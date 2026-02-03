@@ -1,0 +1,27 @@
+Install BasicLinearAlgebra by Tom Stewart in Arduino IDE
+
+States are saved in 'stateEstimates[12]' and accessible anywhere
+
+Rotation around z-axis is set to always be zero
+
+functions.h:
+#include <observer.h>
+
+.ino:
+void setup() {
+  
+  initObserver();
+  
+}
+
+void loop() {
+  
+  if(currentTime - prevSensorTime >= (unsigned long)sensorInterval){
+  
+    // Read all sensors and process data
+    readAllSensors();
+    processSensorData(currentXPos, currentXNeg, currentYPos, currentYNeg);
+    runObserver(pwmInputX, pwmInputY, rawMagFieldDetrended); // Needs to be after processSensorData
+  
+  }
+}
