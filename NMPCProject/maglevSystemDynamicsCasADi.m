@@ -39,12 +39,12 @@ function dx = maglevSystemDynamicsCasADi(x, u, params)
     magnet_n = params.magnet.n;             % Number of discretization points
     
     %% Compute rotation matrix from Euler angles
-    phi = x(4);      % Roll
-    theta = x(5);    % Pitch
-    psi = x(6);      % Yaw
+    alpha = x(4);      % Roll
+    beta = x(5);    % Pitch
+    gamma = x(6);      % Yaw
     
     % Rotation matrix: R = Rz(psi) * Ry(theta) * Rx(phi)
-    R = computeRotationMatrix(phi, theta, psi);
+    R = computeRotationMatrix(alpha, beta, gamma);
     
     %% Discretize levitating magnet circumference
     theta_discrete = linspace(0, 2*pi - 2*pi/magnet_n, magnet_n);
@@ -127,22 +127,22 @@ function dx = maglevSystemDynamicsCasADi(x, u, params)
 end
 
 %% Helper function: Compute rotation matrix
-function R = computeRotationMatrix(phi, theta, psi)
+function R = computeRotationMatrix(alpha, beta, gamma)
     import casadi.*
     
     % Rotation about x-axis (roll)
     Rx = [1, 0, 0;
-          0, cos(phi), -sin(phi);
-          0, sin(phi), cos(phi)];
+          0, cos(alpha), -sin(alpha);
+          0, sin(alpha), cos(alpha)];
     
     % Rotation about y-axis (pitch)
-    Ry = [cos(theta), 0, sin(theta);
+    Ry = [cos(beta), 0, sin(beta);
           0, 1, 0;
-          -sin(theta), 0, cos(theta)];
+          -sin(beta), 0, cos(beta)];
     
     % Rotation about z-axis (yaw)
-    Rz = [cos(psi), -sin(psi), 0;
-          sin(psi), cos(psi), 0;
+    Rz = [cos(gamma), -sin(gamma), 0;
+          sin(gamma), cos(gamma), 0;
           0, 0, 1];
     
     % Combined rotation: R = Rz * Ry * Rx
@@ -214,8 +214,6 @@ function [bx, by, bz] = computeCircularWireField(x, y, z, r, I, mu0)
     [bPhi, bRho, bz] = computeCircularWireFieldPolar(rho, z, r, I, mu0);
     
     % Convert back to Cartesian coordinates
-    % bx = bRho * cos(phi) - bPhi * sin(phi)
-    % by = bRho * sin(phi) + bPhi * cos(phi)
     bx = bRho .* cos(phi) - bPhi .* sin(phi);
     by = bRho .* sin(phi) + bPhi .* cos(phi);
 end
