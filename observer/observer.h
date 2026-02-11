@@ -1,19 +1,23 @@
 #pragma once
 
 #include "../BasicLinearAlgebra/BasicLinearAlgebra.h"
-#include "observerDefinitions.h"
+#include "utilities.h"
 #include "kalmanFilter.h"
+//#include "extendedKalmanFilter.h"
 
-
-using namespace BLA;
-
+// Extern variables and objects
 extern volatile bool newSensorReading;
-extern double stateEstimates[12];
-extern BLA::Matrix<NUMBER_MEASUREMENTS, 1, double> innovation_means;
-extern KalmanFilter<NUMBER_STATES_REDUCED,
-                    NUMBER_INPUTS,
-                    NUMBER_MEASUREMENTS> KF;
+extern volatile unsigned long observerTime;
+extern double stateEstimates[NUMBER_STATES];
+extern MeasVector innovation_means;
+extern KalmanFilter KF;
 
-void newSensorReading_callback();
+// Only declare if defined
+#ifdef EXTENDED_KALMAN_FILTER_H
+extern ExtendedKalmanFilter EKF;
+#endif
+
+// Prototypes
 void initObserver();
-void runObserver(const float pwmInputX, const float pwmInputY, const float (*sensorReading)[NUMBER_MEASUREMENTS]);
+void runObserver(const float ux, const float uy, const float (*z)[NUMBER_MEASUREMENTS]);
+
