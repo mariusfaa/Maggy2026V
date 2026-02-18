@@ -3,27 +3,19 @@ function dx = maglevSystemDynamicsCasADi(x, u, params)
 % for a magnetic levitation system using CasADi symbolic variables.
 % This version is compatible with acados for optimal control.
 %
+% CORRECTED VERSION - Fixed Euler angle kinematics
+%
 % Inputs:
 %   x - State vector (12x1 CasADi SX/MX): [position; orientation; velocity; angular_velocity]
 %       x(1:3)   - [x, y, z] position of levitating magnet
-%       x(4:6)   - [roll, pitch, yaw] orientation
+%       x(4:6)   - [roll, pitch, yaw] orientation (Euler angles)
 %       x(7:9)   - [vx, vy, vz] linear velocity
-%       x(10:12) - [wx, wy, wz] angular velocity
+%       x(10:12) - [wx, wy, wz] angular velocity (body frame)
 %   u - Control input (CasADi SX/MX): current through solenoids
 %   params - Parameter struct (same as original implementation)
 %
 % Output:
 %   dx - State derivative (12x1 CasADi SX/MX)
-%
-% Example:
-%   import casadi.*
-%   x = SX.sym('x', 12);
-%   u = SX.sym('u', 4);
-%   params = load('params.mat');
-%   dx = maglevSystemDynamicsCasADi(x, u, params);
-%
-% Author: Adapted for CasADi compatibility
-% Date: 2026
 
     import casadi.*
     
@@ -39,16 +31,15 @@ function dx = maglevSystemDynamicsCasADi(x, u, params)
     magnet_n = params.magnet.n;             % Number of discretization points
     
     %% Compute rotation matrix from Euler angles
-    alpha = x(4);      % Roll
+    alpha = x(4);   % Roll
     beta = x(5);    % Pitch
-    gamma = x(6);      % Yaw
+    gamma = x(6);   % Yaw
     
-    % Rotation matrix: R = Rz(psi) * Ry(theta) * Rx(phi)
+    % Rotation matrix: R = Rz(gamma) * Ry(beta) * Rx(alpha)
     R = computeRotationMatrix(alpha, beta, gamma);
     
     %% Discretize levitating magnet circumference
-    theta_discrete = linspace(0, 2*pi - 2*pi/magnet_n, magnet_n);
-    
+    theta_discrete = linspace(0, 2*pi - 2*pi/magnet_n, magnet_n);    
     % Local coordinates on magnet (in magnet frame)
     px_local = magnet_r * cos(theta_discrete);
     py_local = magnet_r * sin(theta_discrete);
@@ -116,14 +107,38 @@ function dx = maglevSystemDynamicsCasADi(x, u, params)
               omega(3)*I_omega(1) - omega(1)*I_omega(3);
               omega(1)*I_omega(2) - omega(2)*I_omega(1)];
     
-    alpha = mtimes(inv(I_matrix), (T_total - T_gyro));
+    alpha_ang = mtimes(inv(I_matrix), (T_total - T_gyro));
+    
+    %% CORRECTED: Euler angle rate transformation
+    % Convert body angular velocities to Euler angle rates
+    dOrientation = eulerRateTransform(alpha, beta, omega);
     
     %% State derivative
     dx = [x(7:9);           % Position derivative = velocity
-          x(10:12);         % Orientation derivative = angular velocity
+          dOrientation;     % CORRECTED: Euler angle rates (not omega!)
           a_linear;         % Velocity derivative = linear acceleration
-          alpha];           % Angular velocity derivative = angular acceleration
+          alpha_ang];       % Angular velocity derivative = angular acceleration
     
+end
+
+%% Helper function: Euler rate transformation
+function dEuler = eulerRateTransform(phi, theta, omega)
+    % Transform body angular velocities to Euler angle rates
+    % phi = roll, theta = pitch
+    % omega = [wx; wy; wz] in body frame
+    % dEuler = [dphi; dtheta; dpsi] (Euler angle rates)
+    
+    import casadi.*
+    
+    % Transformation matrix (ZYX Euler convention)
+    % Avoid singularity at theta = ±π/2 by clamping
+    theta_safe = fmin(fmax(theta, -pi/2 + 0.01), pi/2 - 0.01);
+    
+    T = [1, sin(phi)*tan(theta_safe), cos(phi)*tan(theta_safe);
+         0, cos(phi), -sin(phi);
+         0, sin(phi)/cos(theta_safe), cos(phi)/cos(theta_safe)];
+    
+    dEuler = mtimes(T, omega);
 end
 
 %% Helper function: Compute rotation matrix
@@ -223,10 +238,10 @@ function [bphi, brho, bz] = computeCircularWireFieldPolar(rho, z, r, I, mu0)
     import casadi.*
     
     % Handle rho ≈ 0 case with smooth transition
-    tol = 1e-6;
+    tol = 1e-3;
     
     % Coefficient
-    c = mu0 * I / (4 * pi * sqrt(r .* rho));
+    c = mu0 * I ./ (4 * pi * sqrt(r .* rho));
     
     % Compute k^2 parameter for elliptic integrals
     k2 = 4 * r * rho ./ ((r + rho).^2 + z.^2);
@@ -249,7 +264,7 @@ function [bphi, brho, bz] = computeCircularWireFieldPolar(rho, z, r, I, mu0)
     % Use smooth transition with tanh or if_else
     axis_bz = mu0 * r^2 * I ./ (2 * (r^2 + z.^2).^(3/2));
     
-    % Smooth blending (you can also use if_else for piecewise)
+    % Smooth blending
     weight = 0.5 * (1 + tanh((rho - tol) / (tol/10)));
     brho = brho .* weight;
     bz = bz .* weight + axis_bz .* (1 - weight);
