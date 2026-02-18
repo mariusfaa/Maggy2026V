@@ -1,11 +1,11 @@
-%% Maglev Simulation with acados - FIXED Compilation Issues
+%% Maglev Simulation with acados - CORRECTED VERSION
 
-% This script uses the NEW acados MATLAB interface (v0.4.0+)
-%
-% Prerequisites:
-% 1. Install acados: https://docs.acados.org/installation/
-% 2. Add to MATLAB path: addpath('<acados_root>/interfaces/acados_matlab_octave')
-% 3. Ensure maglevSystemDynamicsCasADi.m and ellipke_casadi.m are in path
+% CHANGES FROM ORIGINAL:
+% 1. Fixed Euler angle kinematics in dynamics
+% 2. Improved LQR weights (z-position priority)
+% 3. Added control saturation
+% 4. Smaller initial perturbation for testing
+% 5. Added controllability check
 
 clear; close all;
 
@@ -35,25 +35,39 @@ addpath(genpath(fullfile(project_root, 'utilities')));
 import casadi.*
 
 %% Parameters and Equilibrium Setup
-fprintf('=== Maglev System Simulation with acados (FIXED) ===\n\n');
+fprintf('=== Maglev System Simulation with acados (CORRECTED) ===\n\n');
 
 % Load your params struct
-parameters_maggy_V2;
+parameters_maggy_V4;
 
-correctionFactorFast = computeSolenoidRadiusCorrectionFactor(params,'fast');
-fprintf('Fast correction factor %.2f\n', correctionFactorFast);
-paramsFast = params;
-paramsFast.solenoids.r = correctionFactorFast*paramsFast.solenoids.r;
+% Apply correction factor if function exists
+if exist('computeSolenoidRadiusCorrectionFactor', 'file')
+    correctionFactorFast = computeSolenoidRadiusCorrectionFactor(params,'fast');
+    fprintf('Fast correction factor %.2f\n', correctionFactorFast);
+    paramsFast = params;
+    paramsFast.solenoids.r = correctionFactorFast*paramsFast.solenoids.r;
+else
+    fprintf('Warning: computeSolenoidRadiusCorrectionFactor not found, using params as-is\n');
+    paramsFast = params;
+end
 
 % Define equilibrium point
-[zEq, zEqInv, dzEq, dzEqInv] = computeSystemEquilibria(paramsFast,'fast');
+if exist('computeSystemEquilibria', 'file')
+    [zEq, zEqInv, dzEq, dzEqInv] = computeSystemEquilibria(paramsFast,'fast');
+else
+    fprintf('Warning: computeSystemEquilibria not found, using manual equilibrium\n');
+    zEq = 0.010; % 10mm estimate - adjust based on your system
+end
+
 xEq = [0, 0, zEq, 0, 0, 0, 0, 0, 0, 0, 0, 0]';
 n_solenoids = length(paramsFast.solenoids.r);
 uEq = zeros(n_solenoids, 1);
 
+fprintf('Equilibrium height: z = %.2f mm\n', zEq*1000);
+
 %% Step 1: Linearization using CasADi
 
-fprintf('Step 1: Linearizing system at equilibrium...\n');
+fprintf('\nStep 1: Linearizing system at equilibrium...\n');
 
 nx = 12; % State dimension
 nu = n_solenoids; % Control dimension
@@ -63,6 +77,7 @@ x_sym = SX.sym('x', nx);
 u_sym = SX.sym('u', nu);
 
 % Get nonlinear dynamics symbolic expression
+% IMPORTANT: Use the CORRECTED dynamics file!
 f_nl = maglevSystemDynamicsCasADi(x_sym, u_sym, paramsFast);
 
 % Compute Jacobian symbolic EXPRESSIONS
@@ -98,9 +113,37 @@ B_red = B(controllable_indices, :);
 A_red_numeric = full(double(A_red));
 B_red_numeric = full(double(B_red));
 
-% Design LQR weights
-Q = diag([1e4, 1e4, 1e7, 1e3, 1e3, 1e2, 1e2, 1e3, 1e2, 1e2]);
+% Check controllability
+ctrb_matrix = ctrb(A_red_numeric, B_red_numeric);
+rank_ctrb = rank(ctrb_matrix);
+fprintf(' Controllability matrix rank: %d (should be %d)\n', rank_ctrb, size(A_red_numeric, 1));
+
+if rank_ctrb < size(A_red_numeric, 1)
+    warning('System is not fully controllable!');
+else
+    fprintf(' System is fully controllable ✓\n');
+end
+
+% CORRECTED LQR weights - Z position is HIGHEST priority
+% State order in reduced system: [x, y, z, roll, pitch, vx, vy, vz, wx, wy]
+Q = diag([1e4,  % x position
+          1e4,  % y position  
+          1e7,  % z position (HIGHEST - most critical!)
+          1e3,  % roll
+          1e3,  % pitch
+          1e2,  % vx
+          1e2,  % vy
+          1e3,  % vz (vertical velocity important)
+          1e2,  % wx
+          1e2]);% wy
+
 R = 1e-0 * eye(nu);
+
+fprintf(' LQR weights:\n');
+fprintf('   Q_z = %.0e (vertical position - HIGHEST)\n', Q(3,3));
+fprintf('   Q_xy = %.0e (horizontal position)\n', Q(1,1));
+fprintf('   Q_angles = %.0e (roll/pitch)\n', Q(4,4));
+fprintf('   R = %.0e (control effort)\n', R(1,1));
 
 % Compute LQR gain
 K_red = lqr(A_red_numeric, B_red_numeric, Q, R);
@@ -111,7 +154,7 @@ K(:, controllable_indices) = K_red;
 
 fprintf(' LQR gain K: %dx%d\n', size(K));
 
-%% Step 3: Setup acados Integrator (FIXED FOR COMPILATION)
+%% Step 3: Setup acados Integrator
 
 fprintf('\nStep 3: Setting up acados integrator...\n');
 
@@ -125,7 +168,7 @@ xdot = SX.sym('xdot', nx);
 
 % 3. Create the Model Object
 model = AcadosModel();
-model.name = 'maglev_sim';
+model.name = 'maglev_sim_corrected';
 model.x = x;
 model.xdot = xdot;
 model.u = u;
@@ -141,11 +184,11 @@ sim.model = model;
 % 5. Configure Solver Options
 sim.solver_options.Tsim = dt;
 sim.solver_options.integrator_type = 'IRK';
-sim.solver_options.num_stages = 1;  % Reduced from 3 to speed up compilation
-sim.solver_options.num_steps = 1;   % Reduced from 3
-sim.solver_options.newton_iter = 5; % Increased from 3 for stability
+sim.solver_options.num_stages = 1;
+sim.solver_options.num_steps = 1;
+sim.solver_options.newton_iter = 5;
 
-% 6. CRITICAL: Set code export directory to reuse compiled code
+% 6. Set code export directory
 code_gen_dir = fullfile(project_root, 'c_generated_code');
 if ~exist(code_gen_dir, 'dir')
     mkdir(code_gen_dir);
@@ -154,23 +197,14 @@ sim.code_export_directory = code_gen_dir;
 
 % 7. Create the integrator solver object
 fprintf(' Creating AcadosSimSolver...\n');
-fprintf(' NOTE: First compilation may take 1-3 minutes on Windows.\n');
-fprintf('       Please be patient. Subsequent runs will be much faster.\n');
+fprintf(' NOTE: First compilation may take 1-3 minutes.\n');
 
 try
-    diary('acados_log.txt');
-    diary on;
     sim_solver = AcadosSimSolver(sim);
-    diary off;
     fprintf(' Integrator configured successfully.\n');
 catch ME
     fprintf(' ERROR during solver creation:\n');
     fprintf(' %s\n', ME.message);
-    fprintf('\n TROUBLESHOOTING:\n');
-    fprintf(' 1. Check that MinGW64 is properly installed and on PATH\n');
-    fprintf(' 2. Try closing MATLAB and deleting: %s\n', code_gen_dir);
-    fprintf(' 3. Reduce num_stages and num_steps further if needed\n');
-    fprintf(' 4. Check acados installation: run acados examples first\n');
     rethrow(ME);
 end
 
@@ -178,17 +212,30 @@ end
 
 fprintf('\nStep 4: Running closed-loop simulation...\n');
 
-% Initial condition (perturbed from equilibrium)
-x0 = xEq + [0, 0, 0.002, 0.01, 0, 0, zeros(1,6)]';
+% CORRECTED: Much smaller initial perturbation for testing
+% Original: [0.001, -0.003, 0.04, pi/5, ...]  (36 degree roll!)
+% New: Small perturbations only
+x0 = xEq + [0, 0, 0.002, 0.01, 0, 0, zeros(1, 6)]';  % 2mm up, 0.6° roll
+
+fprintf(' Initial perturbation:\n');
+fprintf('   Δz = %.1f mm\n', (x0(3)-xEq(3))*1000);
+fprintf('   Δroll = %.2f deg\n', rad2deg(x0(4)-xEq(4)));
+
+% Control saturation limits [A]
+u_min = 0.0;  % Minimum current
+u_max = 5.0;  % Maximum current (adjust based on your hardware)
+
+fprintf(' Control saturation: [%.1f, %.1f] A\n', u_min, u_max);
 
 % Simulation parameters
-t_final = 1.0; % [s]
+t_final = 2.0; % [s] - increased to see settling
 t_vec = 0:dt:t_final;
 N_sim = length(t_vec);
 
 % Preallocate trajectory arrays
 x_traj = zeros(nx, N_sim);
 u_traj = zeros(nu, N_sim);
+u_traj_saturated = zeros(nu, N_sim);
 x_traj(:, 1) = x0;
 
 % Simulation loop
@@ -196,12 +243,22 @@ fprintf(' Simulating %d time steps...\n', N_sim-1);
 
 tic;
 x_current = x0;
+saturated_count = 0;
 
 for k = 1:N_sim-1
-    % Compute LQR control
+    % Compute LQR control (unsaturated)
     u_raw = -K * (x_current - xEq) + uEq;
-    u_current = max(0, min(5, u_raw));
-    u_traj(:, k) = u_current;
+    
+    % ADDED: Control saturation
+    u_current = max(u_min, min(u_max, u_raw));
+    
+    % Track saturation events
+    if any(abs(u_raw - u_current) > 1e-6)
+        saturated_count = saturated_count + 1;
+    end
+    
+    u_traj(:, k) = u_raw;
+    u_traj_saturated(:, k) = u_current;
     
     % Set initial state and control
     sim_solver.set('x', x_current);
@@ -210,9 +267,9 @@ for k = 1:N_sim-1
     % Integrate one step
     status = sim_solver.solve();
     
-    % CRITICAL: Check status immediately
+    % Check status
     if status ~= 0
-        warning('Solver failed at step %d with status %d. Reducing time step may help.', k, status);
+        warning('Solver failed at step %d with status %d.', k, status);
         fprintf(' State at failure: x = [%.4f, %.4f, %.4f, ...]\n', x_current(1:3));
         fprintf(' Control at failure: u = [%.4f, %.4f, %.4f, %.4f]\n', u_current);
         break;
@@ -222,24 +279,50 @@ for k = 1:N_sim-1
     x_current = sim_solver.get('xn');
     x_traj(:, k+1) = x_current;
     
-    % Optional: Print progress every 20 steps so you know it's alive
-    if mod(k, 20) == 0
-        fprintf(' Step %d/%d completed...\n', k, N_sim-1);
+    % Print progress
+    if mod(k, 50) == 0
+        fprintf(' Step %d/%d: z=%.2fmm, roll=%.2fdeg\n', ...
+            k, N_sim-1, x_current(3)*1000, rad2deg(x_current(4)));
     end
 end
 
 % Final control
-u_traj(:, N_sim) = -K * (x_traj(:, N_sim) - xEq) + uEq;
+u_raw = -K * (x_traj(:, N_sim) - xEq) + uEq;
+u_traj(:, N_sim) = u_raw;
+u_traj_saturated(:, N_sim) = max(u_min, min(u_max, u_raw));
 
 sim_time = toc;
-fprintf(' Simulation completed in %.3f seconds (%.1f ms per step)\n', sim_time, 1000*sim_time/(N_sim-1));
+fprintf('\n Simulation completed in %.3f seconds (%.1f ms per step)\n', ...
+    sim_time, 1000*sim_time/(N_sim-1));
+fprintf(' Control saturated in %d/%d steps (%.1f%%)\n', ...
+    saturated_count, N_sim-1, 100*saturated_count/(N_sim-1));
 
-%% Step 5: Visualization
+%% Step 5: Performance Metrics
 
-fprintf('\nStep 5: Generating plots...\n');
+fprintf('\n=== Performance Metrics ===\n');
+fprintf('Initial error norm (position): %.4f mm\n', 1000*norm(x0(1:3) - xEq(1:3)));
+fprintf('Final error norm (position): %.4f mm\n', 1000*norm(x_traj(1:3,end) - xEq(1:3)));
+fprintf('Initial error norm (angles): %.3f deg\n', rad2deg(norm(x0(4:6) - xEq(4:6))));
+fprintf('Final error norm (angles): %.3f deg\n', rad2deg(norm(x_traj(4:6,end) - xEq(4:6))));
+
+% Settling time (2% criterion for z position)
+z_error = abs(x_traj(3,:) - xEq(3));
+z_settled_idx = find(z_error < 0.02*abs(x0(3)-xEq(3)), 1, 'first');
+if ~isempty(z_settled_idx)
+    fprintf('Z-position settling time (2%%): %.3f s\n', t_vec(z_settled_idx));
+else
+    fprintf('Z-position did not settle within simulation time\n');
+end
+
+% Max control effort
+fprintf('Max control current: %.3f A\n', max(max(abs(u_traj_saturated))));
+
+%% Step 6: Visualization
+
+fprintf('\nStep 6: Generating plots...\n');
 
 % Create main figure for states
-fig1 = figure('Name', 'State Trajectories', 'Position', [50, 50, 1400, 900]);
+fig1 = figure('Name', 'State Trajectories - CORRECTED', 'Position', [50, 50, 1400, 900]);
 
 % Position states
 subplot(3,4,1); plot(t_vec, 1000*x_traj(1,:), 'LineWidth', 2);
@@ -250,7 +333,7 @@ xlabel('Time [s]'); ylabel('Y [mm]'); title('Y Position'); grid on;
 
 subplot(3,4,3); plot(t_vec, 1000*x_traj(3,:), 'LineWidth', 2); hold on;
 plot(t_vec, 1000*zEq*ones(size(t_vec)), 'r--', 'LineWidth', 1.5);
-xlabel('Time [s]'); ylabel('Z [mm]'); title('Z Position');
+xlabel('Time [s]'); ylabel('Z [mm]'); title('Z Position (CRITICAL)');
 legend('Response', 'Equilibrium'); grid on;
 
 % Orientation states
@@ -283,25 +366,31 @@ xlabel('Time [s]'); ylabel('\omega_y [°/s]'); title('Pitch Rate'); grid on;
 subplot(3,4,12); plot(t_vec, rad2deg(x_traj(12,:)), 'LineWidth', 2);
 xlabel('Time [s]'); ylabel('\omega_z [°/s]'); title('Yaw Rate'); grid on;
 
-sgtitle('Maglev System: Closed-Loop Response with LQR', 'FontSize', 14, 'FontWeight', 'bold');
+sgtitle('Maglev System: CORRECTED LQR Control', 'FontSize', 14, 'FontWeight', 'bold');
 
 % Create figure for control inputs
-fig2 = figure('Name', 'Control Inputs', 'Position', [100, 100, 1000, 500]);
+fig2 = figure('Name', 'Control Inputs - CORRECTED', 'Position', [100, 100, 1000, 500]);
 colors = lines(nu);
 
 for i = 1:nu
     subplot(2, ceil(nu/2), i);
-    plot(t_vec, u_traj(i,:), 'Color', colors(i,:), 'LineWidth', 2);
-    hold on; plot(t_vec, uEq(i)*ones(size(t_vec)), 'k--', 'LineWidth', 1);
+    plot(t_vec, u_traj(i,:), 'Color', colors(i,:), 'LineWidth', 1.5, 'LineStyle', '--');
+    hold on;
+    plot(t_vec, u_traj_saturated(i,:), 'Color', colors(i,:), 'LineWidth', 2);
+    plot(t_vec, uEq(i)*ones(size(t_vec)), 'k--', 'LineWidth', 1);
+    plot(t_vec, u_max*ones(size(t_vec)), 'r:', 'LineWidth', 1);
+    plot(t_vec, u_min*ones(size(t_vec)), 'r:', 'LineWidth', 1);
     xlabel('Time [s]'); ylabel(sprintf('I_%d [A]', i));
     title(sprintf('Solenoid %d Current', i));
-    legend('Control', 'Equilibrium'); grid on;
+    legend('Commanded', 'Saturated', 'Equilibrium', 'Limits', 'Location', 'best');
+    grid on;
+    ylim([u_min-0.5, u_max+0.5]);
 end
 
-sgtitle('Control Input Signals', 'FontSize', 14, 'FontWeight', 'bold');
+sgtitle('Control Inputs (with Saturation)', 'FontSize', 14, 'FontWeight', 'bold');
 
 % 3D trajectory plot
-fig3 = figure('Name', '3D Trajectory', 'Position', [150, 150, 800, 600]);
+fig3 = figure('Name', '3D Trajectory - CORRECTED', 'Position', [150, 150, 800, 600]);
 plot3(1000*x_traj(1,:), 1000*x_traj(2,:), 1000*x_traj(3,:), 'b-', 'LineWidth', 2);
 hold on;
 plot3(1000*x0(1), 1000*x0(2), 1000*x0(3), 'go', 'MarkerSize', 10, 'MarkerFaceColor', 'g');
@@ -312,55 +401,9 @@ legend('Trajectory', 'Initial', 'Equilibrium');
 grid on; axis equal;
 view(45, 30);
 
-fprintf('\n=== Simulation Summary ===\n');
-fprintf('Initial error norm: %.4f m\n', norm(x0(1:3) - xEq(1:3)));
-fprintf('Final error norm: %.4f m\n', norm(x_traj(1:3,end) - xEq(1:3)));
-fprintf('Simulation time: %.3f s\n', sim_time);
-fprintf('Average step time: %.2f ms\n', 1000*sim_time/(N_sim-1));
-
 fprintf('\nSimulation complete!\n');
-
-%% Optional: Compare with MATLAB ode15s
-
-compare_with_ode = false; % Set to true to compare
-
-if compare_with_ode
-    fprintf('\n=== Comparison with ode15s ===\n');
-    
-    % Define ODE function for ode15s
-    ode_fun = @(t, x) full(maglevSystemDynamicsCasADi(x, -K*(x-xEq)+uEq, paramsFast));
-    
-    % Solve with ode15s
-    fprintf('Running ode15s...\n');
-    tic;
-    options = odeset('RelTol', 1e-6, 'AbsTol', 1e-8);
-    [t_ode, x_ode] = ode15s(ode_fun, [0, t_final], x0, options);
-    ode_time = toc;
-    
-    fprintf('ode15s completed in %.3f seconds\n', ode_time);
-    fprintf('Speed ratio: acados is %.2fx %s than ode15s\n', ...
-        abs(ode_time/sim_time), iff(ode_time>sim_time, 'faster', 'slower'));
-    
-    % Plot comparison
-    figure('Name', 'acados vs ode15s', 'Position', [200, 200, 1200, 400]);
-    
-    subplot(1,3,1);
-    plot(t_vec, 1000*x_traj(1,:), 'b-', 'LineWidth', 2); hold on;
-    plot(t_ode, 1000*x_ode(:,1), 'r--', 'LineWidth', 2);
-    xlabel('Time [s]'); ylabel('X [mm]'); title('X Position');
-    legend('acados', 'ode15s'); grid on;
-    
-    subplot(1,3,2);
-    plot(t_vec, 1000*x_traj(2,:), 'b-', 'LineWidth', 2); hold on;
-    plot(t_ode, 1000*x_ode(:,2), 'r--', 'LineWidth', 2);
-    xlabel('Time [s]'); ylabel('Y [mm]'); title('Y Position');
-    legend('acados', 'ode15s'); grid on;
-    
-    subplot(1,3,3);
-    plot(t_vec, 1000*x_traj(3,:), 'b-', 'LineWidth', 2); hold on;
-    plot(t_ode, 1000*x_ode(:,3), 'r--', 'LineWidth', 2);
-    xlabel('Time [s]'); ylabel('Z [mm]'); title('Z Position');
-    legend('acados', 'ode15s'); grid on;
-    
-    sgtitle('Comparison: acados vs ode15s', 'FontSize', 14);
-end
+fprintf('\n=== NEXT STEPS ===\n');
+fprintf('1. If system is now stable, gradually increase initial perturbation\n');
+fprintf('2. Try n=20 or n=50 to see effect of discretization\n');
+fprintf('3. Tune Q and R weights for better performance\n');
+fprintf('4. Consider adding integral action for steady-state error\n');

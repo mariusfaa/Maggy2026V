@@ -28,7 +28,7 @@ params.magnet.l     = 0.0040;
 params.magnet.J     = -1.1;
 params.magnet.m     = 0.060; % (weight on kitchen scale, golden magnet)
 params.magnet.I     = [6.1686e-06, 6.1686e-06, 1.1274e-05];
-params.magnet.n     = 100;
+params.magnet.n     = 13;
 
 % Sensors (7, 2, 3)
 params.sensors.x  = [-0.0003, -0.0326856, 0.0130152];

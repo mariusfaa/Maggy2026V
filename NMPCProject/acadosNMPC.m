@@ -2,8 +2,8 @@
 clear all; clc;
 
 % 1. DEFINE PATHS (Double check these once more)
-acados_root = 'C:\Users\mariujf\acados'; 
-project_root = 'C:\Users\mariujf\NMPCProject'; 
+acados_root = '/home/mariujf/acados';
+project_root = '/home/mariujf/Maggy2026V/NMPCProject';
 
 % 2. THE NUCLEAR FIX FOR PATHS
 % We must set these BEFORE importing casadi or creating the solver.
@@ -23,180 +23,214 @@ addpath(genpath(fullfile(project_root, 'utilities')));
 
 import casadi.*
 
-% --- Setup Model ---
+% --- Init OCP structure ---
 model_name = 'maglev_nmpc';
-nx = 12; sym_x = SX.sym('x', nx); 
-pos = sym_x(1:3); rot_angles = sym_x(4:6); 
-vel = sym_x(7:9); ang_vel = sym_x(10:12);
-nu = 4; sym_u = SX.sym('u', nu);
-parameters_maggy_V4;
-
-% --- Build Dynamics ---
-cx = cos(rot_angles(1)); sx = sin(rot_angles(1));
-cy = cos(rot_angles(2)); sy = sin(rot_angles(2));
-cz = cos(rot_angles(3)); sz = sin(rot_angles(3));
-R_mat = [cy*cz, cz*sx*sy - cx*sz, cx*cz*sy + sx*sz;
-         cy*sz, cx*cz + sx*sy*sz, -cz*sx + cx*sy*sz;
-         -sy,   cy*sx,            cx*cy];
-
-n_segments = 4; 
-theta = linspace(0, 2*pi - 2*pi/n_segments, n_segments);
-K_const = -params.magnet.J / params.physical.mu0;
-fx_total = 0; fy_total = 0; fz_total = 0;
-tx_total = 0; ty_total = 0; tz_total = 0;
-
-for k = 1:n_segments
-    p_local = [params.magnet.r * cos(theta(k)); params.magnet.r * sin(theta(k)); 0];
-    p_world = R_mat * p_local + pos;
-    [bx_k, by_k, bz_k] = casadiComputeFieldBase(p_world(1), p_world(2), p_world(3), sym_u, params);
-    tangent_world = R_mat * [cos(theta(k)+pi/2); sin(theta(k)+pi/2); 0];
-    dF = cross(K_const * params.magnet.l * tangent_world, [bx_k; by_k; bz_k]);
-    segment_weight = (2*pi*params.magnet.r) / n_segments;
-    fx_total = fx_total + dF(1) * segment_weight;
-    fy_total = fy_total + dF(2) * segment_weight;
-    fz_total = fz_total + dF(3) * segment_weight;
-    dT = cross(p_world - pos, dF);
-    tx_total = tx_total + dT(1) * segment_weight;
-    ty_total = ty_total + dT(2) * segment_weight;
-    tz_total = tz_total + dT(3) * segment_weight;
-end
-
-acc = ([fx_total; fy_total; fz_total] + [0; 0; -params.magnet.m * params.physical.g]) / params.magnet.m;
-ang_acc = diag(params.magnet.I) \ ([tx_total; ty_total; tz_total] - cross(ang_vel, diag(params.magnet.I) * ang_vel));
-sym_xdot = [vel; ang_vel; acc; ang_acc];
-
-% --- Create Acados OCP ---
 ocp = AcadosOcp();
 ocp.model.name = model_name;
-ocp.model.x = sym_x;
-ocp.model.u = sym_u;
-ocp.model.f_expl_expr = sym_xdot;
 
-% --- THE FIX: Force External Layout ---
-ocp.code_gen_opts.code_export_directory = fullfile(project_root, 'c_generated_code');
-% This tells acados NOT to look in the current folder for the lib folder
-ocp.code_gen_opts.acados_lib_path = fullfile(acados_root, 'lib');
-ocp.code_gen_opts.acados_include_path = fullfile(acados_root, 'include');
+% --- Model definitions ---
+nx = 12;
+nu = 4;
+x = SX.sym('x', nx); 
+u = SX.sym('u', nu);
+xdot = SX.sym('xdot', nx);
+
+parameters_maggy_V4;
+correctionFactorFast = computeSolenoidRadiusCorrectionFactor(params,'fast');
+paramsFast = params;
+paramsFast.solenoids.r = correctionFactorFast*paramsFast.solenoids.r;
+
+[zEq, zEqInv, dzEq, dzEqInv] = computeSystemEquilibria(paramsFast,'fast');
+uEq = 0.5 * ones(nu, 1);
+% If it doesn't return uEq directly, you need to solve for it.
+% For a symmetric 4-solenoid system at the hover point, 
+% typically u1=u2=u3=u4=uEq_scalar. Try:
+u_test_range = linspace(-5, 5, 1000);
+for k = 1:length(u_test_range)
+    u_test = u_test_range(k) * ones(4,1);
+    f_test = maglevSystemDynamics([0;0;zEq;zeros(9,1)], u_test, paramsFast, 'fast');
+    if abs(f_test(9)) < 0.01  % near-zero z-acceleration
+        fprintf('Approximate equilibrium current: %.4f A\n', u_test_range(k));
+        break;
+    end
+end
+
+f_expl = maglevSystemDynamicsCasADi(x, u, paramsFast);
+
+ocp.model.x = x;
+ocp.model.u = u;
+ocp.model.xdot = xdot;
+ocp.model.f_impl_expr = xdot - f_expl;
+
+% % --- THE FIX: Force External Layout ---
+% ocp.code_gen_opts.code_export_directory = fullfile(project_root, 'c_generated_code');
+% % This tells acados NOT to look in the current folder for the lib folder
+% ocp.code_gen_opts.acados_lib_path = fullfile(acados_root, 'lib');
+% ocp.code_gen_opts.acados_include_path = fullfile(acados_root, 'include');
 
 % Solver Options
-ocp.solver_options.N_horizon = 20;
-ocp.solver_options.tf = 1.0;
-ocp.solver_options.nlp_solver_type = 'SQP_RTI';
-ocp.solver_options.integrator_type = 'ERK';
+ocp.solver_options.N_horizon = 10;
+ocp.solver_options.tf = 0.5;
+ocp.solver_options.integrator_type = 'IRK';
+ocp.solver_options.sim_method_num_stages = 4;
+ocp.solver_options.sim_method_num_steps = 10;
+ocp.solver_options.nlp_solver_type = 'SQP'; % 'SQP_RTI' for real-time
+ocp.solver_options.nlp_solver_max_iter = 100;
 ocp.solver_options.qp_solver = 'PARTIAL_CONDENSING_HPIPM';
+ocp.solver_options.hessian_approx = 'GAUSS_NEWTON';
+ocp.solver_options.globalization = 'MERIT_BACKTRACKING';
 
 % --- Cost (Corrected Concatenation) ---
-ocp.cost.cost_type = 'LINEAR_LS';
-ocp.cost.cost_type_e = 'LINEAR_LS';
-ocp.cost.cost_type_0 = 'LINEAR_LS'; 
+ocp.cost.cost_type = 'NONLINEAR_LS';
+ocp.cost.cost_type_e = 'NONLINEAR_LS';
+ocp.cost.cost_type_0 = 'NONLINEAR_LS';
 
-% Use semicolons to stack these into a single column vector for diag()
-Q_vec = [100*ones(3,1); 10*ones(3,1); ones(6,1)];
-R_vec = 0.1*ones(4,1);
+% Weights
+Q = diag([1 1 10, 0.1 0.1 0.1, 0.01 0.01 0.01, 0.01 0.01 0.01]); 
+R = eye(nu) * 1.0;
+ocp.cost.W = blkdiag(Q, R);
+ocp.cost.W_0  = blkdiag(Q, R);
+ocp.cost.W_e = Q;
 
-ocp.cost.W = diag([Q_vec; R_vec]);    % Full 16x16 matrix
-ocp.cost.W_e = diag(Q_vec);           % Terminal 12x12 matrix
-ocp.cost.W_0 = ocp.cost.W;            % Initial 16x16 matrix
+% Cost expressions
+ocp.model.cost_y_expr = [x; u];
+ocp.model.cost_y_expr_0 = [x; u];
+ocp.model.cost_y_expr_e = x; 
 
-ocp.cost.Vx = zeros(16, 12); ocp.cost.Vx(1:12,1:12) = eye(12);
-ocp.cost.Vu = zeros(16, 4);  ocp.cost.Vu(13:16,1:4) = eye(4);
-ocp.cost.Vx_e = eye(12);
-ocp.cost.Vx_0 = ocp.cost.Vx;
-ocp.cost.Vu_0 = ocp.cost.Vu;
+% References
+yref = [0; 0; zEq; zeros(9,1); uEq];
+yref_e = yref(1:nx);
 
-ocp.cost.yref = zeros(16, 1);
-ocp.cost.yref_e = zeros(12, 1);
-ocp.cost.yref_0 = zeros(16, 1);
+ocp.cost.yref = yref;
+ocp.cost.yref_0 = yref;
+ocp.cost.yref_e = yref_e;
+
 % Constraints
-ocp.constraints.idxbu = 0:3; 
-ocp.constraints.lbu = -5 * ones(4, 1); 
-ocp.constraints.ubu =  5 * ones(4, 1); 
-ocp.constraints.x0 = [0; 0; 0.05; 0; 0; 0; 0; 0; 0; 0; 0; 0]; 
+ocp.constraints.idxbu = 0:nu-1;
+ocp.constraints.lbu = -5 * ones(nu,1); 
+ocp.constraints.ubu =  5 * ones(nu,1);
+ocp.constraints.x0 = [0; 0; zEq - 0.005; zeros(9,1)];
 
-% --- Final Solver Call ---
-try
-    ocp_solver = AcadosOcpSolver(ocp);
-    disp('Success.');
-catch e
-    rethrow(e);
+x_test = ocp.constraints.x0;
+u_test = zeros(nu, 1);
+% Create the CasADi function
+f_func = casadi.Function('f', {x, u}, {f_expl});
+% Evaluate it at the test point and convert to numeric
+f_test = full(f_func(x_test, u_test));
+disp('Dynamics at x0, u=0:');
+disp(f_test);
+if any(isnan(f_test)) || any(isinf(f_test))
+    error('NaN/Inf in dynamics at initial condition! Root cause found here.');
 end
 
-%% --- CLOSED-LOOP SIMULATION ---
-N_sim = 100;                 
-x_current = ocp.constraints.x0; 
-history_x = zeros(nx, N_sim+1);
-history_u = zeros(nu, N_sim);
+% Generate and Build Solver
+ocp_solver = AcadosOcpSolver(ocp);
+
+uEq = 0.5 * ones(nu, 1);
+x_init = [0; 0; zEq; zeros(9,1)];
+u_init = uEq;  % or uEq if you have it
+for k = 0:ocp.solver_options.N_horizon
+    ocp_solver.set('x', x_init, k);
+end
+for k = 0:ocp.solver_options.N_horizon-1
+    ocp_solver.set('u', uEq, k);
+end
+
+% Simulate
+% --- Simulation Setup ---
+nsim = 100;
+x_current = ocp.constraints.x0;
+
+% Initialize history for visualization
+history_x = zeros(nx, nsim+1);
+history_u = zeros(nu, nsim);
 history_x(:,1) = x_current;
 
-fprintf('Starting simulation...\n');
-
-for i = 1:N_sim
-    % 1. Set initial state constraint
-    ocp_solver.set('constr_x0', x_current);
+for i = 1:nsim
+    % 1. Update initial state
+    ocp_solver.set('constr_x0', x_current); 
     
-    % 2. Solve the OCP
+    % 2. Solve (Call without assigning an output)
     ocp_solver.solve();
     
-    % 3. Get first control (Stage 0)
-    u0 = ocp_solver.get('u', 0);
-    
-    % 4. Get next state (Predictive step)
-    x_next = ocp_solver.get('x', 1); 
-    
-    % Store history
-    history_x(:, i+1) = x_next;
-    history_u(:, i) = u0;
-    
-    % Update for next step
-    x_current = x_next;
-    
-    % 5. SHIFT HORIZON (Warm Start)
-    % Use ocp.dims.N to ensure the variable exists
-    for j = 0:ocp.dims.N-2
-        ocp_solver.set('x', ocp_solver.get('x', j+1), j);
-        ocp_solver.set('u', ocp_solver.get('u', j+1), j);
+    % 3. Retrieve status separately
+    status = ocp_solver.get('status');
+    if status ~= 0
+        warning('Solver failed with status %d at step %d', status, i);
     end
-    % Set the last stage to a sensible default (steady state)
-    ocp_solver.set('x', ocp_solver.get('x', ocp.dims.N-1), ocp.dims.N-1);
+    
+    % 4. Extract control
+    u_applied = ocp_solver.get('u', 0);
+    
+    % 5. Plant Simulation (Using ode15s for stiffness)
+    % We wrap the dynamics in a function handle for ode15s
+    f_plant = @(t, x_val) maglevSystemDynamics(x_val, u_applied, paramsFast, 'fast');
+    [~, x_next_traj] = ode15s(f_plant, [0, 1/20], x_current);
+    x_current = x_next_traj(end, :)';
+    
+    % 6. Log data
+    history_x(:, i+1) = x_current;
+    history_u(:, i) = u_applied;
 end
 
-disp('Simulation finished.');
+%% Visualization of MagLev NMPC Results
+h = 1/20;
+t = 0:h:(nsim*h); % Time vector for states
+t_u = 0:h:((nsim-1)*h); % Time vector for controls
 
-%% --- VISUALIZATION ---
-figure('Color', 'w', 'Name', 'MagLev NMPC Results');
+figure('Name', 'MagLev NMPC Performance', 'Color', 'w', 'Units', 'normalized', 'Position', [0.1 0.1 0.8 0.8]);
 
-% Subplot 1: 3D Trajectory
-subplot(2, 2, [1, 3]);
+% --- 1. 3D Trajectory ---
+subplot(2, 3, 1);
 plot3(history_x(1,:), history_x(2,:), history_x(3,:), 'b', 'LineWidth', 2);
 hold on;
-grid on;
-plot3(0, 0, 0.05, 'rx', 'MarkerSize', 10, 'LineWidth', 2); % Target Setpoint
+plot3(yref(1), yref(2), yref(3), 'rx', 'MarkerSize', 10, 'LineWidth', 2); % Reference
+grid on; axis equal;
 xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
-title('Magnet Center of Mass Trajectory');
-axis equal;
-view(45, 30);
+title('3D Trajectory');
+legend('Actual', 'Target');
 
-% Subplot 2: Z-Position (Height) vs Time
-subplot(2, 2, 2);
-plot(history_x(3,:), 'r', 'LineWidth', 1.5);
-hold on; yline(0.05, '--k'); % Setpoint line
-title('Vertical Position (Height)');
-ylabel('Z [m]');
-grid on;
-
-% Subplot 3: Control Inputs (Currents)
-subplot(2, 2, 4);
-plot(history_u', 'LineWidth', 1.2);
-title('Solenoid Currents');
-xlabel('Step'); ylabel('Current [A]');
-legend('I1', 'I2', 'I3', 'I4');
-grid on;
-
-% Add to the visualization section
-subplot(2, 2, [1, 3]);
+% --- 2. Position Tracking ---
+subplot(2, 3, 2);
+plot(t, history_x(1:3, :), 'LineWidth', 1.5);
 hold on;
-% Draw a simple cylinder to represent the magnet at the final position
-[xc, yc, zc] = cylinder(params.magnet.r, 20);
-zc = zc * params.magnet.l - (params.magnet.l/2); % Center the cylinder
-surf(xc + x_current(1), yc + x_current(2), zc + x_current(3), 'FaceColor', 'g', 'EdgeColor', 'none');
-camlight; lighting phong;
+plot(t, repmat(yref(1:3), 1, length(t)), '--k');
+title('Position [m]');
+xlabel('Time [s]');
+legend('x', 'y', 'z');
+grid on;
+
+% --- 3. Orientation (Euler Angles) ---
+subplot(2, 3, 3);
+plot(t, rad2deg(history_x(4:6, :)), 'LineWidth', 1.5);
+title('Orientation [deg]');
+xlabel('Time [s]');
+legend('\phi (roll)', '\theta (pitch)', '\psi (yaw)');
+grid on;
+
+% --- 4. Control Inputs (Currents) ---
+subplot(2, 3, 4);
+stairs(t_u, history_u', 'LineWidth', 1.5);
+hold on;
+yline(ocp.constraints.ubu(1), 'r--', 'Upper Limit');
+yline(ocp.constraints.lbu(1), 'r--', 'Lower Limit');
+title('Control Inputs (Solenoid Currents)');
+xlabel('Time [s]'); ylabel('Current [A]');
+legend('I_1', 'I_2', 'I_3', 'I_4');
+grid on;
+
+% --- 5. Velocity ---
+subplot(2, 3, 5);
+plot(t, history_x(7:9, :), 'LineWidth', 1.5);
+title('Linear Velocity [m/s]');
+xlabel('Time [s]');
+legend('v_x', 'v_y', 'v_z');
+grid on;
+
+% --- 6. Angular Velocity ---
+subplot(2, 3, 6);
+plot(t, rad2deg(history_x(10:12, :)), 'LineWidth', 1.5);
+title('Angular Velocity [deg/s]');
+xlabel('Time [s]');
+legend('\omega_x', '\omega_y', '\omega_z');
+grid on;
