@@ -1,33 +1,20 @@
 %% Maglev Simulation with acados - FIXED Compilation Issues
-
-% This script uses the NEW acados MATLAB interface (v0.4.0+)
 %
 % Prerequisites:
 % 1. Install acados: https://docs.acados.org/installation/
 % 2. Add to MATLAB path: addpath('<acados_root>/interfaces/acados_matlab_octave')
 % 3. Ensure maglevSystemDynamicsCasADi.m and ellipke_casadi.m are in path
 
-clear; close all;
+clear all; close all; rmdir("build","s"); rmdir("c_generated_code","s");
 
-% 1. DEFINE PATHS
-acados_root = 'C:\Users\mariujf\acados';
-project_root = 'C:\Users\mariujf\maggy26\Maggy2026V\NMPCProject';
+%% Env setup
+acados_root = 'C:\Users\halva\Downloads\acados';
+project_root = 'C:\Users\halva\Downloads\Maggy2026V\NMPCProject';
 
-% 2. SETUP ENVIRONMENT
-setenv('ACADOS_SOURCE_DIR', acados_root);
-setenv('ENV_ACADOS_INSTALL_DIR', acados_root);
-setenv('ACADOS_INSTALL_DIR', acados_root);
-setenv('CFLAGS', '-O1');
-addpath(fullfile(acados_root, 'interfaces', 'acados_matlab_octave'));
-addpath(fullfile(acados_root, 'external', 'jsonlab'));
-addpath(fullfile(acados_root, 'external', 'casadi-matlab'));
+% This sets acados variables, it is present in '<acados_root>/interfaces/acados_matlab_octave'
+acados_env_variables_windows();
 
-% Check if the folder actually exists
-if ~exist(fullfile(acados_root, 'interfaces', 'acados_matlab_octave'), 'dir')
-    error('Acados interface path not found. Please check acados_root.');
-end
-
-% Project folders
+% Add project folders to path
 addpath(genpath(fullfile(project_root, 'model_implementations')));
 addpath(genpath(fullfile(project_root, 'system_parameters')));
 addpath(genpath(fullfile(project_root, 'utilities')));
@@ -35,151 +22,170 @@ addpath(genpath(fullfile(project_root, 'utilities')));
 import casadi.*
 
 %% Parameters and Equilibrium Setup
-fprintf('=== Maglev System Simulation with acados (FIXED) ===\n\n');
 
 % Load your params struct
 parameters_maggy_V4;
 
-correctionFactorFast = computeSolenoidRadiusCorrectionFactor(params,'fast');
-fprintf('Fast correction factor %.2f\n', correctionFactorFast);
+% Additional Parameters
+dt = 0.0002; % [s]
+nx = 12;
+nu = 4;
+
+% Correct params
+if ~exist("correctionFactorFast",'var')
+    correctionFactorFast = computeSolenoidRadiusCorrectionFactor(params,'fast');
+end
 paramsFast = params;
 paramsFast.solenoids.r = correctionFactorFast*paramsFast.solenoids.r;
 
-% Define equilibrium point
+%% Linearizing using hansolini scripts
+f = @(x,u) maglevSystemDynamics(x,u,paramsFast,'fast');
+h = @(x,u) maglevSystemMeasurements(x,u,paramsFast,'fast');
+
 [zEq, zEqInv, dzEq, dzEqInv] = computeSystemEquilibria(paramsFast,'fast');
-xEq = [0, 0, zEq, 0, 0, 0, 0, 0, 0, 0, 0, 0]';
-n_solenoids = length(paramsFast.solenoids.r);
-uEq = zeros(n_solenoids, 1);
 
-%% Step 1: Linearization using CasADi
+% Define the point to linearize around
+xLp = [0,0,zEq(1),zeros(1,9)]'; % Linearizing around the equilibria
+uLp = zeros(nu,1);
 
-fprintf('Step 1: Linearizing system at equilibrium...\n');
+% Linearization
+delta = 1e-6; % Step-size used in numerical linearization
+[A,B,C,D] = finiteDifferenceLinearization(f,h,xLp,uLp,delta);
 
-nx = 12; % State dimension
-nu = n_solenoids; % Control dimension
+% sysc = ss(A, B, C, D); % Create state-space model
+% sysd = c2d(sysc, dt, 'zoh');
+% [A,B,C,D] = ssdata(sysd);
 
-% Create symbolic variables
-x_sym = SX.sym('x', nx);
-u_sym = SX.sym('u', nu);
+% Defining reduced order system
+I = [1:5,7:11];
+Ared = A(I,I);
+Bred = B(I,:);
+Cred = C(:,I);
+Dred = D(:,:);
 
-% Get nonlinear dynamics symbolic expression
-f_nl = maglevSystemDynamicsCasADi(x_sym, u_sym, paramsFast);
+% Cost matrices
+Q = diag([1e4,1e4,1e2, 1e1,1e1, 1e2,1e2,1e2, 1e2,1e2]);
+R = 1e-0*eye(length(params.solenoids.r));
 
-% Compute Jacobian symbolic EXPRESSIONS
-jac_A_expr = jacobian(f_nl, x_sym);
-jac_B_expr = jacobian(f_nl, u_sym);
+% Computing LQR estimate
+Kred = lqr(Ared,Bred,Q,R); % Rounding can sometimes be dangerous!
+%Kred = round(Kred,3); % Rounding can sometimes be dangerous!
 
-% Create CasADi FUNCTIONS to evaluate these expressions
-A_fun = Function('A_fun', {x_sym, u_sym}, {jac_A_expr});
-B_fun = Function('B_fun', {x_sym, u_sym}, {jac_B_expr});
 
-% Evaluate at equilibrium to get NUMERIC matrices
-A = full(A_fun(xEq, uEq));
-B = full(B_fun(xEq, uEq));
+% increasing order of our controller for controlling the real system
+K = [Kred(:,1:5), zeros(4,1), Kred(:,6:end), zeros(4,1)];
 
-fprintf(' A matrix: %dx%d (Numeric)\n', size(A));
-fprintf(' B matrix: %dx%d (Numeric)\n', size(B));
+
+
+% %% Step 1: Linearization using CasADi
+% fprintf('Step 1: Linearizing system at equilibrium...\n');
+% 
+% 
+% % Get nonlinear dynamics symbolic expression
+% f_nl = maglevSystemDynamicsCasADi(x_sym, u_sym, paramsFast);
+% 
+% % Compute Jacobian symbolic EXPRESSIONS
+% jac_A_expr = jacobian(f_nl, x_sym);
+% jac_B_expr = jacobian(f_nl, u_sym);
+% 
+% % Create CasADi FUNCTIONS to evaluate these expressions
+% A_fun = Function('A_fun', {x_sym, u_sym}, {jac_A_expr});
+% B_fun = Function('B_fun', {x_sym, u_sym}, {jac_B_expr});
+% 
+% % Evaluate at equilibrium to get NUMERIC matrices
+% A = full(A_fun(xLp, uLp));
+% B = full(B_fun(xLp, uLp));
+% C = zeros(3,12);
+% D = zeros(3,4);
+% sysc = ss(A, B, C, D); % Create state-space model
+% sysd = c2d(sysc, dt, 'zoh');
+% [Ad, Bd, Cd, Dd] = ssdata(sysd);
+% A = Ad; B = Bd;
+% 
+% fprintf(' A matrix: %dx%d (Numeric)\n', size(A));
+% fprintf(' B matrix: %dx%d (Numeric)\n', size(B));
 
 %% Step 2: LQR Controller Design
-
-fprintf('\nStep 2: Designing LQR controller...\n');
-
-% Remove uncontrollable states (yaw rotation around z-axis)
-% Keep states: [x, y, z, roll, pitch, vx, vy, vz, wx, wy]
-% Remove: yaw (6) and wz (12)
-
-controllable_indices = [1:5, 7:11];
-
-% Extract submatrices
-A_red = A(controllable_indices, controllable_indices);
-B_red = B(controllable_indices, :);
-
-% Convert to MATLAB doubles
-A_red_numeric = full(double(A_red));
-B_red_numeric = full(double(B_red));
-
-% Design LQR weights
-Q = diag([1e6, 1e6, 1e2, 1e1, 1e1, 1e2, 1e2, 1e2, 1e2, 1e2]);
-R = 1e-0 * eye(nu);
-
-% Compute LQR gain
-K_red = lqr(A_red_numeric, B_red_numeric, Q, R);
-
-% Map back to full state space
-K = zeros(nu, nx);
-K(:, controllable_indices) = K_red;
+% 
+% fprintf('\nStep 2: Designing LQR controller...\n');
+% 
+% % Remove uncontrollable states (yaw rotation around z-axis)
+% % Keep states: [x, y, z, roll, pitch, vx, vy, vz, wx, wy]
+% % Remove: yaw (6) and wz (12)
+% 
+% controllable_indices = [1:5, 7:11];
+% 
+% % Extract submatrices
+% A_red = A(controllable_indices, controllable_indices);
+% B_red = B(controllable_indices, :);
+% 
+% % Convert to MATLAB doubles
+% A_red_numeric = full(double(A_red));
+% B_red_numeric = full(double(B_red));
+% 
+% % Design LQR weights
+% Q = diag([1e6, 1e6, 1e2, 1e1, 1e1, 1e2, 1e2, 1e2, 1e2, 1e2]);
+% R = 1e-0 * eye(nu);
+% 
+% % Compute LQR gain
+% K_red = lqr(A_red_numeric, B_red_numeric, Q, R);
+% 
+% % Map back to full state space
+% K = zeros(nu, nx);
+% K(:, controllable_indices) = K_red;
 
 fprintf(' LQR gain K: %dx%d\n', size(K));
 
 %% Step 3: Setup acados Integrator (FIXED FOR COMPILATION)
 
-fprintf('\nStep 3: Setting up acados integrator...\n');
+fprintf('\nSetting up acados integrator...\n');
 
-% 1. Define time step
-dt = 0.01; % [s]
+% Create symbolic variables
+x_sym = SX.sym('x', nx, 1);
+u_sym = SX.sym('u', nu, 1);
+xdot_sym = SX.sym('xdot', nx, 1);
 
-% 2. Create symbolic variables
-x = SX.sym('x', nx);
-u = SX.sym('u', nu);
-xdot = SX.sym('xdot', nx);
+f_expl_expr = maglevSystemDynamicsCasADi(x_sym, u_sym, paramsFast);
+f_impl_expr = f_expl_expr - xdot_sym;
 
-% 3. Create the Model Object
+% 3. Populate the Model Object
 model = AcadosModel();
-model.name = 'maglev_sim';
-model.x = x;
-model.xdot = xdot;
-model.u = u;
+model.x = x_sym;
+model.xdot = xdot_sym;
+model.u = u_sym;
 
-% Get explicit dynamics and set as implicit (f_impl = xdot - f_expl = 0)
-f_expl = maglevSystemDynamicsCasADi(x, u, paramsFast);
-model.f_impl_expr = xdot - f_expl;
+model.f_expl_expr = f_expl_expr;
+model.f_impl_expr = f_impl_expr;
+model.name = 'magglev';
 
 % 4. Create Simulation Object
 sim = AcadosSim();
 sim.model = model;
 
-% 5. Configure Solver Options
 sim.solver_options.Tsim = dt;
-sim.solver_options.integrator_type = 'IRK';
-sim.solver_options.num_stages = 1;  % Reduced from 3 to speed up compilation
-sim.solver_options.num_steps = 1;   % Reduced from 3
-sim.solver_options.newton_iter = 5; % Increased from 3 for stability
-
-% 6. CRITICAL: Set code export directory to reuse compiled code
-code_gen_dir = fullfile(project_root, 'c_generated_code');
-if ~exist(code_gen_dir, 'dir')
-    mkdir(code_gen_dir);
-end
-sim.code_export_directory = code_gen_dir;
+sim.solver_options.integrator_type = 'ERK';  % 'ERK', 'IRK'
+% sim.solver_options.sens_forw = true; % true, false
+% sim.solver_options.jac_reuse = false; % true, false
+% sim.solver_options.num_stages = 3;
+% sim.solver_options.num_steps = 3;
+% sim.solver_options.newton_iter = 3;
+% sim.solver_options.compile_interface = 'AUTO';
 
 % 7. Create the integrator solver object
 fprintf(' Creating AcadosSimSolver...\n');
-fprintf(' NOTE: First compilation may take 1-3 minutes on Windows.\n');
-fprintf('       Please be patient. Subsequent runs will be much faster.\n');
+fprintf(' NOTE: This might take a while...\n');
 
-try
-    diary('acados_log.txt');
-    diary on;
-    sim_solver = AcadosSimSolver(sim);
-    diary off;
-    fprintf(' Integrator configured successfully.\n');
-catch ME
-    fprintf(' ERROR during solver creation:\n');
-    fprintf(' %s\n', ME.message);
-    fprintf('\n TROUBLESHOOTING:\n');
-    fprintf(' 1. Check that MinGW64 is properly installed and on PATH\n');
-    fprintf(' 2. Try closing MATLAB and deleting: %s\n', code_gen_dir);
-    fprintf(' 3. Reduce num_stages and num_steps further if needed\n');
-    fprintf(' 4. Check acados installation: run acados examples first\n');
-    rethrow(ME);
-end
+% create integrator
+sim_solver = AcadosSimSolver(sim);
 
 %% Step 4: Closed-Loop Simulation
 
 fprintf('\nStep 4: Running closed-loop simulation...\n');
 
 % Initial condition (perturbed from equilibrium)
-x0 = xEq + [0.001, -0.003, 0.04, pi/5, 0, 0, zeros(1, 6)]';
+%x0 = xLp + [0.001, -0.003, 0.04, pi/5, 0, 0, zeros(1, 6)]';
+%x0 = xLp + [-0.0005 0.0005 0.0004 pi/24 0 0 zeros(1, 6)].';
+x0 = xLp + [0 0 0.0004 0 0 0 zeros(1, 6)].';
 
 % Simulation parameters
 t_final = 1.0; % [s]
@@ -196,10 +202,12 @@ fprintf(' Simulating %d time steps...\n', N_sim-1);
 
 tic;
 x_current = x0;
+umax = 12.5;
 
 for k = 1:N_sim-1
     % Compute LQR control
-    u_current = -K * (x_current - xEq) + uEq;
+    u_current = -K * (x_current - xLp) - uLp;
+    %u_current = min(umax,max(-umax,u_current));
     u_traj(:, k) = u_current;
     
     % Set initial state and control
@@ -220,15 +228,15 @@ for k = 1:N_sim-1
     % Retrieve next state
     x_current = sim_solver.get('xn');
     x_traj(:, k+1) = x_current;
-    
-    % Optional: Print progress every 20 steps so you know it's alive
-    if mod(k, 20) == 0
-        fprintf(' Step %d/%d completed...\n', k, N_sim-1);
-    end
+    % 
+    % % Optional: Print progress every 20 steps so you know it's alive
+    % if mod(k, 20) == 0
+    %     fprintf(' Step %d/%d completed...\n', k, N_sim-1);
+    % end
 end
 
 % Final control
-u_traj(:, N_sim) = -K * (x_traj(:, N_sim) - xEq) + uEq;
+u_traj(:, N_sim) = -K * (x_traj(:, N_sim) - xLp) + uLp;
 
 sim_time = toc;
 fprintf(' Simulation completed in %.3f seconds (%.1f ms per step)\n', sim_time, 1000*sim_time/(N_sim-1));
@@ -239,6 +247,18 @@ fprintf('\nStep 5: Generating plots...\n');
 
 % Create main figure for states
 fig1 = figure('Name', 'State Trajectories', 'Position', [50, 50, 1400, 900]);
+
+% Plot until instability occurs
+for i=1:numel(t_vec)
+    if (abs(x_traj(1:3,i)) > 0.1)
+        i = i - 1;
+        x_traj = x_traj(:,1:i);
+        u_traj = u_traj(:,1:i);
+        t_vec = t_vec(:,1:i);
+        break;
+    end
+end
+
 
 % Position states
 subplot(3,4,1); plot(t_vec, 1000*x_traj(1,:), 'LineWidth', 2);
@@ -291,7 +311,7 @@ colors = lines(nu);
 for i = 1:nu
     subplot(2, ceil(nu/2), i);
     plot(t_vec, u_traj(i,:), 'Color', colors(i,:), 'LineWidth', 2);
-    hold on; plot(t_vec, uEq(i)*ones(size(t_vec)), 'k--', 'LineWidth', 1);
+    hold on; plot(t_vec, uLp(i)*ones(size(t_vec)), 'k--', 'LineWidth', 1);
     xlabel('Time [s]'); ylabel(sprintf('I_%d [A]', i));
     title(sprintf('Solenoid %d Current', i));
     legend('Control', 'Equilibrium'); grid on;
@@ -304,7 +324,7 @@ fig3 = figure('Name', '3D Trajectory', 'Position', [150, 150, 800, 600]);
 plot3(1000*x_traj(1,:), 1000*x_traj(2,:), 1000*x_traj(3,:), 'b-', 'LineWidth', 2);
 hold on;
 plot3(1000*x0(1), 1000*x0(2), 1000*x0(3), 'go', 'MarkerSize', 10, 'MarkerFaceColor', 'g');
-plot3(1000*xEq(1), 1000*xEq(2), 1000*xEq(3), 'r*', 'MarkerSize', 15, 'LineWidth', 2);
+plot3(1000*xLp(1), 1000*xLp(2), 1000*xLp(3), 'r*', 'MarkerSize', 15, 'LineWidth', 2);
 xlabel('X [mm]'); ylabel('Y [mm]'); zlabel('Z [mm]');
 title('3D Position Trajectory');
 legend('Trajectory', 'Initial', 'Equilibrium');
@@ -312,8 +332,8 @@ grid on; axis equal;
 view(45, 30);
 
 fprintf('\n=== Simulation Summary ===\n');
-fprintf('Initial error norm: %.4f m\n', norm(x0(1:3) - xEq(1:3)));
-fprintf('Final error norm: %.4f m\n', norm(x_traj(1:3,end) - xEq(1:3)));
+fprintf('Initial error norm: %.4f m\n', norm(x0(1:3) - xLp(1:3)));
+fprintf('Final error norm: %.4f m\n', norm(x_traj(1:3,end) - xLp(1:3)));
 fprintf('Simulation time: %.3f s\n', sim_time);
 fprintf('Average step time: %.2f ms\n', 1000*sim_time/(N_sim-1));
 
@@ -327,7 +347,7 @@ if compare_with_ode
     fprintf('\n=== Comparison with ode15s ===\n');
     
     % Define ODE function for ode15s
-    ode_fun = @(t, x) full(maglevSystemDynamicsCasADi(x, -K*(x-xEq)+uEq, paramsFast));
+    ode_fun = @(t, x) full(maglevSystemDynamicsCasADi(x, -K*(x-xLp)+uLp, paramsFast));
     
     % Solve with ode15s
     fprintf('Running ode15s...\n');
@@ -363,3 +383,5 @@ if compare_with_ode
     
     sgtitle('Comparison: acados vs ode15s', 'FontSize', 14);
 end
+
+%clear sim_solver

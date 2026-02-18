@@ -25,8 +25,6 @@ function dx = maglevSystemDynamicsCasADi(x, u, params)
 % Author: Adapted for CasADi compatibility
 % Date: 2026
 
-    import casadi.*
-    
     %% Extract parameters
     m = params.magnet.m;                    % Mass of levitating magnet
     I_vec = params.magnet.I;                % Moment of inertia [Ixx, Iyy, Izz]
@@ -128,8 +126,7 @@ end
 
 %% Helper function: Compute rotation matrix
 function R = computeRotationMatrix(alpha, beta, gamma)
-    import casadi.*
-    
+
     % Rotation about x-axis (roll)
     Rx = [1, 0, 0;
           0, cos(alpha), -sin(alpha);
@@ -151,14 +148,13 @@ end
 
 %% Helper function: Compute magnetic field from base
 function [bx, by, bz] = computeMagneticField(x, y, z, u, params)
-    import casadi.*
-    
+
     n_points = length(x);
     
     % Initialize field components
-    bx = SX.zeros(1, n_points);
-    by = SX.zeros(1, n_points);
-    bz = SX.zeros(1, n_points);
+    bx = zeros(1, n_points);
+    by = zeros(1, n_points);
+    bz = zeros(1, n_points);
     
     mu0 = params.physical.mu0;
     
@@ -204,8 +200,7 @@ end
 
 %% Helper function: Magnetic field from circular wire
 function [bx, by, bz] = computeCircularWireField(x, y, z, r, I, mu0)
-    import casadi.*
-    
+
     % Convert to polar coordinates
     rho = sqrt(x.^2 + y.^2);
     phi = atan2(y, x);
@@ -220,8 +215,7 @@ end
 
 %% Helper function: Magnetic field in polar coordinates
 function [bphi, brho, bz] = computeCircularWireFieldPolar(rho, z, r, I, mu0)
-    import casadi.*
-    
+
     % Handle rho ≈ 0 case with smooth transition
     tol = 1e-6;
     
@@ -262,8 +256,7 @@ end
 function c = crossProduct3D(a, b)
     % a and b are 3xN matrices
     % Returns 3xN matrix where each column is the cross product
-    import casadi.*
-    
+
     c = [a(2,:) .* b(3,:) - a(3,:) .* b(2,:);
          a(3,:) .* b(1,:) - a(1,:) .* b(3,:);
          a(1,:) .* b(2,:) - a(2,:) .* b(1,:)];
@@ -274,7 +267,6 @@ function integral = trapzCasADi(theta, y)
     % Trapezoidal rule integration compatible with CasADi
     % theta: discrete angles (numeric array, 1xN)
     % y: function values (CasADi symbolic, 1xN)
-    import casadi.*
     
     % Number of points
     N = length(theta);
