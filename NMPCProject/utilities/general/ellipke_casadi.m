@@ -1,4 +1,4 @@
-function [K, E] = ellipke_casadi(m)
+function [K, E] = ellipke_casadi2(m)
     % ELLIPKE_CASADI Compute complete elliptic integrals of first and second kind
     % using CasADi-compatible operations (Hastings approximation).
     %
@@ -15,7 +15,7 @@ function [K, E] = ellipke_casadi(m)
     % In CasADi, use fmin/fmax for smooth min/max operations if needed, 
     % generally simple constraints on the OCP states prevent m > 1.
     % For safety inside the function:
-    m = fmin(fmax(m, 0), 1 - 1e-9);
+    % m = fmin(fmax(m, 0), 1 - 1e-9);
 
     % Complementary parameter
     m1 = 1 - m;

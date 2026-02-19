@@ -1,20 +1,19 @@
-function [bx,by,bz] = computeFieldBase(x,y,z,u,params,modelName)
+function [bx,by,bz] = computeFieldBase(x,y,z,u,params,modelId)
 % COMPUTEFIELDBASE computes the magnetic field in cartesian coordinates 
 % produced by a base of permanent magnets and solenoids, defined by params,
-% using the magnet/solenoid model defined by modelName.
+% using the magnet/solenoid model defined by modelId (MaglevModel enum).
 %
 % The function calculates the magnetic field components (bx, by, bz) at
 % the specified points (x, y, z) in polar coordinates. u is the current in
 % running through the solenoids (its size defined by the number of
-% solenoids in params). modelName is either 'fast', 'accurate' or 
-% 'fillament'.
+% solenoids in params). modelId is a MaglevModel enum: Fast, Accurate, or Filament.
 %
 % Example:
 %   x = [0, 0, 0]; y = [0, 0, 0]; z = [0, 0.5, 1];
 %   u = [1,0,-1,0]';
 %   params; (from parameter file)
-%   modelName = 'fast';
-%   [bx,by,bz] = computeFieldBase(x,y,z,u,params,modelName);
+%   modelId = MaglevModel.Fast;
+%   [bx,by,bz] = computeFieldBase(x,y,z,u,params,modelId);
 %
 % See also COMPUTEFIELDTOTAL, 
 %          COMPUTEFORCEANDTORQUE.
@@ -28,8 +27,8 @@ by = zeros(size(y));
 bz = zeros(size(z));
 
 %% Field from permanent magnets
-switch modelName
-    case {'filament','accurate'}
+switch modelId
+    case {MaglevModel.Filament, MaglevModel.Accurate}
         for i = 1:length(params.permanent.r)
             I = params.permanent.J/params.physical.mu0*params.permanent.l(i);
             
@@ -66,8 +65,8 @@ switch modelName
 end
 
 %% Field from solenoids
-switch modelName
-    case 'filament'
+switch modelId
+    case MaglevModel.Filament
         for i = 1:length(params.solenoids.r)
             I = u(i);
 
@@ -98,7 +97,7 @@ switch modelName
             end
         end
 
-    case 'accurate'
+    case MaglevModel.Accurate
         % TODO: Need correct multiplication when using current sheets
         for i = 1:length(params.solenoids.r)
             I = u(i);

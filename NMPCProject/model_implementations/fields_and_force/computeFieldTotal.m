@@ -1,21 +1,20 @@
-function [bx,by,bz] = computeFieldTotal(x,y,z,eta,u,params,modelName)
+function [bx,by,bz] = computeFieldTotal(x,y,z,eta,u,params,modelId)
 % COMPUTEFIELDTOTAL computes the magnetic field in cartesian coordinates 
 % produced by a base of permanent magnets and solenoids, defined by params,
 % AND a levitating magnet defined by params and eta. The field is computed
-% using the magnet/solenoid model defined by modelName.
+% using the magnet/solenoid model defined by modelId (MaglevModel enum).
 %
 % The function calculates the magnetic field components (bx, by, bz) at
 % the specified points (x, y, z) in polar coordinates. u is the current in
 % running through the solenoids (its size defined by the number of
-% solenoids in params). modelName is either 'fast', 'accurate' or 
-% 'fillament'.
+% solenoids in params). modelId is a MaglevModel enum: Fast, Accurate, or Filament.
 %
 % Example:
 %   x = [0, 0, 0]; y = [0, 0, 0]; z = [0, 0.5, 1];
 %   u = [1,0,-1,0]'; eta = [0,0,0.05,0,0,0,0,0,0,0,0,0]';
 %   params; (from parameter file)
-%   modelName = 'fast';
-%   [bx,by,bz] = computeFieldTotal(x,y,z,eta,u,params,modelName);
+%   modelId = MaglevModel.Fast;
+%   [bx,by,bz] = computeFieldTotal(x,y,z,eta,u,params,modelId);
 %
 % See also COMPUTEFIELDBASE, 
 %          COMPUTEFORCEANDTORQUE.
@@ -24,7 +23,7 @@ function [bx,by,bz] = computeFieldTotal(x,y,z,eta,u,params,modelName)
 % Date: 08.01.2024
 
 %% Field from base
-[bxBase,byBase,bzBase] = computeFieldBase(x,y,z,u,params,modelName);
+[bxBase,byBase,bzBase] = computeFieldBase(x,y,z,u,params,modelId);
 
 %% Field from levitating magnet
 % Relative position and rotation of points
@@ -33,8 +32,8 @@ pRotated = inv(R)*(eta(1:3) - [x(:)';y(:)';z(:)']);
 
 % Compute Field
 I = -params.magnet.J/params.physical.mu0*params.magnet.l/2;
-switch modelName
-    case {'accurate','filament'}
+switch modelId
+    case {MaglevModel.Accurate, MaglevModel.Filament}
         [bxMagnet,byMagnet,bzMagnet] = computeFieldCircularCurrentSheetCartesian(...
             pRotated(1,:),...
             pRotated(2,:),...
@@ -43,8 +42,7 @@ switch modelName
             params.magnet.l,...
             I,...
             params.physical.mu0);
-
-    otherwise % Default is 'fast'
+    otherwise % Default is MaglevModel.Fast
         [bxMagnet,byMagnet,bzMagnet] = computeFieldCircularWireCartesian(...
             pRotated(1,:),...
             pRotated(2,:),...
@@ -54,9 +52,9 @@ switch modelName
             params.physical.mu0);
 end
 bMagnet = R*[bxMagnet; byMagnet; bzMagnet];
-bxMagnet = bMagnet(1,:);
-byMagnet = bMagnet(2,:);
-bzMagnet = bMagnet(3,:);
+bxMagnet = reshape(bMagnet(1,:), size(bxBase));
+byMagnet = reshape(bMagnet(2,:), size(byBase));
+bzMagnet = reshape(bMagnet(3,:), size(bzBase));
 
 %% Total field
 bx = bxBase + bxMagnet;

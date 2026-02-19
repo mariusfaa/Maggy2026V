@@ -1,9 +1,9 @@
-function H = plotMagnetRealistic(x,y,z,alpha,beta,gamma,params,modelName)
+function H = plotMagnetRealistic(x,y,z,alpha,beta,gamma,params,modelId)
 % Colors
 gray = [0.5,0.5,0.5];
 
-switch modelName
-    case {'accurate','filament'}
+switch modelId
+    case {MaglevModel.Accurate, MaglevModel.Filament}
         H = plotCylinder( ...
             x,y,z,alpha,beta,gamma, ...
             params.magnet.r, ...

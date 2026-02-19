@@ -28,7 +28,7 @@ params.magnet.l     = 0.0040;
 params.magnet.J     = -1.1;
 params.magnet.m     = 0.060; % (weight on kitchen scale, golden magnet)
 params.magnet.I     = [6.1686e-06, 6.1686e-06, 1.1274e-05];
-params.magnet.n     = 21; % (higher is more accurate, but also more computationally expensive)
+params.magnet.n     = 30; % (higher is more accurate, but also more computationally expensive)
 
 % Sensors - only one sensor 
 params.sensors.x  = [0];

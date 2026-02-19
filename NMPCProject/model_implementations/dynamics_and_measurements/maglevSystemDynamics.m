@@ -1,4 +1,4 @@
-function dx = maglevSystemDynamics(x,u,params,modelName)
+function dx = maglevSystemDynamics(x,u,params,modelId)
 % MAGLEVSYSTEMDYNAMICS implements the function f in the ODE dxdt = f(x,u)
 % defining the dynamics of a magnetic levitation system. The system is
 % fully defined by the params struct, and the magnetic model to be used is
@@ -27,7 +27,7 @@ function dx = maglevSystemDynamics(x,u,params,modelName)
 %     IFAC-PapersOnLine 56.2 (2023): 7276-7281.
 
 % Computing force and torque on levitating magnet
-[fx,fy,fz,tx,ty,tz] = computeForceAndTorque(x,u,params,modelName);
+[fx,fy,fz,tx,ty,tz] = computeForceAndTorque(x,u,params,modelId);
 
 % Setting up system matrices
 A = [
