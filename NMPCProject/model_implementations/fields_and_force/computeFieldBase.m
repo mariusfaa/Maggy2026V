@@ -46,7 +46,7 @@ switch modelId
             bz = bz + bzTemp;
         end
 
-    otherwise % Default is 'fast'
+    otherwise % Default is MaglevModel.Fast
         for i = 1:length(params.permanent.r)
             I = params.permanent.J/params.physical.mu0*params.permanent.l(i);
             
@@ -116,7 +116,7 @@ switch modelId
             bz = bz + bzTemp*params.solenoids.nw;
         end
 
-    otherwise % Default is 'fast'
+    otherwise % Default is MaglevModel.Fast
         for i = 1:length(params.solenoids.r)
             I = u(i);
 

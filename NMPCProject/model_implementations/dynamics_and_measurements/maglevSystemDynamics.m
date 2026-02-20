@@ -2,14 +2,14 @@ function dx = maglevSystemDynamics(x,u,params,modelId)
 % MAGLEVSYSTEMDYNAMICS implements the function f in the ODE dxdt = f(x,u)
 % defining the dynamics of a magnetic levitation system. The system is
 % fully defined by the params struct, and the magnetic model to be used is
-% defined by modelName, which can be either 'fast', 'accurate' or 
-% 'filament'.
+% defined by modelId, which can be either MaglevModel.Fast, MaglevModel.Accurate or 
+% MaglevModel.Filament.
 %
 % Example:
 %   params; (from parameter file)
-%   modelName = 'fast';
+%   modelId = MaglevModel.Fast;
 %   u = @(t) ...; (user defined)
-%   f = @(t,x) maglevSystemDynamics(x,u(t),params,modelName);
+%   f = @(t,x) maglevSystemDynamics(x,u(t),params,modelId);
 %
 %   t = [0, 10]; x0 = [0,0,0.1,0,0,0,0,0,0,0,0,0]';
 %   [t,x] = ode15s(f,t,x0);

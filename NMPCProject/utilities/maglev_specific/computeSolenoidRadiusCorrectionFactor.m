@@ -1,4 +1,9 @@
 function c = computeSolenoidRadiusCorrectionFactor(params,modelId)
+    if modelId == MaglevModel.Accurate
+        c = 1;
+        return;
+    end
+
     % Find equilibrium (used in objective function)
     zEq = computeSystemEquilibria(params,modelId);
 

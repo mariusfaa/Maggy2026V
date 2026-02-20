@@ -28,12 +28,12 @@ params.magnet.l     = 0.0040;
 params.magnet.J     = -1.1;
 params.magnet.m     = 0.060; % (weight on kitchen scale, golden magnet)
 params.magnet.I     = [6.1686e-06, 6.1686e-06, 1.1274e-05];
-params.magnet.n     = 100;
+params.magnet.n     = 30; % (higher is more accurate, but also more computationally expensive)
 
-% Sensors (7, 2, 3)
-params.sensors.x  = [-0.0003, -0.0326856, 0.0130152];
-params.sensors.y  = [0, 0.0137257, 0.0324254];
-params.sensors.z  = [0, 0, 0];%-0.2e-3;
+% Sensors - only one sensor 
+params.sensors.x  = [0];
+params.sensors.y  = [0];
+params.sensors.z  = [0];
 
 % Physical constants
 params.physical.g   = 9.81;                                                % Gravitational acceleration [m/s^2]

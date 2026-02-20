@@ -31,29 +31,22 @@ import casadi.*
 load_params;
 
 % Additional Parameters
-dt = 0.0002; % [s]
+dt = 0.01; % [s]
 nx = 12;
 nu = 4;
 
 %% Linearizing using hansolini scripts
-f = @(x,u) maglevSystemDynamics(x,u,params,modelId);
-h = @(x,u) maglevSystemMeasurements(x,u,params,modelId);
+f = @(x,u) maglevSystemDynamics(x,u,paramsFast,MaglevModel.Fast);
+h = @(x,u) maglevSystemMeasurements(x,u,paramsFast,MaglevModel.Fast);
 
-x_sym = sym("x", [12 1], "real");
-u_sym = sym("u", [4 1], "real");
-
-dx_sym = f(x_sym, u_sym);
-
-
-%[zEq, zEqInv, dzEq, dzEqInv] = computeSystemEquilibria(paramsFast,MaglevModel.Fast);
-return;
+[zEq, zEqInv, dzEq, dzEqInv] = computeSystemEquilibria(paramsFast,MaglevModel.Fast);
 
 % Define the point to linearize around
 xLp = [0,0,zEq(1),zeros(1,9)]'; % Linearizing around the equilibria
 uLp = zeros(nu,1);
 
 % Linearization
-delta = 1e-6; % Step-size used in numerical linearization
+delta = 1e-7; % Step-size used in numerical linearization
 [A,B,C,D] = finiteDifferenceLinearization(f,h,xLp,uLp,delta);
 
 % sysc = ss(A, B, C, D); % Create state-space model
@@ -79,66 +72,12 @@ Kred = lqr(Ared,Bred,Q,R); % Rounding can sometimes be dangerous!
 % increasing order of our controller for controlling the real system
 K = [Kred(:,1:5), zeros(4,1), Kred(:,6:end), zeros(4,1)];
 
-
-
-% %% Step 1: Linearization using CasADi
-% fprintf('Step 1: Linearizing system at equilibrium...\n');
-% 
-% 
-% % Get nonlinear dynamics symbolic expression
-% f_nl = maglevSystemDynamicsCasADi(x_sym, u_sym, paramsFast);
-% 
-% % Compute Jacobian symbolic EXPRESSIONS
-% jac_A_expr = jacobian(f_nl, x_sym);
-% jac_B_expr = jacobian(f_nl, u_sym);
-% 
-% % Create CasADi FUNCTIONS to evaluate these expressions
-% A_fun = Function('A_fun', {x_sym, u_sym}, {jac_A_expr});
-% B_fun = Function('B_fun', {x_sym, u_sym}, {jac_B_expr});
-% 
-% % Evaluate at equilibrium to get NUMERIC matrices
-% A = full(A_fun(xLp, uLp));
-% B = full(B_fun(xLp, uLp));
-% C = zeros(3,12);
-% D = zeros(3,4);
-% sysc = ss(A, B, C, D); % Create state-space model
-% sysd = c2d(sysc, dt, 'zoh');
-% [Ad, Bd, Cd, Dd] = ssdata(sysd);
-% A = Ad; B = Bd;
-% 
-% fprintf(' A matrix: %dx%d (Numeric)\n', size(A));
-% fprintf(' B matrix: %dx%d (Numeric)\n', size(B));
-
-%% Step 2: LQR Controller Design
-% 
-% fprintf('\nStep 2: Designing LQR controller...\n');
-% 
-% % Remove uncontrollable states (yaw rotation around z-axis)
-% % Keep states: [x, y, z, roll, pitch, vx, vy, vz, wx, wy]
-% % Remove: yaw (6) and wz (12)
-% 
-% controllable_indices = [1:5, 7:11];
-% 
-% % Extract submatrices
-% A_red = A(controllable_indices, controllable_indices);
-% B_red = B(controllable_indices, :);
-% 
-% % Convert to MATLAB doubles
-% A_red_numeric = full(double(A_red));
-% B_red_numeric = full(double(B_red));
-% 
-% % Design LQR weights
-% Q = diag([1e6, 1e6, 1e2, 1e1, 1e1, 1e2, 1e2, 1e2, 1e2, 1e2]);
-% R = 1e-0 * eye(nu);
-% 
-% % Compute LQR gain
-% K_red = lqr(A_red_numeric, B_red_numeric, Q, R);
-% 
-% % Map back to full state space
-% K = zeros(nu, nx);
-% K(:, controllable_indices) = K_red;
-
 fprintf(' LQR gain K: %dx%d\n', size(K));
+
+%% Simulate with ode
+
+gc()
+
 
 %% Step 3: Setup acados Integrator (FIXED FOR COMPILATION)
 

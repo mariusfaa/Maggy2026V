@@ -2,12 +2,13 @@ function [bx,by,bz] = computeFieldTotal(x,y,z,eta,u,params,modelId)
 % COMPUTEFIELDTOTAL computes the magnetic field in cartesian coordinates 
 % produced by a base of permanent magnets and solenoids, defined by params,
 % AND a levitating magnet defined by params and eta. The field is computed
-% using the magnet/solenoid model defined by modelId (MaglevModel enum).
+% using the magnet/solenoid model defined by modelId.
 %
 % The function calculates the magnetic field components (bx, by, bz) at
 % the specified points (x, y, z) in polar coordinates. u is the current in
 % running through the solenoids (its size defined by the number of
-% solenoids in params). modelId is a MaglevModel enum: Fast, Accurate, or Filament.
+% solenoids in params). modelId is either MaglevModel.Fast, MaglevModel.Accurate or 
+% MaglevModel.Fillament.
 %
 % Example:
 %   x = [0, 0, 0]; y = [0, 0, 0]; z = [0, 0.5, 1];
@@ -33,7 +34,7 @@ pRotated = inv(R)*(eta(1:3) - [x(:)';y(:)';z(:)']);
 % Compute Field
 I = -params.magnet.J/params.physical.mu0*params.magnet.l/2;
 switch modelId
-    case {MaglevModel.Accurate, MaglevModel.Filament}
+    case {MaglevModel.Accurate,MaglevModel.Filament}
         [bxMagnet,byMagnet,bzMagnet] = computeFieldCircularCurrentSheetCartesian(...
             pRotated(1,:),...
             pRotated(2,:),...
@@ -42,6 +43,7 @@ switch modelId
             params.magnet.l,...
             I,...
             params.physical.mu0);
+
     otherwise % Default is MaglevModel.Fast
         [bxMagnet,byMagnet,bzMagnet] = computeFieldCircularWireCartesian(...
             pRotated(1,:),...

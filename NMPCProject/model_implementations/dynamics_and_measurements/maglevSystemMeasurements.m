@@ -4,17 +4,17 @@ function y = maglevSystemMeasurements(x,u,params,modelId)
 %      y = h(x,u);
 % defining the sensor measurements of a magnetic levitation system. The 
 % system is fully defined by the params struct, and the magnetic model to 
-% be used for the measurements is defined by modelName, which can be either
-% 'fast', 'accurate' or 'filament'. The measurements computes the effect
+% be used for the measurements is defined by modelId, which can be either
+% MaglevModel.Fast, MaglevModel.Accurate or MaglevModel.Filament. The measurements computes the effect
 % from all magnetic components of the system.
 %
 % Example:
 %   params; (from parameter file)
-%   modelName = 'fast';
+%   modelId = MaglevModel.Fast;
 %   x = [0,0,0.1,0,0,0,0,0,0,0,0,0]';
 %   u = [1,0,-1,0]';
 %
-%   h = @(x,u) maglevSystemMeasuremets(x,u,params,modelName);
+%   h = @(x,u) maglevSystemMeasuremets(x,u,params,modelId);
 %   y = h(x,u);
 %
 % See also MAGLEVSYSTEMDYNAMICS,

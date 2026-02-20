@@ -1,4 +1,4 @@
-function H = plotBaseRealistic(params,modelName)
+function H = plotBaseRealistic(params,modelId)
 H = gobjects(0);
 
 % Colors
@@ -8,8 +8,8 @@ black = [0,0,0];
 
 % Plot permanent magnets
 for i = 1:length(params.permanent.r)
-    switch modelName
-        case {'accurate', 'filament'}
+    switch modelId
+        case { MaglevModel.Accurate, MaglevModel.Filament }
             Htemp = plotCylinder( ...
                 params.permanent.x(i), ...
                 params.permanent.y(i), ...
@@ -33,8 +33,8 @@ end
 
 % Plot solenoids
 for i = 1:length(params.solenoids.r)
-    switch modelName
-        case 'filament'
+    switch modelId
+        case MaglevModel.Filament
             % Computing number of windings in axial and radial directions of solenoids
             ratio = sqrt(params.solenoids.nw/(params.solenoids.l(i)*params.solenoids.r(i)));
             nwAxial  = floor(params.solenoids.l(i)*ratio);
@@ -50,7 +50,7 @@ for i = 1:length(params.solenoids.r)
                 ceil(nwAxial), ...
                 ceil(nwRadial), ...
                 copper,0,1,0);
-        case 'accurate'
+        case MaglevModel.Accurate
             Htemp = plotCylinder( ...
                 params.solenoids.x(i), ...
                 params.solenoids.y(i), ...
@@ -60,7 +60,7 @@ for i = 1:length(params.solenoids.r)
                 params.solenoids.l(i), ...
                 copper,0,1);
 
-        otherwise % fast is default
+        case MaglevModel.Fast
             Htemp = plotWireLoop( ...
                 params.solenoids.x(i), ...
                 params.solenoids.y(i), ...
@@ -69,6 +69,8 @@ for i = 1:length(params.solenoids.r)
                 0.55*params.solenoids.r(i), ... % Illustrates the radius correction
                 100, ...
                 copper,0);
+        otherwise
+            error("Invalid model type");
     end
     H = [H,Htemp];
 end

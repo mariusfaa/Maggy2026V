@@ -32,9 +32,7 @@ c = mu0*I./(4*pi*sqrt(r.*rho));
 
 k2 = 4*r*rho./((r+rho).^2+z.^2);
 k2 = min(k2,1); k2 = max(k2,0); % Fix for numerical error
-
-% casadi fix
-[K, E] = ellipke_casadi(k2);
+[K,E] = ellipke_approx(k2);
 
 bphi = phi;
 brho = -(z./rho).*c.*sqrt(k2).*(K-(rho.^2+r^2+z.^2)./((rho-r).^2+z.^2).*E);
@@ -42,21 +40,8 @@ bz   =            c.*sqrt(k2).*(K-(rho.^2-r^2+z.^2)./((rho-r).^2+z.^2).*E);
 
 %% rho = 0 (2b)
 tol = 1e-6; % Fix for numerical error
-% indices = abs(rho) < tol;
-% 
-% bphi(indices) = 0;
-% brho(indices) = 0;
-% bz(indices)   = mu0*r^2*I./(2*(r^2+z(indices).^2).^(3/2));
+indices = abs(rho) < tol;
 
-% casadi fix
-near_zero = abs(rho) < tol;
-
-if isa(rho, 'casadi.SX') || isa(rho, 'casadi.MX')
-    bphi = if_else(near_zero, 0,                                  bphi);
-    brho = if_else(near_zero, 0,                                  brho);
-    bz   = if_else(near_zero, mu0*r^2*I./(2*(r^2+z.^2).^(3/2)), bz  );
-else
-    bphi(near_zero) = 0;
-    brho(near_zero) = 0;
-    bz(near_zero)   = mu0*r^2*I./(2*(r^2+z(near_zero).^2).^(3/2));
-end
+bphi(indices) = 0;
+brho(indices) = 0;
+bz(indices)   = mu0*r^2*I./(2*(r^2+z(indices).^2).^(3/2));
