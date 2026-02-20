@@ -1,4 +1,4 @@
-function y = maglevSystemMeasurements(x,u,params,modelName)
+function y = maglevSystemMeasurements(x,u,params,modelId)
 % MAGLEVSYSTEMMEASUREMENTS implements the function h in the ODE 
 %   dxdt = f(x,u); 
 %      y = h(x,u);
@@ -30,5 +30,5 @@ function y = maglevSystemMeasurements(x,u,params,modelName)
 %     "Modeling and Control of a Magnetic Levitation Platform." 
 %     IFAC-PapersOnLine 56.2 (2023): 7276-7281.
 
-[bx,by,bz] = computeFieldTotal(params.sensors.x,params.sensors.y,params.sensors.z,x,u,params,modelName);
+[bx,by,bz] = computeFieldTotal(params.sensors.x,params.sensors.y,params.sensors.z,x,u,params,modelId);
 y = reshape([bx(:)'; by(:)'; bz(:)'],3*numel(bx),1);

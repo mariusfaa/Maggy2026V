@@ -1,4 +1,4 @@
-function [zEq, zEqInv, dzEq, dzEqInv] = computeSystemEquilibria(params,modelName)
+function [zEq, zEqInv, dzEq, dzEqInv] = computeSystemEquilibria(params,modelId)
     
     % Interval limits
     zMin = max([params.solenoids.z+params.solenoids.l/2, params.permanent.z+params.permanent.l/2]) + params.magnet.l/2; % Lower limit is determined by the height of the components
@@ -59,7 +59,7 @@ function [zEq, zEqInv, dzEq, dzEqInv] = computeSystemEquilibria(params,modelName
         fz = zeros(size(z));
         for j = 1:length(z)
             x = [0;0;z(j);zeros(9,1)];
-            [~,~,fz] = computeForceAndTorque(x,u,params,modelName);
+            [~,~,fz] = computeForceAndTorque(x,u,params,modelId);
         end
         fz = fz - 9.81*params.magnet.m;
     end

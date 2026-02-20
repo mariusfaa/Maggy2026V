@@ -5,8 +5,12 @@
 % 2. Add to MATLAB path: addpath('<acados_root>/interfaces/acados_matlab_octave')
 % 3. Ensure maglevSystemDynamicsCasADi.m and ellipke_casadi.m are in path
 
-clear all; close all; rmdir("build","s"); rmdir("c_generated_code","s");
-
+clear all; close all;
+try
+    rmdir("build","s");
+    rmdir("c_generated_code","s");
+catch
+end
 %% Env setup
 acados_root = 'C:\Users\halva\Downloads\acados';
 project_root = 'C:\Users\halva\Downloads\Maggy2026V\NMPCProject';
@@ -33,16 +37,16 @@ nu = 4;
 
 % Correct params
 if ~exist("correctionFactorFast",'var')
-    correctionFactorFast = computeSolenoidRadiusCorrectionFactor(params,'fast');
+    correctionFactorFast = computeSolenoidRadiusCorrectionFactor(params,MaglevModel.Fast);
 end
 paramsFast = params;
 paramsFast.solenoids.r = correctionFactorFast*paramsFast.solenoids.r;
 
 %% Linearizing using hansolini scripts
-f = @(x,u) maglevSystemDynamics(x,u,paramsFast,'fast');
-h = @(x,u) maglevSystemMeasurements(x,u,paramsFast,'fast');
+f = @(x,u) maglevSystemDynamics(x,u,paramsFast,MaglevModel.Fast);
+h = @(x,u) maglevSystemMeasurements(x,u,paramsFast,MaglevModel.Fast);
 
-[zEq, zEqInv, dzEq, dzEqInv] = computeSystemEquilibria(paramsFast,'fast');
+[zEq, zEqInv, dzEq, dzEqInv] = computeSystemEquilibria(paramsFast,MaglevModel.Fast);
 
 % Define the point to linearize around
 xLp = [0,0,zEq(1),zeros(1,9)]'; % Linearizing around the equilibria
@@ -145,7 +149,7 @@ x_sym = SX.sym('x', nx, 1);
 u_sym = SX.sym('u', nu, 1);
 xdot_sym = SX.sym('xdot', nx, 1);
 
-f_expl_expr = maglevSystemDynamicsCasADi(x_sym, u_sym, paramsFast);
+f_expl_expr = maglevSystemDynamics(x_sym, u_sym, paramsFast,MaglevModel.Fast);
 f_impl_expr = f_expl_expr - xdot_sym;
 
 % 3. Populate the Model Object
