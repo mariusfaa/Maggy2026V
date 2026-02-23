@@ -25,7 +25,11 @@ function Pi = ellipP(h2,k2)
     %       Moiseev Igor, 
     %       34106, SISSA, via Beirut n. 2-4,  Trieste, Italy
     
-    Pi = zeros(size(k2));
+    if isa(k2, 'sym') || isa(h2, 'sym')
+        Pi = sym(zeros(size(k2)));
+    else
+        Pi = zeros(size(k2));
+    end
     k2 = k2(:).';    % make a row vector
     h2 = h2(:).';
     
@@ -40,7 +44,12 @@ function Pi = ellipP(h2,k2)
           0.1316886384491766,  0.1420961093183820,...
           0.1491729864726037,  0.1527533871307258  ];
       
-    P = 0;  i = 0;
+    if isa(k2, 'sym') || isa(h2, 'sym')
+        P = sym(0);
+    else
+        P = 0;
+    end
+    i = 0;
     while i < 10
         i  = i + 1;
         c0 = pi*t(i)/4;

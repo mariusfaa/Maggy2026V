@@ -37,8 +37,10 @@ zetan = z - l/2;
 k2p = 4*r*rho./((r+rho).^2+zetap.^2);
 k2n = 4*r*rho./((r+rho).^2+zetan.^2);
 
-k2p = min(k2p,1); k2p = max(k2p,0); % Fix for numerical error
-k2n = min(k2n,1); k2n = max(k2n,0); % Fix for numerical error
+if ~isa(k2p, 'sym')
+    k2p = min(k2p,1); k2p = max(k2p,0);
+    k2n = min(k2n,1); k2n = max(k2n,0);
+end
 
 [Kp,Ep] = ellipke(k2p);
 [Kn,En] = ellipke(k2n);
@@ -57,11 +59,11 @@ bzn   = c.*zetan.*sqrt(k2n).*(Kn - ((rho-r)./(rho+r)).*Pn);
 bz = bzp - bzn;
 
 %% rho = 0 (2b)
-tol = 1e-6; % Fix for numerical error
-indices = abs(rho) < tol;
-
-bphi(indices) = 0;
-brho(indices) = 0;
-bz(indices)   = mu0*I*zetap(indices)./(2*l*sqrt(r^2+zetap(indices).^2)) - ...
-                mu0*I*zetan(indices)./(2*l*sqrt(r^2+zetan(indices).^2));
-
+tol = 1e-6;
+if ~isa(rho, 'sym')
+    indices = abs(rho) < tol;
+    bphi(indices) = 0;
+    brho(indices) = 0;
+    bz(indices)   = mu0*I*zetap(indices)./(2*l*sqrt(r^2+zetap(indices).^2)) - ...
+                    mu0*I*zetan(indices)./(2*l*sqrt(r^2+zetan(indices).^2));
+end

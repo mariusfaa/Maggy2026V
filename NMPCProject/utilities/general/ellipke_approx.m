@@ -18,6 +18,7 @@ function [K, E] = ellipke_approx(m)
     % if any(k < 0 | k > 1)
     %     error('Input m must satisfy 0 <= m <= 1.');
     % end
+    k = min(1,max(0,k));
 
     % Approximation for E(k)
     E = pi/2 - 0.567 .* k.^(2.4 + (k + 0.1).^5.8);

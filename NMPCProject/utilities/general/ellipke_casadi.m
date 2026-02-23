@@ -1,4 +1,4 @@
-function [K, E] = ellipke_casadi2(m)
+function [K, E] = ellipke_casadi(m)
     % ELLIPKE_CASADI Compute complete elliptic integrals of first and second kind
     % using CasADi-compatible operations (Hastings approximation).
     %
