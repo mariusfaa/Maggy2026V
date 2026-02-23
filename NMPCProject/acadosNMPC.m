@@ -41,7 +41,7 @@ paramsFast = params;
 paramsFast.solenoids.r = correctionFactorFast*paramsFast.solenoids.r;
 
 [zEq, zEqInv, dzEq, dzEqInv] = computeSystemEquilibria(paramsFast,'fast');
-uEq = 0.5 * ones(nu, 1);
+uEq = zeros(nu, 1);
 % If it doesn't return uEq directly, you need to solve for it.
 % For a symmetric 4-solenoid system at the hover point, 
 % typically u1=u2=u3=u4=uEq_scalar. Try:
@@ -56,6 +56,22 @@ for k = 1:length(u_test_range)
 end
 
 f_expl = maglevSystemDynamicsCasADi(x, u, paramsFast);
+f_func = casadi.Function('f', {x, u}, {f_expl});
+
+z_test_range = linspace(0.020, 0.060, 1000);
+best_residual = inf;
+zEq_cas = zEq;  % fallback
+for k = 1:length(z_test_range)
+    x_eq_test = [0;0;z_test_range(k);zeros(9,1)];
+    f_val = full(f_func(x_eq_test, zeros(nu,1)));
+    residual = norm(f_val(7:12));  % all accelerations
+    if residual < best_residual
+        best_residual = residual;
+        zEq_cas = z_test_range(k);
+    end
+end
+fprintf('CasADi equilibrium: z=%.6f (residual=%.6f)\n', zEq_cas, best_residual);
+fprintf('Original equilibrium: z=%.6f\n', zEq);
 
 ocp.model.x = x;
 ocp.model.u = u;
@@ -69,13 +85,13 @@ ocp.model.f_impl_expr = xdot - f_expl;
 % ocp.code_gen_opts.acados_include_path = fullfile(acados_root, 'include');
 
 % Solver Options
-ocp.solver_options.N_horizon = 10;
-ocp.solver_options.tf = 0.5;
+ocp.solver_options.N_horizon = 40;
+ocp.solver_options.tf = 0.2;
 ocp.solver_options.integrator_type = 'IRK';
 ocp.solver_options.sim_method_num_stages = 4;
 ocp.solver_options.sim_method_num_steps = 10;
 ocp.solver_options.nlp_solver_type = 'SQP'; % 'SQP_RTI' for real-time
-ocp.solver_options.nlp_solver_max_iter = 100;
+ocp.solver_options.nlp_solver_max_iter = 200;
 ocp.solver_options.qp_solver = 'PARTIAL_CONDENSING_HPIPM';
 ocp.solver_options.hessian_approx = 'GAUSS_NEWTON';
 ocp.solver_options.globalization = 'MERIT_BACKTRACKING';
@@ -86,8 +102,11 @@ ocp.cost.cost_type_e = 'NONLINEAR_LS';
 ocp.cost.cost_type_0 = 'NONLINEAR_LS';
 
 % Weights
-Q = diag([1 1 10, 0.1 0.1 0.1, 0.01 0.01 0.01, 0.01 0.01 0.01]); 
-R = eye(nu) * 1.0;
+Q = diag([1e2, 1e2, 1e3, ...    % x, y, z position
+          1e4, 1e4, 1e1, ...    % roll, pitch, yaw (penalize tipping heavily!)
+          1e1, 1e1, 1e2, ...    % vx, vy, vz
+          1e3, 1e3, 1e0]);      % wx, wy, wz (these blow up first!)
+R = eye(nu) * 0.01;             % let the solver use aggressive control
 ocp.cost.W = blkdiag(Q, R);
 ocp.cost.W_0  = blkdiag(Q, R);
 ocp.cost.W_e = Q;
@@ -98,7 +117,7 @@ ocp.model.cost_y_expr_0 = [x; u];
 ocp.model.cost_y_expr_e = x; 
 
 % References
-yref = [0; 0; zEq; zeros(9,1); uEq];
+yref = [0; 0; zEq_cas; zeros(9,1); uEq];
 yref_e = yref(1:nx);
 
 ocp.cost.yref = yref;
@@ -106,15 +125,16 @@ ocp.cost.yref_0 = yref;
 ocp.cost.yref_e = yref_e;
 
 % Constraints
+ocp.constraints.idxbx = 0:nx-1;
+ocp.constraints.lbx = [-0.05; -0.05; zEq_cas-0.02; -0.5*ones(3,1); -1*ones(3,1); -50*ones(3,1)];
+ocp.constraints.ubx = [ 0.05;  0.05; zEq_cas+0.02;  0.5*ones(3,1);  1*ones(3,1);  50*ones(3,1)];
 ocp.constraints.idxbu = 0:nu-1;
 ocp.constraints.lbu = -5 * ones(nu,1); 
 ocp.constraints.ubu =  5 * ones(nu,1);
-ocp.constraints.x0 = [0; 0; zEq - 0.005; zeros(9,1)];
+ocp.constraints.x0 = [0; 0; zEq_cas; zeros(9,1)];
 
-x_test = ocp.constraints.x0;
+x_test = [0,0,zEq_cas(1),zeros(1,9)]' + [0.001 -0.003 0.04 pi/10 0 0 zeros(1, 6)].';
 u_test = zeros(nu, 1);
-% Create the CasADi function
-f_func = casadi.Function('f', {x, u}, {f_expl});
 % Evaluate it at the test point and convert to numeric
 f_test = full(f_func(x_test, u_test));
 disp('Dynamics at x0, u=0:');
@@ -126,8 +146,8 @@ end
 % Generate and Build Solver
 ocp_solver = AcadosOcpSolver(ocp);
 
-uEq = 0.5 * ones(nu, 1);
-x_init = [0; 0; zEq; zeros(9,1)];
+% warm start
+x_init = [0; 0; zEq_cas; zeros(9,1)];
 u_init = uEq;  % or uEq if you have it
 for k = 0:ocp.solver_options.N_horizon
     ocp_solver.set('x', x_init, k);
@@ -138,7 +158,7 @@ end
 
 % Simulate
 % --- Simulation Setup ---
-nsim = 100;
+nsim = 1000;
 x_current = ocp.constraints.x0;
 
 % Initialize history for visualization
@@ -157,15 +177,18 @@ for i = 1:nsim
     status = ocp_solver.get('status');
     if status ~= 0
         warning('Solver failed with status %d at step %d', status, i);
+        residual = ocp_solver.get('residuals');
+        display(residual);
     end
+
     
     % 4. Extract control
     u_applied = ocp_solver.get('u', 0);
     
     % 5. Plant Simulation (Using ode15s for stiffness)
     % We wrap the dynamics in a function handle for ode15s
-    f_plant = @(t, x_val) maglevSystemDynamics(x_val, u_applied, paramsFast, 'fast');
-    [~, x_next_traj] = ode15s(f_plant, [0, 1/20], x_current);
+    f_plant = @(t, x_val) full(f_func(x_val, u_applied));
+    [~, x_next_traj] = ode15s(f_plant, [0, 1/200], x_current);
     x_current = x_next_traj(end, :)';
     
     % 6. Log data

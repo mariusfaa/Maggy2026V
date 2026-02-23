@@ -3,7 +3,10 @@ function dx = maglevSystemDynamicsCasADi(x, u, params)
 % for a magnetic levitation system using CasADi symbolic variables.
 % This version is compatible with acados for optimal control.
 %
-% CORRECTED VERSION - Fixed Euler angle kinematics
+% This version exactly matches the original maglevSystemDynamics.m, which
+% uses the simplification dx(4:6) = x(10:12), i.e., Euler angle rates
+% equal body angular velocities. This is valid for small angles and is
+% the model around which equilibria were computed.
 %
 % Inputs:
 %   x - State vector (12x1 CasADi SX/MX): [position; orientation; velocity; angular_velocity]
@@ -66,7 +69,7 @@ function dx = maglevSystemDynamicsCasADi(x, u, params)
                      zeros(1, magnet_n)];
     tangent_global = mtimes(R, tangent_local);
     
-    % Force density: F = K * l * (tangent × B)
+    % Force density: F = K * l * (tangent x B)
     F = crossProduct3D(K * magnet_l * tangent_global, [bx; by; bz]);
     
     % Integrate force around circumference using trapezoidal rule
@@ -79,7 +82,7 @@ function dx = maglevSystemDynamicsCasADi(x, u, params)
     nvec_local = [zeros(2, magnet_n); ones(1, magnet_n)];
     nvec_global = mtimes(R, nvec_local);
     
-    % Torque density: T = K * l * (nvec × B)
+    % Torque density: T = K * l * (nvec x B)
     T = crossProduct3D(K * magnet_l * nvec_global, [bx; by; bz]);
     
     % Integrate torque around circumference
@@ -87,13 +90,18 @@ function dx = maglevSystemDynamicsCasADi(x, u, params)
     ty = magnet_r * trapzCasADi(theta_discrete, T(2,:));
     tz = magnet_r * trapzCasADi(theta_discrete, T(3,:));
     
-    %% Compute dynamics
-    % Linear acceleration
-    F_total = [fx; fy; fz];
-    F_gravity = [0; 0; -m*g];
-    a_linear = (F_total + F_gravity) / m;
+    %% Compute dynamics — matching original maglevSystemDynamics.m exactly
+    % Original computes:
+    %   f = M\([fx;fy;fz;tx;ty;tz] - [0;0;0;cross(omega,I*omega)]) - [0;0;g;0;0;0]
+    %   dx = A*x + B*f
+    % which expands to:
+    %   dx(1:6)  = x(7:12)        (positions/angles from velocities)
+    %   dx(7:12) = f               (accelerations)
     
-    % Angular acceleration (considering gyroscopic effects)
+    % Linear acceleration: f(1:3) = [fx;fy;fz]/m - [0;0;g]
+    a_linear = [fx; fy; fz] / m - [0; 0; g];
+    
+    % Angular acceleration: f(4:6) = inv(I)*(tau - omega x I*omega)
     I_matrix = [I_vec(1), 0, 0; 
                 0, I_vec(2), 0; 
                 0, 0, I_vec(3)];
@@ -101,7 +109,7 @@ function dx = maglevSystemDynamicsCasADi(x, u, params)
     omega = x(10:12);
     T_total = [tx; ty; tz];
     
-    % Gyroscopic torque: omega × (I * omega)
+    % Gyroscopic torque: omega x (I * omega)
     I_omega = mtimes(I_matrix, omega);
     T_gyro = [omega(2)*I_omega(3) - omega(3)*I_omega(2);
               omega(3)*I_omega(1) - omega(1)*I_omega(3);
@@ -109,36 +117,16 @@ function dx = maglevSystemDynamicsCasADi(x, u, params)
     
     alpha_ang = mtimes(inv(I_matrix), (T_total - T_gyro));
     
-    %% CORRECTED: Euler angle rate transformation
-    % Convert body angular velocities to Euler angle rates
-    dOrientation = eulerRateTransform(alpha, beta, omega);
+    %% State derivative — matching original: dx = A*x + B*f
+    % dx(1:3)   = x(7:9)      velocity
+    % dx(4:6)   = x(10:12)    angular velocity (NOT Euler rate transform)
+    % dx(7:9)   = a_linear     linear acceleration
+    % dx(10:12) = alpha_ang    angular acceleration
+    dx = [x(7:9);       % Position derivative = velocity
+          x(10:12);     % Orientation derivative = angular velocity (matches original)
+          a_linear;     % Velocity derivative = linear acceleration
+          alpha_ang];   % Angular velocity derivative = angular acceleration
     
-    %% State derivative
-    dx = [x(7:9);           % Position derivative = velocity
-          dOrientation;     % CORRECTED: Euler angle rates (not omega!)
-          a_linear;         % Velocity derivative = linear acceleration
-          alpha_ang];       % Angular velocity derivative = angular acceleration
-    
-end
-
-%% Helper function: Euler rate transformation
-function dEuler = eulerRateTransform(phi, theta, omega)
-    % Transform body angular velocities to Euler angle rates
-    % phi = roll, theta = pitch
-    % omega = [wx; wy; wz] in body frame
-    % dEuler = [dphi; dtheta; dpsi] (Euler angle rates)
-    
-    import casadi.*
-    
-    % Transformation matrix (ZYX Euler convention)
-    % Avoid singularity at theta = ±π/2 by clamping
-    theta_safe = fmin(fmax(theta, -pi/2 + 0.01), pi/2 - 0.01);
-    
-    T = [1, sin(phi)*tan(theta_safe), cos(phi)*tan(theta_safe);
-         0, cos(phi), -sin(phi);
-         0, sin(phi)/cos(theta_safe), cos(phi)/cos(theta_safe)];
-    
-    dEuler = mtimes(T, omega);
 end
 
 %% Helper function: Compute rotation matrix
@@ -236,41 +224,42 @@ end
 %% Helper function: Magnetic field in polar coordinates
 function [bphi, brho, bz] = computeCircularWireFieldPolar(rho, z, r, I, mu0)
     import casadi.*
-    
-    % Handle rho ≈ 0 case with smooth transition
-    tol = 1e-3;
-    
-    % Coefficient
-    c = mu0 * I ./ (4 * pi * sqrt(r .* rho));
-    
-    % Compute k^2 parameter for elliptic integrals
-    k2 = 4 * r * rho ./ ((r + rho).^2 + z.^2);
-    k2 = fmin(fmax(k2, 0), 1 - 1e-9);  % Clamp to valid range
-    
-    % Compute elliptic integrals using CasADi-compatible version
+
+    tol = 1e-6;
+
+    % Guard rho to prevent division by zero in c and z./rho
+    % This only affects the general formula; if_else will discard it on-axis
+    rho_safe = fmax(rho, tol);
+
+    % Coefficient (using rho_safe to avoid Inf)
+    c = mu0 * I ./ (4 * pi * sqrt(r .* rho_safe));
+
+    % k^2 parameter for elliptic integrals
+    k2 = 4 * r * rho_safe ./ ((r + rho_safe).^2 + z.^2);
+    k2 = fmin(fmax(k2, 0), 1 - 1e-9);
+
+    % Elliptic integrals
     [K, E] = ellipke_casadi(k2);
-    
-    % Magnetic field components (general case, rho != 0)
+
     sqrt_k2 = sqrt(k2);
-    denominator = (rho - r).^2 + z.^2;
-    
-    brho = -(z ./ rho) .* c .* sqrt_k2 .* ...
-           (K - (rho.^2 + r^2 + z.^2) ./ denominator .* E);
-    
-    bz = c .* sqrt_k2 .* ...
-         (K - (rho.^2 - r^2 + z.^2) ./ denominator .* E);
-    
-    % For rho ≈ 0, use analytical solution on axis
-    % Use smooth transition with tanh or if_else
-    axis_bz = mu0 * r^2 * I ./ (2 * (r^2 + z.^2).^(3/2));
-    
-    % Smooth blending
-    weight = 0.5 * (1 + tanh((rho - tol) / (tol/10)));
-    brho = brho .* weight;
-    bz = bz .* weight + axis_bz .* (1 - weight);
-    
-    % bphi is always zero due to axial symmetry
-    bphi = 0 * rho;  % Ensures correct symbolic dimension
+    denominator = (rho_safe - r).^2 + z.^2;
+
+    % General formula (valid away from axis)
+    brho_general = -(z ./ rho_safe) .* c .* sqrt_k2 .* ...
+                   (K - (rho_safe.^2 + r^2 + z.^2) ./ denominator .* E);
+
+    bz_general   =  c .* sqrt_k2 .* ...
+                   (K - (rho_safe.^2 - r^2 + z.^2) ./ denominator .* E);
+
+    % On-axis formula (exact, valid only at rho = 0)
+    bz_axis = mu0 * r^2 * I ./ (2 * (r^2 + z.^2).^(3/2));
+
+    % Select formula based on rho, mimicking the original's hard switch
+    brho = if_else(rho < tol, 0,       brho_general);
+    bz   = if_else(rho < tol, bz_axis, bz_general);
+
+    % bphi is zero due to axial symmetry
+    bphi = 0 * rho;
 end
 
 %% Helper function: Cross product for 3D vectors (matrix form)
@@ -291,12 +280,8 @@ function integral = trapzCasADi(theta, y)
     % y: function values (CasADi symbolic, 1xN)
     import casadi.*
     
-    % Number of points
-    N = length(theta);
-    
-    % Spacing (uniform) 
-    dtheta = 2*pi / N;  % For periodic [0, 2π) with N points
-    
-    % Sum along second dimension (columns) to get a scalar from 1xN row vector
-    integral = dtheta * sum2(y);
+    % Close the loop by appending first point at 2*pi
+    y_closed = [y, y(1)];             % 1 X (N+1)
+    dtheta_vec = diff([theta, 2*pi]); % spacing for each trapezoid, 1xN
+    integral = sum(0.5 * (y_closed(1:end-1) + y_closed(2:end)) .* dtheta_vec);
 end
