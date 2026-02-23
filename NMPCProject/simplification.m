@@ -1,57 +1,148 @@
-
-
-
 % We want to simplify our function
-
-% points per var
 N = 101;
+r_range = 0.05;
+phi = 0;
+rho = linspace(0, r_range, N);
+z = linspace(-r_range, r_range, N);
 
-r = 0.1;
-x = linspace(-r,r,N);
-y = linspace(-r,r,N);
-z = linspace(-r,r,N);
-I = params.permanent.J/params.physical.mu0*params.permanent.l(1);
-%ub = 1.5;
-%I = linspace(-ub,ub,N);
+% Avoid singularity at rho=0
+rho(1) = rho(2) * 0.1;
 
+I = params.permanent.J / params.physical.mu0 * params.permanent.l(1);
+I = -1.2;
+r = params.permanent.r(1);
+l = params.permanent.l(1);
+mu0 = params.physical.mu0;
 
-% Fixed center values
-x0 = 0; y0 = 0; z0 = 0;
+[RHO, Z] = meshgrid(rho, z);
+[bphi, brho, bz] = computeFieldCircularCurrentSheetPolar(phi, RHO, Z, r, l, I, mu0);
 
-% --- Vary x, fix y=0, z=0 ---
-bx_x = zeros(1,N); by_x = zeros(1,N); bz_x = zeros(1,N);
-for i = 1:N
-    [bx_x(i),by_x(i),bz_x(i)] = computeFieldCircularCurrentSheetCartesian(...
-        x(i), y0, z0, params.permanent.r(1), params.permanent.l(1), I, params.physical.mu0);
-end
+% Debug: check for bad values
+fprintf('brho: min=%.3e, max=%.3e, NaN=%d, Inf=%d\n', ...
+    min(brho(:)), max(brho(:)), sum(isnan(brho(:))), sum(isinf(brho(:))));
+fprintf('bz: min=%.3e, max=%.3e, NaN=%d, Inf=%d\n', ...
+    min(bz(:)), max(bz(:)), sum(isnan(bz(:))), sum(isinf(bz(:))));
 
-% --- Vary y, fix x=0, z=0 ---
-bx_y = zeros(1,N); by_y = zeros(1,N); bz_y = zeros(1,N);
-for i = 1:N
-    [bx_y(i),by_y(i),bz_y(i)] = computeFieldCircularCurrentSheetCartesian(...
-        x0, y(i), z0, params.permanent.r(1), params.permanent.l(1), I, params.physical.mu0);
-end
+% Replace NaN/Inf with 0 for SVD
+brho_clean = brho;
+bz_clean = bz;
+brho_clean(~isfinite(brho_clean)) = 0;
+bz_clean(~isfinite(bz_clean)) = 0;
 
-% --- Vary z, fix x=0, y=0 ---
-bx_z = ones(1,N); by_z = zeros(1,N); bz_z = zeros(1,N);
-for i = 1:N
-    [bx_z(i),by_z(i),bz_z(i)] = computeFieldCircularCurrentSheetCartesian(...
-        x0, y0, z(i), params.permanent.r(1), params.permanent.l(1), I, params.physical.mu0);
-end
-
-% --- Plots ---
+% Plot field projections
 figure;
+subplot(2, 2, 1);
+plot(rho*1000, brho');
+xlabel('\rho [mm]'); ylabel('B_\rho');
+title('B_\rho vs \rho (lines = different z)');
 
-subplot(3,3,1); plot(x, bx_x); xlabel('x'); ylabel('Bx'); title('Bx vs x');
-subplot(3,3,2); plot(x, by_x); xlabel('x'); ylabel('By'); title('By vs x');
-subplot(3,3,3); plot(x, bz_x); xlabel('x'); ylabel('Bz'); title('Bz vs x');
+subplot(2, 2, 2);
+plot(z*1000, brho);
+xlabel('z [mm]'); ylabel('B_\rho');
+title('B_\rho vs z (lines = different \rho)');
 
-subplot(3,3,4); plot(y, bx_y); xlabel('y'); ylabel('Bx'); title('Bx vs y');
-subplot(3,3,5); plot(y, by_y); xlabel('y'); ylabel('By'); title('By vs y');
-subplot(3,3,6); plot(y, bz_y); xlabel('y'); ylabel('Bz'); title('Bz vs y');
+subplot(2, 2, 3);
+plot(rho*1000, bz');
+xlabel('\rho [mm]'); ylabel('B_z');
+title('B_z vs \rho (lines = different z)');
 
-subplot(3,3,7); plot(z, bx_z); xlabel('z'); ylabel('Bx'); title('Bx vs z');
-subplot(3,3,8); plot(z, by_z); xlabel('z'); ylabel('By'); title('By vs z');
-subplot(3,3,9); plot(z, bz_z); xlabel('z'); ylabel('Bz'); title('Bz vs z');
+subplot(2, 2, 4);
+plot(z*1000, bz);
+xlabel('z [mm]'); ylabel('B_z');
+title('B_z vs z (lines = different \rho)');
 
-sgtitle('B-field components: one input varied at a time');
+sgtitle('Field projections');
+
+% SVD on cleaned data
+[U_rho, S_rho, V_rho] = svd(brho_clean);
+[U_z, S_z, V_z] = svd(bz_clean);
+
+s_rho = diag(S_rho);
+s_z = diag(S_z);
+
+% Plot SVD spectrum
+figure;
+subplot(1, 2, 1);
+semilogy(s_rho / max(s_rho), 'o-');
+xlabel('Index'); ylabel('Normalized magnitude');
+title('B_\rho SVD'); grid on;
+
+subplot(1, 2, 2);
+semilogy(s_z / max(s_z), 'o-');
+xlabel('Index'); ylabel('Normalized magnitude');
+title('B_z SVD'); grid on;
+
+% Variance explained
+var_rho = sum(s_rho(1:min(3,end)).^2) / sum(s_rho.^2) * 100;
+var_z = sum(s_z(1:min(3,end)).^2) / sum(s_z.^2) * 100;
+fprintf('B_rho: first 3 singular values explain %.2f%% of variance\n', var_rho);
+fprintf('B_z: first 3 singular values explain %.2f%% of variance\n', var_z);
+
+% Determine effective rank
+tol = 1e-10;
+rank_rho = sum(s_rho / max(s_rho) > tol);
+rank_z = sum(s_z / max(s_z) > tol);
+fprintf('Effective rank: B_rho=%d, B_z=%d\n', rank_rho, rank_z);
+
+% Test different k values
+fprintf('\nApproximation error vs rank:\n');
+for k = [3, 5, 10, 15]
+    brho_approx = U_rho(:,1:k) * S_rho(1:k,1:k) * V_rho(:,1:k)';
+    bz_approx = U_z(:,1:k) * S_z(1:k,1:k) * V_z(:,1:k)';
+    err_rho = norm(brho_clean - brho_approx, 'fro') / norm(brho_clean, 'fro');
+    err_z = norm(bz_clean - bz_approx, 'fro') / norm(bz_clean, 'fro');
+    fprintf('  k=%2d: B_rho=%.2e, B_z=%.2e\n', k, err_rho, err_z);
+end
+
+% Final approximation with chosen k
+k = 5;
+brho_approx = U_rho(:,1:k) * S_rho(1:k,1:k) * V_rho(:,1:k)';
+bz_approx = U_z(:,1:k) * S_z(1:k,1:k) * V_z(:,1:k)';
+
+% Plot error vs rank
+figure;
+max_k = min(50, length(s_rho));
+err_vs_k_rho = zeros(max_k, 1);
+err_vs_k_z = zeros(max_k, 1);
+for kk = 1:max_k
+    err_vs_k_rho(kk) = sqrt(sum(s_rho(kk+1:end).^2)) / norm(s_rho);
+    err_vs_k_z(kk) = sqrt(sum(s_z(kk+1:end).^2)) / norm(s_z);
+end
+semilogy(1:max_k, err_vs_k_rho, 'o-', 1:max_k, err_vs_k_z, 's-');
+xlabel('Rank k'); ylabel('Relative error');
+legend('B_\rho', 'B_z'); grid on;
+title('Approximation error vs rank');
+
+% Plot approximation comparison
+figure;
+subplot(2, 3, 1);
+imagesc(rho*1000, z*1000, brho_clean);
+colorbar; axis equal tight;
+xlabel('\rho [mm]'); ylabel('z [mm]'); title('B_\rho original');
+
+subplot(2, 3, 2);
+imagesc(rho*1000, z*1000, brho_approx);
+colorbar; axis equal tight;
+xlabel('\rho [mm]'); ylabel('z [mm]'); title(sprintf('B_\\rho rank-%d approx', k));
+
+subplot(2, 3, 3);
+imagesc(rho*1000, z*1000, brho_clean - brho_approx);
+colorbar; axis equal tight;
+xlabel('\rho [mm]'); ylabel('z [mm]'); title('B_\rho error');
+
+subplot(2, 3, 4);
+imagesc(rho*1000, z*1000, bz_clean);
+colorbar; axis equal tight;
+xlabel('\rho [mm]'); ylabel('z [mm]'); title('B_z original');
+
+subplot(2, 3, 5);
+imagesc(rho*1000, z*1000, bz_approx);
+colorbar; axis equal tight;
+xlabel('\rho [mm]'); ylabel('z [mm]'); title(sprintf('B_z rank-%d approx', k));
+
+subplot(2, 3, 6);
+imagesc(rho*1000, z*1000, bz_clean - bz_approx);
+colorbar; axis equal tight;
+xlabel('\rho [mm]'); ylabel('z [mm]'); title('B_z error');
+
+sgtitle(sprintf('Rank-%d approximation comparison', k));
