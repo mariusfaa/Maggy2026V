@@ -32,7 +32,12 @@ c = mu0*I./(4*pi*sqrt(r.*rho));
 
 k2 = 4*r*rho./((r+rho).^2+z.^2);
 k2 = min(k2,1); k2 = max(k2,0); % Fix for numerical error
-[K,E] = ellipke(k2);
+
+if ~isa(k2, 'sym')
+    [K,E] = ellipke(k2,1e-9);
+else
+    [K,E] = ellipke(sym(k2));
+end
 
 bphi = phi;
 brho = -(z./rho).*c.*sqrt(k2).*(K-(rho.^2+r^2+z.^2)./((rho-r).^2+z.^2).*E);

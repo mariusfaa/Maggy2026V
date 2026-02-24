@@ -1,34 +1,40 @@
 function load_params(modelIdOverride)
-    % try to load previous parameters
+    % Load previously cached parameters if available
     try
-        clear params modelId;
-        load("system_parameters/params.mat");
-        paramsPrev = params;
-        modelIdPrev = modelId;
+        cached = load("system_parameters/params.mat");
+        paramsPrev = cached.params;
+        modelIdPrev = cached.modelId;
     catch
         paramsPrev = struct([]);
         modelIdPrev = -1;
     end
-    
-    % wanted params
+
+    % Load current parameters from definition script
     parameters_maggy_V41;
-    
-    % wanted model (use override if provided)
-    if nargin >= 1
+    assert(exist('params', 'var'), 'parameters_maggy_V41 did not define ''params''');
+
+    % Set model ID
+    if nargin >= 1 && ~isempty(modelIdOverride)
         modelId = modelIdOverride;
     else
         modelId = MaglevModel.Accurate;
     end
-    
-    if (~isequal(paramsPrev, params) || ~isequal(modelIdPrev, modelId)) && ~isequal(modelId, MaglevModel.Accurate)
-        fprintf("recalculating params\n");
-        correctionFactor = computeSolenoidRadiusCorrectionFactor(params, modelId);
+
+    % Recompute only if params or modelId changed, and model is not Accurate
+    paramsChanged = ~isequal(paramsPrev, params);
+    modelChanged  = ~isequal(modelIdPrev, modelId);
+    needsRecompute = (paramsChanged || modelChanged) && ~isequal(modelId, MaglevModel.Accurate);
+
+    if needsRecompute
+        fprintf('Recalculating params (model=%s)...\n', char(modelId));
         paramsFixed = params;
-        paramsFixed.solenoids.r = correctionFactor * paramsFixed.solenoids.r;
+        % paramsFixed.solenoids.r = paramsFixed.solenoids.r / computeSolenoidRadiusCorrectionFactor(params, modelId);
         save("system_parameters/params.mat", "params", "paramsFixed", "modelId");
+        assignin('base', 'params', paramsFixed);
+    else
+        assignin('base', 'params', params);
     end
-    
-    % export to base workspace
-    assignin('base', 'params', paramsFixed);
-    fprintf("Params loaded!\n");
+
+    assignin('base', 'modelId', modelId);
+    fprintf('Params loaded (model=%s)\n', char(modelId));
 end
