@@ -53,8 +53,8 @@ solver_eq = nlpsol('solver_eq', 'ipopt', nlp, ...
     struct('ipopt', struct('print_level', 3, 'max_iter', 1000)));
 
 x0_guess = [0.030; zeros(nu,1)];
-lbx = [0.015; -5*ones(nu,1)];
-ubx = [0.060;  5*ones(nu,1)];
+lbx = [0.015; -1*ones(nu,1)];
+ubx = [0.060;  1*ones(nu,1)];
 
 sol = solver_eq('x0', x0_guess, 'lbx', lbx, 'ubx', ubx);
 opt = full(sol.x);
@@ -79,9 +79,9 @@ ocp.model.xdot = xdot;
 ocp.model.f_impl_expr = xdot - f_expl;
 
 % Solver options
-N = 20;
-Tf = 0.5;
-dt_mpc = Tf / N;  % 0.025s
+N = 10;
+Tf = 0.1;
+dt_mpc = Tf / N;  % 0.01s
 
 ocp.solver_options.N_horizon = N;
 ocp.solver_options.tf = Tf;
@@ -121,8 +121,8 @@ ocp.cost.yref_e = yref_e;
 
 % Input constraints
 ocp.constraints.idxbu = 0:nu-1;
-ocp.constraints.lbu = -5 * ones(nu,1); 
-ocp.constraints.ubu =  5 * ones(nu,1);
+ocp.constraints.lbu = -1 * ones(nu,1); 
+ocp.constraints.ubu =  1 * ones(nu,1);
 ocp.constraints.x0 = xEq;
 
 %% --- BUILD SOLVER ---
@@ -159,7 +159,7 @@ function [x_next, u_applied, status, diverged] = ...
     u_applied = ocp_solver.get('u', 0);
     
     % Clamp control for safety
-    u_applied = max(min(u_applied, 5), -5);
+    u_applied = max(min(u_applied, 1), -1);
     
     % Simulate plant
     f_plant = @(t, xv) full(f_func(xv, u_applied));
@@ -196,8 +196,11 @@ for i = 1:sim_steps
     [x_current, u_applied, status, diverged] = ...
         nmpc_step(ocp_solver, f_func, x_current, xEq, uEq, dt_mpc, n_rti_iter, N);
     
-    fprintf('Step %3d: status=%d, |u-uEq|=%.4e, |u|=%.4e\n', ...
-        i, status, norm(u_applied - uEq), norm(u_applied));
+    % Get timing after solve (called inside nmpc_step)
+    time_tot = ocp_solver.get('time_tot');
+
+    fprintf('Step %3d: status=%d, solve_time=%.4f ms, |u-uEq|=%.4e\n', ...
+        i, status, time_tot*1000, norm(u_applied - uEq));
     
     plot_x(:,i+1) = x_current;
     plot_u(:,i) = u_applied;

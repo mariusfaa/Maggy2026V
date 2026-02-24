@@ -53,8 +53,8 @@ solver_eq = nlpsol('solver_eq', 'ipopt', nlp, ...
     struct('ipopt', struct('print_level', 3, 'max_iter', 1000)));
 
 x0_guess = [0.030; zeros(nu,1)];
-lbx = [0.015; -5*ones(nu,1)];
-ubx = [0.060;  5*ones(nu,1)];
+lbx = [0.015; -1*ones(nu,1)];
+ubx = [0.060;  1*ones(nu,1)];
 
 sol = solver_eq('x0', x0_guess, 'lbx', lbx, 'ubx', ubx);
 opt = full(sol.x);
@@ -121,8 +121,8 @@ ocp.cost.yref_e = yref_e;
 
 % Input constraints
 ocp.constraints.idxbu = 0:nu-1;
-ocp.constraints.lbu = -5 * ones(nu,1); 
-ocp.constraints.ubu =  5 * ones(nu,1);
+ocp.constraints.lbu = -1 * ones(nu,1); 
+ocp.constraints.ubu =  1 * ones(nu,1);
 ocp.constraints.x0 = xEq;
 
 %% --- BUILD SOLVER ---
@@ -159,7 +159,7 @@ function [x_next, u_applied, status, diverged] = ...
     u_applied = ocp_solver.get('u', 0);
     
     % Clamp control for safety
-    u_applied = max(min(u_applied, 5), -5);
+    u_applied = max(min(u_applied, 1), -1);
     
     % Simulate plant
     f_plant = @(t, xv) full(f_func(xv, u_applied));
@@ -183,7 +183,7 @@ end
 
 %% --- Simulate and control system
 
-sim_steps = 1000;
+sim_steps = 200;
 x_current = xEq;
 plot_x = zeros(nx,sim_steps+1);
 plot_u = zeros(nu,sim_steps);
@@ -196,8 +196,11 @@ for i = 1:sim_steps
     [x_current, u_applied, status, diverged] = ...
         nmpc_step(ocp_solver, f_func, x_current, xEq, uEq, dt_mpc, n_rti_iter, N);
     
-    fprintf('Step %3d: status=%d, |u-uEq|=%.4e, |u|=%.4e\n', ...
-        i, status, norm(u_applied - uEq), norm(u_applied));
+    % Get timing after solve (called inside nmpc_step)
+    time_tot = ocp_solver.get('time_tot');
+
+    fprintf('Step %3d: status=%d, solve_time=%.4f ms, |u-uEq|=%.4e\n', ...
+        i, status, time_tot*1000, norm(u_applied - uEq));
     
     plot_x(:,i+1) = x_current;
     plot_u(:,i) = u_applied;
@@ -208,54 +211,18 @@ for i = 1:sim_steps
     end
 end
 
-%% --- VISUALIZATION OF MAGLEV NMPC ---
-time = (0:size(plot_u, 2)) * dt_mpc; % Time vector
-time_u = time(1:end-1);
+%% --- SAVE SIMULATION DATA ---
+save_filename = 'nmpc_results.mat';
 
-figure('Name', 'Maglev NMPC Performance', 'Color', 'w', 'Position', [100, 100, 1200, 800]);
+% Package the results for the separate script
+sim_data = struct();
+sim_data.t = (0:sim_steps) * dt_mpc;
+sim_data.x = plot_x;
+sim_data.u = plot_u;
+sim_data.xEq = xEq;
+sim_data.uEq = uEq;
+sim_data.dt = dt_mpc;
+sim_data.params = paramsFast; % Save physical parameters for context
 
-% 1. Translational States (x, y, z)
-subplot(3, 2, 1);
-plot(time, plot_x(1, :), 'r', 'LineWidth', 1.5); hold on;
-plot(time, plot_x(2, :), 'g', 'LineWidth', 1.5);
-plot(time, plot_x(3, :), 'b', 'LineWidth', 1.5);
-yline(xEq(3), '--k', 'Equilibrium Z');
-grid on; ylabel('Position [m]'); title('Translational States');
-legend('x', 'y', 'z');
-
-% 2. Rotational States (Roll, Pitch, Yaw)
-subplot(3, 2, 3);
-plot(time, rad2deg(plot_x(4:6, :)), 'LineWidth', 1.5);
-grid on; ylabel('Angle [deg]'); title('Attitude (Euler Angles)');
-legend('\phi (roll)', '\theta (pitch)', '\psi (yaw)');
-
-% 3. Linear Velocities
-subplot(3, 2, 5);
-plot(time, plot_x(7:9, :), 'LineWidth', 1.5);
-grid on; xlabel('Time [s]'); ylabel('Velocity [m/s]'); title('Linear Velocities');
-
-% 4. Control Inputs (Currents)
-subplot(3, 2, 2);
-p = plot(time_u, plot_u, 'LineWidth', 1.2);
-hold on;
-% Plot equilibrium current levels for reference
-for j = 1:nu
-    yline(uEq(j), '--', 'Color', p(j).Color, 'Alpha', 0.5);
-end
-grid on; ylabel('Current [A]'); title('Control Inputs (Solenoid Currents)');
-legend('u_1', 'u_2', 'u_3', 'u_4');
-
-% 5. Control Effort (Deviation from Equilibrium)
-subplot(3, 2, 4);
-u_dev = plot_u - uEq;
-plot(time_u, vecnorm(u_dev), 'k', 'LineWidth', 1.5);
-grid on; ylabel('|u - u_{Eq}|'); title('Control Effort Deviation');
-
-% 6. 3D Trajectory Visualization
-subplot(3, 2, 6);
-plot3(plot_x(1,:), plot_x(2,:), plot_x(3,:), 'b', 'LineWidth', 2); hold on;
-plot3(xEq(1), xEq(2), xEq(3), 'rx', 'MarkerSize', 10, 'LineWidth', 2); % Target
-grid on; axis equal;
-xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
-title('3D Path Trace');
-view(45, 30); 
+save(save_filename, '-struct', 'sim_data');
+fprintf('\nSimulation data saved to: %s\n', save_filename);
