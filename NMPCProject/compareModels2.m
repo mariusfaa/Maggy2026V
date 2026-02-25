@@ -1,3 +1,5 @@
+addpath(genpath("."))
+
 load_params(MaglevModel.Accurate);
 paramsAccurate = params;
 
@@ -38,20 +40,20 @@ figure;
 subplot(2,2,1);
 imagesc(x_range, y_range, E_pos);
 colorbar;
-xlabel('x'); ylabel('y');
-title('||f_{fast} - f_{accurate}|| over XY plane');
+xlabel('x_1'); ylabel('x_2');
+title('||f_{fast} - f_{accurate}|| for states x_1 to x_5');
 axis xy;
 
 subplot(2,2,2);
 imagesc(x_range, y_range, E_lvel);
 colorbar;
-xlabel('x'); ylabel('y');
-title('||f_{fast} - f_{accurate}|| over XY plane');
+xlabel('x_1'); ylabel('x_2');
+title('||f_{fast} - f_{accurate}|| for states x_7 to x_9');
 axis xy;
 
 subplot(2,2,3);
 imagesc(x_range, y_range, E_avel);
 colorbar;
-xlabel('x'); ylabel('y');
-title('||f_{fast} - f_{accurate}|| over XY plane');
+xlabel('x_1'); ylabel('x_2');
+title('||f_{fast} - f_{accurate}|| for states x_{10} to x_{11}');
 axis xy;
