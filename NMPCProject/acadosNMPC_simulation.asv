@@ -79,9 +79,9 @@ ocp.model.xdot = xdot;
 ocp.model.f_impl_expr = xdot - f_expl;
 
 % Solver options
-N = 20;
-Tf = 0.5;
-dt_mpc = Tf / N;  % 0.025s
+N = 10;
+Tf = 0.1;
+dt_mpc = Tf / N;  % 0.01s
 
 ocp.solver_options.N_horizon = N;
 ocp.solver_options.tf = Tf;
@@ -125,6 +125,14 @@ ocp.constraints.lbu = -1 * ones(nu,1);
 ocp.constraints.ubu =  1 * ones(nu,1);
 ocp.constraints.x0 = xEq;
 
+%% --- Build Acados Simulator
+sim = AcadosSim();
+sim.model.name = 'maglev_nmpc';
+sim.model.x = x;
+sim.model.u = u;
+sim.model.xdot = xdo
+sim_solver = AcadosSimSolver(sim);
+
 %% --- BUILD SOLVER ---
 fprintf('\n--- Building acados solver ---\n');
 ocp_solver = AcadosOcpSolver(ocp);
@@ -147,7 +155,7 @@ end
 n_rti_iter = 5;  % Number of RTI iterations per control step
 
 function [x_next, u_applied, status, diverged] = ...
-    nmpc_step(ocp_solver, f_func, x_current, xEq, uEq, dt_mpc, n_rti, N)
+    nmpc_step(ocp_solver, sim_solver, x_current, xEq, uEq, dt_mpc, n_rti, N)
     
     ocp_solver.set('constr_x0', x_current);
     
@@ -161,10 +169,16 @@ function [x_next, u_applied, status, diverged] = ...
     % Clamp control for safety
     u_applied = max(min(u_applied, 1), -1);
     
-    % Simulate plant
-    f_plant = @(t, xv) full(f_func(xv, u_applied));
-    [~, x_traj] = ode15s(f_plant, [0, dt_mpc], x_current);
-    x_next = x_traj(end,:)';
+    % Simulate plant (MATLAB)
+    % f_plant = @(t, xv) full(f_func(xv, u_applied));
+    % [~, x_traj] = ode15s(f_plant, [0, dt_mpc], x_current);
+    % x_next = x_traj(end,:)';
+
+    % Simulate plant (acados)
+    sim_solver.set('x', x_current);
+    sim_solver.set('u', u_applied);
+    sim_solver.solve();
+    x_next = sim_solver.get('x');
     
     % Divergence detection
     diverged = abs(x_next(3)) > 0.5 || ...      % z way out of range
@@ -194,7 +208,7 @@ for k = 0:N-1, ocp_solver.set('u', uEq, k); end
 
 for i = 1:sim_steps
     [x_current, u_applied, status, diverged] = ...
-        nmpc_step(ocp_solver, f_func, x_current, xEq, uEq, dt_mpc, n_rti_iter, N);
+        nmpc_step(ocp_solver, sim_solver, x_current, xEq, uEq, dt_mpc, n_rti_iter, N);
     
     % Get timing after solve (called inside nmpc_step)
     time_tot = ocp_solver.get('time_tot');
