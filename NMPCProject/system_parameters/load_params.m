@@ -28,7 +28,7 @@ function load_params(modelIdOverride)
     if needsRecompute
         fprintf('Recalculating params (model=%s)...\n', char(modelId));
         paramsFixed = params;
-        % paramsFixed.solenoids.r = paramsFixed.solenoids.r / computeSolenoidRadiusCorrectionFactor(params, modelId);
+        paramsFixed.solenoids.r = paramsFixed.solenoids.r / computeSolenoidRadiusCorrectionFactor(params, modelId);
         save("system_parameters/params.mat", "params", "paramsFixed", "modelId");
         assignin('base', 'params', paramsFixed);
     else

@@ -16,7 +16,8 @@ function c = computeSolenoidRadiusCorrectionFactor(params,modelId)
 
     % Optimize
     options = optimoptions('fmincon', 'Display', 'off');
-    c = fmincon(@(c) objfun(c,zEq,params,modelId),1,[],[],[],[],0,inf,[],options);
+    target = computeVerticalForce(zEq,params,MaglevModel.Filament);
+    c = fmincon(@(c) objfun(c,zEq,params,modelId,target),1,[],[],[],[],0,inf,[],options);
 
     % Helping functions
     function fz = computeVerticalForce(z,params,modelId)
@@ -31,11 +32,11 @@ function c = computeSolenoidRadiusCorrectionFactor(params,modelId)
         fz = fz - 9.81*params.magnet.m;
     end
 
-    function J = objfun(c,zEq,params,modelId)
+    function J = objfun(c,zEq,params,modelId,target)
         paramsCorrected = params;
         paramsCorrected.solenoids.r = c*paramsCorrected.solenoids.r;
 
-        J = norm(computeVerticalForce(zEq,params,MaglevModel.Filament) - computeVerticalForce(zEq,paramsCorrected,modelId));
+        J = norm(target - computeVerticalForce(zEq,paramsCorrected,modelId));
     end
 
 end
