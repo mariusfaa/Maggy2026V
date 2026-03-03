@@ -3,7 +3,11 @@
 % the original maglevSystemDynamics. Uses the same initial conditions and
 % inputs as simAcados so results can be directly compared.
 
-simSetupInit;
+simSetup;
+
+% Setting up system equations
+f = @(x,u) maglevSystemDynamics(x,u,params,modelId);
+h = @(x,u) maglevSystemMeasurements(x,u,params,modelId);
 
 %% --- Simulate with ode15s ---
 fprintf('--- Running ode15s reference simulation ---\n');

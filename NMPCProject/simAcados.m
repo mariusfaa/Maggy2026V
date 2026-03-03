@@ -3,9 +3,9 @@
 % from memory, causing slow re-initialisation on every re-run.
 %clearvars -except ocp_solver sim_solver; clc;
 
-simSetupInit;
+simSetup;
 
-acados_root  = '/home/h3rl/acados';
+acados_root  = '/home/halva/acados';
 project_root = '/mnt/c/Users/halva/Downloads/Maggy2026V/NMPCProject';
 
 setenv('ACADOS_INSTALL_DIR',       acados_root);
@@ -22,33 +22,16 @@ import casadi.*
 
 %% --- Model setup ---
 
-fprintf('--- Setting up parameters ---\n');
+fprintf('--- Setting up model ---\n');
 
-params.magnet.n        = 100;  % current sheet is more accurate → fewer points needed (was 100)
-opts = struct();
-opts.rho_max = 0.1;      % 10cm
-opts.z_max = 0.06;       % 6cm
-opts.method = 'linear';  % 'linear' is much faster in generated C code than 'bspline'
-opts.N_rho = 100;        % denser grid compensates for linear interpolation
-opts.N_z = 100;
-params.luts = buildCurrentSheetLuts(params, opts);
-
-%% --- OCP SETUP ---
-% N      = 10;
-% Tf     = 0.1;
-% dt_mpc = Tf / N;   % 0.01 s
-% 
-% ocp = AcadosOcp();
-% ocp.model = get_maggy_model(params);
+model = get_maggy_model(params);
 
 %% --- BUILD / REUSE SIM SOLVER ---
 
 fprintf('\n--- Building acados sim solver ---\n');
-if exist('c_generated_code/maglev_sim', 'dir')
-    rmdir('c_generated_code/maglev_sim', 's');
-end
+
 sim = AcadosSim();
-sim.model = get_maggy_model(params);
+sim.model = model;
 
 sim.solver_options.Tsim            = dt;
 sim.solver_options.integrator_type = 'ERK';
