@@ -24,7 +24,7 @@ vec runFilter(FilterType &filter, vec &u, vec &z) {
 
 // Call once at start
 void initObserver() {
-  const double dt = 0.0005; // 500 µs
+  double dt = 0.0005; // 500 µs
 
   // Initial state
   vec x0(NUMBER_STATES_REDUCED, fill::zeros);
@@ -34,9 +34,13 @@ void initObserver() {
   mat Bd = discretize_B(get_A_fast(), Ad, get_B_fast());
   mat Qd = van_loan(get_A_fast(), get_Q(), dt);
 
+  mat P0 = get_P0();
+  mat H = get_H_fast();
+  mat R = get_R();
+
   // Initialize filter
-  // KF.init(x0, get_P0(), Ad, Bd, Qd, get_H(), get_R());
-  EKF.init(x0, get_P0(), Ad, Bd, Qd, get_H_fast(), get_R(), dt);
+  // KF.init(x0, P0, Ad, Bd, Qd, H, R, dt);
+  EKF.init(x0, P0, Ad, Bd, Qd, H, R, dt);
 }
 
 

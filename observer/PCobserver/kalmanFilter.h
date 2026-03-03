@@ -59,14 +59,14 @@ public:
         {}
 
     // Initializing
-    virtual void init(vec initialState,
-              mat initialCovariance,
-              mat stateTransition,
-              mat inputMatrix,
-              mat processNoise,
-              mat measurementMatrix,
-              mat measurementNoise,
-              double discretizationTime
+    virtual void init(vec &initialState,
+              mat &initialCovariance,
+              mat &stateTransition,
+              mat &inputMatrix,
+              mat &processNoise,
+              mat &measurementMatrix,
+              mat &measurementNoise,
+              double &discretizationTime
               ) {
         dt = discretizationTime;
         x_est = initialState;
@@ -112,7 +112,8 @@ public:
         x_est = x_pred + W * v;
 
         // Update covariance estimate
-        P = (I - W * H) * P;
+        // P = (I - W * H) * P;
+        P = (I - W*H) * P * (I - W*H).t() + W*R*W.t();
     }
 
     // Get state estimate

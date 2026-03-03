@@ -4,7 +4,6 @@
 #include "integrator.h"
 #include <armadillo>
 #include <cstdio>
-#include <numeric>
 
 using namespace arma;
 
@@ -37,7 +36,7 @@ void reduceStateSpace(const double x_pad[NUMBER_STATES], vec &x) {
 // mode: 0 forward differemce, 1 backward difference, 2 central
 mat calculateJacobian(const vec &x, const vec &u, const vec &curr, const double &dt, const int &mode) {
 
-  double delta = 1e-6;
+  double delta = 1e-12;
 
   size_t n = curr.n_rows;
 

@@ -5,7 +5,9 @@
 #include "integrator.h"
 #include "utilities.h"
 #include "include/matlab/maglevModel.h"
+#include <algorithm>
 #include <armadillo>
+#include <cstddef>
 
 class ExtendedKalmanFilter: public KalmanFilter {
   using Base = KalmanFilter;
@@ -42,7 +44,7 @@ public:
   derivatives_struct dxd;
 
   // Constructor
-  ExtendedKalmanFilter(int numberStates, int numberInputs, int numberMeasurements):
+  ExtendedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements):
     dx(arma::zeros(NUMBER_STATES_REDUCED)),
     Base(numberStates, numberInputs, numberMeasurements) {
       maglevModel_initialize();
@@ -57,9 +59,12 @@ public:
     // x = f(x,u)
     eulerForward(x_est, u, dt, dxd);
 
+    mat Ac;
     // Calculates new F
     if (updateJacobians) {
-      F = calculateJacobian(x_est, u, x_pred, dt);
+      // Ac = calculateJacobian(x_est, u, x_pred, 0, 2);
+      // F = discretize_A(Ac, dt);
+      F = calculateJacobian(x_est, u, x_pred, dt, 2);
     }
 
     // P = F * P * F^T + Q
@@ -78,7 +83,7 @@ public:
 
     // Calculates new H
     if (updateJacobians) {
-      H = calculateJacobian(x_pred, u, z_pred);
+      H = calculateJacobian(x_pred, u, z_pred, 0, 2);
     }
 
     // Calculate innovation
@@ -101,7 +106,8 @@ public:
     x_est = x_pred + W * v;
 
     // Update covariance estimate
-    P = (I - W * H) * P;
+    // P = (I - W * H) * P;
+    P = (I - W*H) * P * (I - W*H).t() + W*R*W.t();
   }
 
 };
