@@ -29,20 +29,20 @@ model = get_maggy_model(params);
 %% --- OCP SETUP ---
 fprintf('\n--- Setting up OCP ---\n');
 
-N      = 20;
-Tf     = N * dt;
-dt_mpc = dt;
+N      = 10;
+Tf     = 0.01;
+dt_mpc = Tf / N;   % 0.01 s
 
 ocp = AcadosOcp();
 ocp.model = model;
 
 ocp.solver_options.N_horizon             = N;
 ocp.solver_options.tf                    = Tf;
-ocp.solver_options.integrator_type       = 'ERK';
+ocp.solver_options.integrator_type       = 'IRK';
 ocp.solver_options.sim_method_num_stages = 4;
-ocp.solver_options.sim_method_num_steps  = 1;
-ocp.solver_options.nlp_solver_type       = 'SQP';
-ocp.solver_options.nlp_solver_max_iter   = 100;
+ocp.solver_options.sim_method_num_steps  = 2;
+ocp.solver_options.nlp_solver_type       = 'SQP_RTI';
+%ocp.solver_options.nlp_solver_max_iter   = 100;
 ocp.solver_options.qp_solver             = 'PARTIAL_CONDENSING_HPIPM';
 ocp.solver_options.hessian_approx        = 'GAUSS_NEWTON';
 
@@ -103,15 +103,16 @@ sim_solver = AcadosSimSolver(sim);
 
 
 %% --- Simulation loop ---
-N_sim = 200;
-x_sim = zeros(nx, N_sim+1);
+N_sim = numel(t);
+x_sim = zeros(nx, N_sim);
 u_sim = zeros(nu, N_sim);
 
-x_sim(:,1) = x0;
+x = x0;
+u = uEq;
 
 for i = 1:N_sim
     % Update initial state constraint
-    ocp_solver.set('constr_x0', x_sim(:,i));
+    ocp_solver.set('constr_x0', x);
 
     % Solve OCP
     ocp_solver.solve();
@@ -125,19 +126,16 @@ for i = 1:N_sim
     u_sim(:,i) = u;
 
     % Simulate one step with plant model
-    sim_solver.set('x', x_sim(:,i));
-    sim_solver.set('u', u);
-    sim_solver.solve();
-    x_sim(:,i+1) = sim_solver.get('xn');
+    x = sim_solver.simulate(x,u);
+    x_sim(:,i) = x;
 
     % --- Divergence check ---
-    xn = x_sim(:,i+1);
-    diverged = abs(xn(3)) > 0.5       || ...
-               max(abs(xn(4:5))) > pi  || ...
-               any(isnan(xn))          || ...
-               any(isinf(xn));
+    diverged = abs(x(3)) > 0.5       || ...
+               max(abs(x(4:5))) > pi  || ...
+               any(isnan(x))          || ...
+               any(isinf(x));
 
-    fprintf('Step %3d: |x|=%.4e  status=%d\n', i, norm(xn([1:5,7:11])), status);
+    fprintf('Step %3d: |x|=%.4e  status=%d\n', i, norm(x([1:5,7:11])), status);
 
     if diverged
         fprintf('  *** DIVERGED at step %d ***\n', i);
@@ -148,7 +146,7 @@ end
 %% --- SAVE ---
 save_filename   = 'results_acados_mpc.mat';
 sim_data        = struct();
-ylsim_data.t      = [t, t(end)+dt];  % x_traj has numel(t)+1 columns (x0 + one per step)
+sim_data.t      = t;  % x_traj has numel(t)+1 columns (x0 + one per step)
 sim_data.x      = x_sim;
 sim_data.u      = u_sim;
 sim_data.xEq    = xEq;

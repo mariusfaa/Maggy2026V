@@ -20,43 +20,48 @@ addpath(genpath(fullfile(project_root, 'utilities')));
 
 import casadi.*
 
+save_filename   = 'results_acados_u_on.mat';
+u0 = -ones(nu,1)*1;
+
+% save_filename   = 'results_acados_u_off.mat';
+% u0 = zeros(nu,1);
+
 %% --- Model setup ---
 
 fprintf('--- Setting up model ---\n');
 
-model = get_maggy_model(params);
+if ~exist("model","var")
+    model = get_maggy_model(params);
+end
 
 %% --- BUILD / REUSE SIM SOLVER ---
 
 fprintf('\n--- Building acados sim solver ---\n');
 
-sim = AcadosSim();
-sim.model = model;
-
-sim.solver_options.Tsim            = dt;
-sim.solver_options.integrator_type = 'ERK';
-sim.solver_options.num_stages      = 4;
-sim.solver_options.num_steps       = 1;   % match OCP integrator
-
-sim_solver = AcadosSimSolver(sim);
-
-u = u0;
-x = x0;
+if ~exist("sim","var") || ~exist("sim_solver","var")
+    sim = AcadosSim();
+    sim.model = model;
+    
+    sim.solver_options.Tsim            = dt;
+    sim.solver_options.integrator_type = 'ERK';
+    sim.solver_options.num_stages      = 4;
+    sim.solver_options.num_steps       = 1;   % match OCP integrator
+    
+    sim_solver = AcadosSimSolver(sim);
+end
 
 x_traj = zeros(nx,numel(t));
 u_traj = zeros(nu,numel(t));
 
-x_traj(:,1)=x0;
-u_traj(:,1)=u0;
+u = u0;
+x = x0;
 
 for i=1:numel(t)
-    sim_solver.set('x', x);
-    sim_solver.set('u', u);
-    sim_solver.solve();
-    x = sim_solver.get('xn');
+    % simulate step
+    x = sim_solver.simulate(x,u);
 
-    x_traj(:,i+1)=x;
-    u_traj(:,i+1)=u;
+    x_traj(:,i)=x;
+    u_traj(:,i)=u;
 
     % --- Divergence check ---
     diverged = abs(x(3)) > 0.5       || ...
@@ -72,9 +77,8 @@ for i=1:numel(t)
 end
 
 %% --- SAVE ---
-save_filename   = 'results_acados.mat';
 sim_data        = struct();
-sim_data.t      = [t, t(end)+dt];  % x_traj has numel(t)+1 columns (x0 + one per step)
+sim_data.t      = t;
 sim_data.x      = x_traj;
 sim_data.u      = u_traj;
 sim_data.xEq    = xEq;
