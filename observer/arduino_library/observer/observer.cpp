@@ -40,9 +40,10 @@ void runObserver(const float ux, const float uy, const float (*z)[NUMBER_MEASURE
   static int measCount = 0;
   ++measCount;
 
-  for (int i = 0; i < 3; ++i) {
-    meas(i) = z[0][i]*1e-3; // reading is in mT, but h(x) uses T
-  }
+  // reading is in mT, but h(x) uses T
+  meas(0) = z[0][0]*1e-3;   // bx
+  meas(1) = z[0][1]*1e-3;   // by
+  meas(2) = -z[0][2]*1e-3;  // bz; is inverted
 
   u(0) =  ux;
   u(1) =  uy;

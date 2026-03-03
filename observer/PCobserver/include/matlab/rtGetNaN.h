@@ -2,21 +2,31 @@
 // Academic License - for use in teaching, academic research, and meeting
 // course requirements at degree granting institutions only.  Not for
 // government, commercial, or other organizational use.
-// File: maglevModel_types.h
+// File: rtGetNaN.h
 //
 // MATLAB Coder version            : 25.2
-// C/C++ source code generated on  : 14-Feb-2026 17:04:30
+// C/C++ source code generated on  : 24-Feb-2026 11:41:58
 //
 
-#ifndef MAGLEVMODEL_TYPES_H
-#define MAGLEVMODEL_TYPES_H
+#ifndef RTGETNAN_H
+#define RTGETNAN_H
 
 // Include Files
 #include "rtwtypes.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern real_T rtGetNaN(void);
+extern real32_T rtGetNaNF(void);
+
+#ifdef __cplusplus
+}
+#endif
 #endif
 //
-// File trailer for maglevModel_types.h
+// File trailer for rtGetNaN.h
 //
 // [EOF]
 //

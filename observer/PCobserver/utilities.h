@@ -9,8 +9,14 @@
 
 using namespace arma;
 
-void increaseStateSpace(const vec *x, double x_pad[NUMBER_STATES]);
-void reduceStateSpace(const double x_pad[NUMBER_STATES], vec x);
-mat discretize_A(const mat A, const double dt);
-mat discretize_B(const mat A, const mat Ad, const mat B);
-mat van_loan(const mat A, const mat Q, const double dt);
+void increaseStateSpace(const vec &x, double x_pad[NUMBER_STATES]);
+void reduceStateSpace(const double x_pad[NUMBER_STATES], vec &x);
+mat calculateJacobian(const vec &x, const vec &u, const vec &curr, const double &dt = 0, const int &mode = 0);
+mat discretize_A(const mat &A, const double &dt);
+mat discretize_B(const mat &A, const mat &Ad, const mat &B);
+mat van_loan(const mat &A, const mat &Q, const double &dt);
+
+struct derivatives_struct {
+    vec *dx;      // continuous derivative
+    vec *x_next;  // discretized next value based on dx
+};

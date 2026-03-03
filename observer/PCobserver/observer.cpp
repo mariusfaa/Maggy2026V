@@ -1,26 +1,23 @@
 
-//#include "extendedKalmanFilter.h"
+#include "extendedKalmanFilter.h"
 #include "kalmanFilter.h"
 #include "matrices.h"
 #include "utilities.h"
-#include <chrono>
-
-using namespace std::chrono;
 
 volatile bool newSensorReading = false;
-volatile unsigned long observerTime = 0;
 double NIS = 0;
 
-//ExtendedKalmanFilter EKF;
 
 KalmanFilter KF(NUMBER_STATES_REDUCED, NUMBER_INPUTS, NUMBER_MEASUREMENTS);
+ExtendedKalmanFilter EKF(NUMBER_STATES_REDUCED, NUMBER_INPUTS, NUMBER_MEASUREMENTS);
+
 
 // Filter independent way of running an entire estimating cycle
 template<typename FilterType>
-vec runFilter(FilterType &filter, vec u, vec z) {
+vec runFilter(FilterType &filter, vec &u, vec &z) {
   filter.predict(u);
   filter.update(z);
-  NIS = filter.nis;
+  NIS = filter.getNIS();
   return filter.getState();
 }
 
@@ -38,14 +35,15 @@ void initObserver() {
   mat Qd = van_loan(get_A_fast(), get_Q(), dt);
 
   // Initialize filter
-  KF.init(x0, get_P0(), Ad, Bd, Qd, get_H(), get_R(), dt);
+  // KF.init(x0, get_P0(), Ad, Bd, Qd, get_H(), get_R());
+  EKF.init(x0, get_P0(), Ad, Bd, Qd, get_H_fast(), get_R(), dt);
 }
 
 
 // Stores estimates in provided stateEstimates array
-void runObserver(const float input[NUMBER_INPUTS], const float (*z)[NUMBER_MEASUREMENTS],
-    double *stateEstimates) {
-  //unsigned long start = micro;
+void runObserver(const double input[NUMBER_INPUTS], const double (*z)[NUMBER_MEASUREMENTS],
+    double stateEstimates[NUMBER_STATES]) {
+
   vec u(NUMBER_INPUTS);  // ux, uy, -ux, -uy
   u(0) = input[0];
   u(1) = input[1];
@@ -56,16 +54,14 @@ void runObserver(const float input[NUMBER_INPUTS], const float (*z)[NUMBER_MEASU
   static int measCount = 0;
   ++measCount;
 
-  for (int i = 0; i < 3; ++i) {
-    meas(i) = z[0][i]*1e-3; // reading is in mT, but h(x) uses T
-  }
+  // reading is in mT, but h(x) uses T
+  meas(0) = z[0][0]*1e-3;   // bx
+  meas(1) = z[0][1]*1e-3;   // by
+  meas(2) = -z[0][2]*1e-3;  // bz; is inverted
 
-  vec estimate = runFilter(KF, u, meas);
+  vec estimate = runFilter(EKF, u, meas);
 
   // Add back rotation around z axis as 0
-  increaseStateSpace(&estimate, stateEstimates);
-  //unsigned long stop = micros();
-
-  //observerTime = stop - start; // µs
+  increaseStateSpace(estimate, stateEstimates);
 }
 

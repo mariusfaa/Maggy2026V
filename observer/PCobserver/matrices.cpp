@@ -2,6 +2,7 @@
 #include "matrices.h"
 
 // Fast model
+// System matrix
 mat get_A_fast() {
   return {
   {0,0,0,0,0,1,0,0,0,0},
@@ -32,6 +33,7 @@ mat get_A_d() {
   };
 }
 
+// Input matrix
 mat get_B_fast() {
   return {
   {0,0,0,0},
@@ -62,7 +64,8 @@ mat get_B_d() {
   };
 }
 
-mat get_H() {
+// Measurement matrix
+mat get_H_fast() {
   return {
   {0.33798,0,-0.0066,0,0.00128,0,0,0,0,0},
   {0,0.33801,0,-0.00128,0,0,0,0,0,0},
@@ -71,7 +74,8 @@ mat get_H() {
 };
 
 
-// covariance matrices
+// Covariance matrices
+// Initial covariance
 mat get_P0() {
   return {
   {1,0,0,0,0,0,0,0,0,0},
@@ -87,6 +91,8 @@ mat get_P0() {
   };
 }
 
+
+// State transition covariance
 mat get_Q() {
  return {
   {1,0,0,0,0,0,0,0,0,0},
@@ -117,10 +123,22 @@ mat get_Q_d() {
   };
 }
 
+
+// Measurement covariance
 mat get_R() {
   return {
   {0.030519, 0, 0},
   {0, 0.041962, 0},
   {0, 0, 0.022074}
+  };
+}
+
+// State feedback gain
+mat get_K() {
+  return {
+  {-2657.578,-0,5.058,-0,265.896,0,23.322,-0,-4.98,-0,-0.534,0},
+  {0,-2657.578,5.058,-265.896,-0,0,0,23.322,-4.98,0.534,-0,0},
+  {2657.578,-0,5.058,-0,-265.896,0,-23.322,-0,-4.98,-0,0.534,0},
+  {0,2657.578,5.058,265.896,-0,0,0,-23.322,-4.98,-0.534,-0,0}
   };
 }

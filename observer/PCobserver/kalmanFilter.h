@@ -2,50 +2,73 @@
 #define KALMAN_FILTER_H
 
 #include <armadillo>
+#include <cstddef>
 #include "utilities.h"
 
 using namespace arma;
 
 class KalmanFilter {
-public:
-    int n;
-    int m;
-    int p;
+protected:
+    double dt;
+
+    size_t nx;
+    size_t nu;
+    size_t nz;
+
     vec x_est;
     vec x_pred;
     vec z_pred;
-    mat P;
+
     mat F;
     mat B;
-    mat Q;
     mat H;
+
+    mat P;
+    mat Q;
     mat R;
     mat S;
-    mat K;
-    double dt;
 
-    // Innovations
-    vec vi;
+    mat I;
+    mat W;
 
-    // Normalized innovations squared
-    double nis;
+    vec v; // Innovations
+    double nis; // Normalized innovations squared
 
+public:
     // Constructor
-    KalmanFilter(int numberStates, int numberInputs, int numberMeasurements) {
-        n = numberStates;
-        m = numberInputs;
-        p = numberMeasurements;
-    };
+    KalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements):
+        nx(numberStates),
+        nu(numberInputs),
+        nz(numberMeasurements),
+
+        x_est(arma::zeros(nx)),
+        x_pred(arma::zeros(nx)),
+        z_pred(arma::zeros(nz)),
+
+        F(arma::zeros(nx, nx)),
+        B(arma::zeros(nx, nu)),
+        H(arma::zeros(nz, nx)),
+
+        P(arma::eye(nx, nx)),
+        Q(arma::eye(nx, nx)),
+        R(arma::eye(nx, nx)),
+        S(arma::eye(nx, nx)),
+
+        I(arma::eye(nx,nx)),
+        W(arma::zeros(nx, nz))
+        {}
 
     // Initializing
-    void init(vec initialState,
+    virtual void init(vec initialState,
               mat initialCovariance,
               mat stateTransition,
               mat inputMatrix,
               mat processNoise,
               mat measurementMatrix,
               mat measurementNoise,
-              double discretizationTime) {
+              double discretizationTime
+              ) {
+        dt = discretizationTime;
         x_est = initialState;
         P = initialCovariance;
         F = stateTransition;
@@ -53,7 +76,6 @@ public:
         Q = processNoise;
         H = measurementMatrix;
         R = measurementNoise;
-        dt = discretizationTime;
     }
 
     // Prediction step
@@ -71,27 +93,26 @@ public:
         z_pred = H * x_pred;
 
         // Calculate innovation
-        vec v = z - z_pred;
+        v = z - z_pred;
 
         // Calculate innovation covariance
         S = H * P * H.t() + R;
 
         // Only use to calculate NIS; use solve otherwise
-        mat Sinv = inv(S, inv_opts::likely_sympd);
+        // mat Sinv = inv(S, inv_opts::likely_sympd);
 
         // Calculate Kalman gain
-        //K = P * H.t() * Sinv;
-        // S K^T = (P H^T)^T
-        K = solve(S, H*P, solve_opts::likely_sympd).t();
+        //W = P * H.t() * Sinv;
+        // S W^T = (P H^T)^T
+        W = solve(S, H*P, solve_opts::likely_sympd).t();
 
-        // Calculate NIS
-        calculateNIS(v, Sinv);
+        // calculateNIS(v, Sinv);
 
         // Update state estimate
-        x_est = x_pred + K * v;
+        x_est = x_pred + W * v;
 
         // Update covariance estimate
-        P = (eye(n,n) - K * H) * P;
+        P = (I - W * H) * P;
     }
 
     // Get state estimate
@@ -109,10 +130,24 @@ public:
         return P;
     }
 
+    // Get system matrix
+    mat getF() const {
+        return F;
+    }
+
+    // Get input matrix
+    mat getB() const {
+        return B;
+    }
+
     // Calculate normalised innovations squared
     void calculateNIS(vec &v, mat &Sinv) {
         //vi = Sinv*v;
         double nis = as_scalar(v.t()*Sinv*v);
+    }
+
+    double getNIS() const {
+        return nis;
     }
 };
 

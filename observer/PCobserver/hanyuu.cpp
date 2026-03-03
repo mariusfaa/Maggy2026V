@@ -1,9 +1,34 @@
 
+#include <algorithm>
 #include <armadillo>
+#include <cmath>
+#include <cstddef>
+#include <cstring>
 #include <iostream>
 #include "matrices.h"
+#include "include/matlab/maglevModel.h"
+#include "utilities.h"
+#include "integrator.h"
+#include <chrono>
 
 using namespace arma;
+using namespace std::chrono;
+
+mat rel_diff(const mat A, const mat B) {
+  double eps = 1e-12;
+  size_t n = A.n_rows;
+  size_t m = B.n_cols;
+  mat C = zeros(n, m);
+
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      double a = A(i, j);
+      double b = B(i, j);
+      C(i, j) = std::fabs(a - b)/std::max(std::max(std::fabs(a), std::fabs(b)), eps);
+    }
+  }
+  return C;
+}
 
 void AB_diff() {
   mat A_matlab = get_A_d();
@@ -22,7 +47,7 @@ void AB_diff() {
 
 mat van_loan() {
   mat A = get_A_fast();
-  int n = arma::size(A)[0];
+  int n = A.n_rows;
   double dt = 0.0005;
 
   mat M(2*n, 2*n, fill::zeros);
@@ -52,6 +77,74 @@ void Q_diff () {
   std::cout << diff << endl;
 }
 
+
+void jacobian_diff() {
+
+  mat A_matlab = get_A_fast();
+  mat F_matlab = get_A_d();
+  mat H_matlab = get_H_fast();
+
+  double dt = 0.0005;
+  double zEq = 0.030119178665731;
+
+  vec x = zeros(10);
+  double x_pad[12] = {};
+  x(2) = zEq;
+  x_pad[2] = zEq;
+
+  vec u = zeros(4);
+  vec dx_pad = zeros(12);
+  vec dx = zeros(10);
+  vec z = zeros(3);
+
+
+  maglevSystemDynamics_fast(x_pad, u.memptr(), dx_pad.memptr());
+  reduceStateSpace(dx_pad.memptr(), dx);
+
+  derivatives_struct s;
+  vec _dx = zeros(10);
+  vec x_next = zeros(10);
+  s.dx = &_dx;
+  s.x_next = &x_next;
+  eulerForward(x, u, dt, s);
+
+  maglevSystemMeasurements_fast(x_pad, u.memptr(), z.memptr());
+
+  mat Ac = calculateJacobian(x, u, dx);
+  mat F_redisc = arma::eye(10, 10) + Ac*dt;
+  mat F_redisc_good = discretize_A(Ac, dt);
+
+  mat F_ref = discretize_A(get_A_fast(), dt);
+  mat F = calculateJacobian(x, u, x_next, dt);
+  mat F1 = calculateJacobian(x, u, x_next, dt, 1);
+  mat F2 = calculateJacobian(x, u, x_next, dt, 2);
+
+  mat H = calculateJacobian(x, u, z);
+  mat H1 = calculateJacobian(x, u, z, 0, 1);
+  mat H2 = calculateJacobian(x, u, z, 0, 2);
+
+
+  mat diffF = F_redisc_good - F_ref;
+  mat diffF1 = F1 - F_ref;
+  mat diffF2 = F2 - F_ref;
+
+  mat diffH = H - H_matlab;
+  mat diffH1 = H1 - H_matlab;
+  mat diffH2 = H2 - H_matlab;
+
+  std::cout << F << endl;
+  std::cout << "============================" << endl;
+  std::cout << F_ref << endl;
+  std::cout << "============================" << endl;
+  std::cout << diffF << endl;
+  // std::cout << diffH << endl;
+  // std::cout << "============================" << endl;
+  // std::cout << diffH1 << endl;
+  // std::cout << "============================" << endl;
+  // std::cout << diffH2 << endl;
+
+}
+
 int main() {
 
   vec a = {4, 5, 6};
@@ -66,10 +159,17 @@ int main() {
   mat Abottom = A.submat(2,0,2,2);
   mat Arecon(3,3); Arecon.col(0) = Aleft; Arecon.row(2) = Abottom; Arecon.submat(0,1,1,2) = Atr;
 
+  auto start = steady_clock::now();
+
   //AB_diff();
   //Q_diff();
-  std::cout << norm(get_A_fast()) << endl;
 
+  jacobian_diff();
+  
+
+  auto end = steady_clock::now();
+  auto duration = duration_cast<microseconds>(end - start);
+  std::cout << duration.count() << endl;
 
   return 0;
 }

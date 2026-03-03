@@ -2,60 +2,106 @@
 #define EXTENDED_KALMAN_FILTER_H
 
 #include "kalmanFilter.h"
-#include "discretizer.h"
+#include "integrator.h"
 #include "utilities.h"
-#include "maglevModel.h"
+#include "include/matlab/maglevModel.h"
+#include <armadillo>
 
 class ExtendedKalmanFilter: public KalmanFilter {
   using Base = KalmanFilter;
 
+private:
+  bool updateJacobians;
+  bool updateQ;
+
 protected:
+  vec dx;
+
   using Base::dt;
-  using Base::x;
+
+  using Base::nx;
+  using Base::nu;
+  using Base::nz;
+
+  using Base::x_est;
+  using Base::x_pred;
   using Base::z_pred;
-  using Base::I;
+
   using Base::F;
   using Base::H;
-  using Base::K;
+
   using Base::P;
   using Base::Q;
   using Base::R;
+  using Base::S;
+
+  using Base::I;
+  using Base::W;
 
 public:
+  derivatives_struct dxd;
+
   // Constructor
-  ExtendedKalmanFilter(): Base() {
-    maglevModel_initialize();
-  }
+  ExtendedKalmanFilter(int numberStates, int numberInputs, int numberMeasurements):
+    dx(arma::zeros(NUMBER_STATES_REDUCED)),
+    Base(numberStates, numberInputs, numberMeasurements) {
+      maglevModel_initialize();
+      dxd.dx = &dx;
+      dxd.x_next = &x_pred;
+      updateJacobians = 1;
+      updateQ = 0;
+    }
 
 
-  void predict(InputVector& u) override {
+  void predict(vec &u) override {
     // x = f(x,u)
-    x = eulerForward(x, u, dt);
+    eulerForward(x_est, u, dt, dxd);
+
+    // Calculates new F
+    if (updateJacobians) {
+      F = calculateJacobian(x_est, u, x_pred, dt);
+    }
 
     // P = F * P * F^T + Q
-    P = F * P * ~F + Q;
+    P = F * P * F.t() + Q;
   }
 
-  void update(MeasVector& z) override {
-    float x_pad[NUMBER_STATES];
-    increaseStateSpace(x, x_pad);
+  void update(vec &z) override {
+    double x_pad[NUMBER_STATES] = {};
+
+    // Assuming feedthrough is compensated for
+    vec u = zeros(nu);
+
     // z_pred = h(x)
-    maglevSystemMeasurements_fast(x_pad, z.storage, z_pred.storage);
+    increaseStateSpace(x_est, x_pad);
+    maglevSystemMeasurements_fast(x_pad, u.memptr(), z_pred.memptr());
+
+    // Calculates new H
+    if (updateJacobians) {
+      H = calculateJacobian(x_pred, u, z_pred);
+    }
 
     // Calculate innovation
-    MeasVector v = z - z_pred;
+    v = z - z_pred;
 
     // Calculate innovation covariance
-    R_type S = H * P * ~H + R;
+    S = H * P * H.t() + R;
+
+    // Only use to calculate NIS; use solve otherwise
+    // mat Sinv = inv(S, inv_opts::likely_sympd);
 
     // Calculate Kalman gain
-    K = P * ~H * Inverse(S);
+    //W = P * H.t() * Sinv;
+    // S W^T = (P H^T)^T
+    W = solve(S, H*P, solve_opts::likely_sympd).t();
+
+    // calculateNIS(v, Sinv);
 
     // Update state estimate
-    x = x + K * v;
+    x_est = x_pred + W * v;
 
     // Update covariance estimate
-    P = (I - K * H) * P;
+    P = (I - W * H) * P;
   }
 
 };
