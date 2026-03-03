@@ -1,0 +1,3 @@
+MODEL_FOLDER=${MODEL_FOLDER:-"$(pwd)/build"}
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ACADOS_INSTALL_DIR/lib:$MODEL_FOLDER
+export LD_RUN_PATH="$(pwd)"/c_generated_code

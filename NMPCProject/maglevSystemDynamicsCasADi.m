@@ -15,11 +15,15 @@ function dx = maglevSystemDynamicsCasADi(x, u, params)
 % Output:
 %   dx - State derivative (12x1 CasADi SX/MX)
 %
+% Requires params.luts field with pre-built CasADi BSpline lookup tables.
+% Build with: params.luts = buildCurrentSheetLuts(params);
+%
 % Example:
 %   import casadi.*
-%   x = SX.sym('x', 12);
-%   u = SX.sym('u', 4);
-%   params = load('params.mat');
+%   x = MX.sym('x', 12);
+%   u = MX.sym('u', 4);
+%   params = ...; % from parameter file
+%   params.luts = buildCurrentSheetLuts(params);
 %   dx = maglevSystemDynamicsCasADi(x, u, params);
 %
 % Author: Adapted for CasADi compatibility
@@ -146,110 +150,53 @@ function R = computeRotationMatrix(alpha, beta, gamma)
     R = mtimes(mtimes(Rz, Ry), Rx);
 end
 
-%% Helper function: Compute magnetic field from base
+%% Helper function: Compute magnetic field from base (LUT-based current sheet)
 function [bx, by, bz] = computeMagneticField(x, y, z, u, params)
 
-    n_points = length(x);
-    
-    % Initialize field components
-    bx = zeros(1, n_points);
-    by = zeros(1, n_points);
-    bz = zeros(1, n_points);
-    
-    mu0 = params.physical.mu0;
-    
-    %% Contribution from permanent magnets
-    n_perm = length(params.permanent.r);
-    for i = 1:n_perm
-        I_perm = params.permanent.J / mu0 * params.permanent.l(i);
-        
-        % Compute field from this permanent magnet
-        [bx_temp, by_temp, bz_temp] = computeCircularWireField(...
-            x - params.permanent.x(i), ...
-            y - params.permanent.y(i), ...
-            z - params.permanent.z(i), ...
-            params.permanent.r(i), ...
-            I_perm, ...
-            mu0);
-        
-        bx = bx + bx_temp;
-        by = by + by_temp;
-        bz = bz + bz_temp;
-    end
-    
-    %% Contribution from solenoids (controlled)
+    import casadi.*
+
+    n     = length(x);  % magnet_n
     n_sol = length(params.solenoids.r);
+    eps_val = 1e-9;
+
+    %% Permanent magnets — 3D Cartesian LUT (combined field, pre-baked)
+    % Input: global (x,y,z) coordinates directly — no polar conversion
+    % Output: (bx,by,bz) total from all permanent magnets, ready to use
+    result_perm = params.luts.perm_3d_map([x; y; z]);   % 3×n
+    bx = result_perm(1,:);
+    by = result_perm(2,:);
+    bz = result_perm(3,:);
+
+    %% Solenoids — 2D polar LUT (per-source, nw pre-baked)
+    dx_parts = cell(1, n_sol);
+    dy_parts = cell(1, n_sol);
+    dz_parts = cell(1, n_sol);
     for i = 1:n_sol
-        I_sol = u(i);
-        
-        % Compute field from this solenoid
-        [bx_temp, by_temp, bz_temp] = computeCircularWireField(...
-            x - params.solenoids.x(i), ...
-            y - params.solenoids.y(i), ...
-            z - params.solenoids.z(i), ...
-            params.solenoids.r(i), ...
-            I_sol, ...
-            mu0);
-        
-        % Multiply by number of windings
-        bx = bx + bx_temp * params.solenoids.nw;
-        by = by + by_temp * params.solenoids.nw;
-        bz = bz + bz_temp * params.solenoids.nw;
+        dx_parts{i} = x - params.solenoids.x(i);
+        dy_parts{i} = y - params.solenoids.y(i);
+        dz_parts{i} = z - params.solenoids.z(i);
     end
-end
+    all_dx  = horzcat(dx_parts{:});
+    all_dy  = horzcat(dy_parts{:});
+    all_dz  = horzcat(dz_parts{:});
+    all_rho = sqrt(all_dx.^2 + all_dy.^2);
 
-%% Helper function: Magnetic field from circular wire
-function [bx, by, bz] = computeCircularWireField(x, y, z, r, I, mu0)
+    % Single call: nw pre-baked, only need to multiply by u(i) per source
+    result   = params.luts.sol_field_map([all_dz; all_rho]);
+    all_brho = result(1,:);
+    all_bz_f = result(2,:);
 
-    % Convert to polar coordinates
-    rho = sqrt(x.^2 + y.^2);
-    phi = atan2(y, x);
-    
-    % Compute field in polar coordinates
-    [bPhi, bRho, bz] = computeCircularWireFieldPolar(rho, z, r, I, mu0);
-    
-    % Convert back to Cartesian coordinates
-    bx = bRho .* cos(phi) - bPhi .* sin(phi);
-    by = bRho .* sin(phi) + bPhi .* cos(phi);
-end
+    % Polar → Cartesian (done once for all solenoids)
+    all_bx = all_brho .* (all_dx ./ (all_rho + eps_val));
+    all_by = all_brho .* (all_dy ./ (all_rho + eps_val));
 
-%% Helper function: Magnetic field in polar coordinates
-function [bphi, brho, bz] = computeCircularWireFieldPolar(rho, z, r, I, mu0)
-
-    % Handle rho ≈ 0 case with smooth transition
-    tol = 1e-6;
-    
-    % Coefficient
-    c = mu0 * I / (4 * pi * sqrt(r .* rho));
-    
-    % Compute k^2 parameter for elliptic integrals
-    k2 = 4 * r * rho ./ ((r + rho).^2 + z.^2);
-    k2 = fmin(fmax(k2, 0), 1 - 1e-9);  % Clamp to valid range
-    
-    % Compute elliptic integrals using CasADi-compatible version
-    [K, E] = ellipke_casadi(k2);
-    
-    % Magnetic field components (general case, rho != 0)
-    sqrt_k2 = sqrt(k2);
-    denominator = (rho - r).^2 + z.^2;
-    
-    brho = -(z ./ rho) .* c .* sqrt_k2 .* ...
-           (K - (rho.^2 + r^2 + z.^2) ./ denominator .* E);
-    
-    bz = c .* sqrt_k2 .* ...
-         (K - (rho.^2 - r^2 + z.^2) ./ denominator .* E);
-    
-    % For rho ≈ 0, use analytical solution on axis
-    % Use smooth transition with tanh or if_else
-    axis_bz = mu0 * r^2 * I ./ (2 * (r^2 + z.^2).^(3/2));
-    
-    % Smooth blending (you can also use if_else for piecewise)
-    weight = 0.5 * (1 + tanh((rho - tol) / (tol/10)));
-    brho = brho .* weight;
-    bz = bz .* weight + axis_bz .* (1 - weight);
-    
-    % bphi is always zero due to axial symmetry
-    bphi = 0 * rho;  % Ensures correct symbolic dimension
+    % Scale per-solenoid by u(i) only (nw already baked in)
+    for i = 1:n_sol
+        idx = (i-1)*n + (1:n);
+        bx = bx + all_bx(idx) * u(i);
+        by = by + all_by(idx) * u(i);
+        bz = bz + all_bz_f(idx) * u(i);
+    end
 end
 
 %% Helper function: Cross product for 3D vectors (matrix form)
