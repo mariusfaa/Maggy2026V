@@ -1,6 +1,6 @@
 %% --- Compare any two simulation result files ---
 
-clear; clc;
+% clear; clc;
 
 %% ==========================================================
 %% Settings
