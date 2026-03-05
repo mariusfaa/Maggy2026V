@@ -8,34 +8,42 @@
 using namespace arma;
 
 class KalmanFilter {
+private:
+    bool useSRformulation;
+
 protected:
-    double dt;
+    double dt; // Discretization time
 
-    size_t nx;
-    size_t nu;
-    size_t nz;
+    size_t nx; // Number of states
+    size_t nu; // Number of inputs
+    size_t nz; // Number of measurements
 
-    vec x_est;
-    vec x_pred;
-    vec z_pred;
+    vec x_est;  // Estimated states
+    vec x_pred; // Predicted states
+    vec z_pred; // Predicted measurements
 
-    mat F;
-    mat B;
-    mat H;
+    mat F; // State transition matrix
+    mat B; // Input matrix
+    mat H; // Measurement matrix
 
-    mat P;
-    mat Q;
-    mat R;
-    mat S;
+    mat P; // Prediction/estimate covariance
+    mat Q; // Process covariance
+    mat R; // Measurement covariance
+    mat S; // Innovation covariance
 
-    mat I;
-    mat W;
+    // Square roots of covariances
+    mat Ps;
+    mat Qs;
+    mat Rs;
+    mat Ss;
+
+    mat I; // Identity matrix
+    mat W; // Kalman gain
 
     vec v; // Innovations
     double nis; // Normalized innovations squared
 
 public:
-    // Constructor
     KalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements):
         nx(numberStates),
         nu(numberInputs),
@@ -51,14 +59,20 @@ public:
 
         P(arma::eye(nx, nx)),
         Q(arma::eye(nx, nx)),
-        R(arma::eye(nx, nx)),
-        S(arma::eye(nx, nx)),
+        R(arma::eye(nz, nz)),
+        S(arma::eye(nz, nz)),
 
-        I(arma::eye(nx,nx)),
+        Ps(arma::eye(nx, nx)),
+        Qs(arma::eye(nx, nx)),
+        Rs(arma::eye(nz, nz)),
+        Ss(arma::eye(nz, nz)),
+
+        I(arma::eye(nx, nx)),
         W(arma::zeros(nx, nz))
-        {}
+        {
+        useSRformulation = 1;
+        }
 
-    // Initializing
     virtual void init(vec &initialState,
               mat &initialCovariance,
               mat &stateTransition,
@@ -76,44 +90,66 @@ public:
         Q = processNoise;
         H = measurementMatrix;
         R = measurementNoise;
+
+        Ps = chol(P);
+        Qs = chol(Q);
+        Rs = chol(R);
     }
 
-    // Prediction step
     virtual void predict(vec &u) {
-        // x = F * x + B * u
+        // Predict mean
         x_pred = F * x_est + B * u;
 
-        // P = F * P * F^T + Q
-        P = F * P * F.t() + Q;
+        // Predict covariance
+        if (useSRformulation) {
+            Ps = QRr(join_vert(Ps*F.t(), Qs));
+        }
+        else {
+            P = F * P * F.t() + Q;
+        }
     }
 
-    // Update step
     virtual void update(vec &z) {
         // Predicted measurement
         z_pred = H * x_pred;
 
-        // Calculate innovation
+        // Innovation
         v = z - z_pred;
 
-        // Calculate innovation covariance
-        S = H * P * H.t() + R;
+        // Innovation covariance
+        if (useSRformulation) {
+            Ss = QRr(join_vert(Ps*H.t(), Rs));
+        }
+        else {
+            S = H * P * H.t() + R;
+        }
 
         // Only use to calculate NIS; use solve otherwise
         // mat Sinv = inv(S, inv_opts::likely_sympd);
 
         // Calculate Kalman gain
         //W = P * H.t() * Sinv;
-        // S W^T = (P H^T)^T
-        W = solve(S, H*P, solve_opts::likely_sympd).t();
-
+        if (useSRformulation) {
+          mat _temp = solve(trimatl(Ss.t()), H);
+          mat __temp = solve(trimatu(Ss), _temp);
+          W = (__temp*Ps.t()*Ps).t();
+        }
+        else {
+            W = solve(S, H*P, solve_opts::likely_sympd).t();
+        }
         // calculateNIS(v, Sinv);
 
         // Update state estimate
         x_est = x_pred + W * v;
 
         // Update covariance estimate
-        // P = (I - W * H) * P;
-        P = (I - W*H) * P * (I - W*H).t() + W*R*W.t();
+        if (useSRformulation) {
+            Ps = QRr(join_vert(Ps*(I-W*H).t(), Rs*W.t()));
+        }
+        else {
+            // P = (I - W * H) * P;
+            P = (I - W*H) * P * (I - W*H).t() + W*R*W.t();
+        }
     }
 
     // Get state estimate

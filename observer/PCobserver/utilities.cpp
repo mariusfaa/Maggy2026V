@@ -152,7 +152,7 @@ mat discretize_B(const mat &A, const mat &Ad, const mat &B) {
 
 
 // Using van-loan's method to discretize process covariance matrix
-mat van_loan(const mat &A, const mat &Q, const double &dt) {
+van_loan_struct van_loan(const mat &A, const mat &Q, const double &dt) {
   size_t n = A.n_rows;
 
   mat M(2*n, 2*n, arma::fill::zeros);
@@ -163,13 +163,32 @@ mat van_loan(const mat &A, const mat &Q, const double &dt) {
   mat phi = expmat(M*dt);
   mat phi12 = phi.submat(0, n, n-1, 2*n-1);
   mat phi22 = phi.submat(n, n, 2*n-1, 2*n-1);
+  
+  mat Ad = phi22.t();
 
-  mat Qd = phi22.t()*phi12;
+  mat Qd = Ad*phi12;
+
+  // Averaging for symmetry. Small regularization for positive definiteness
+  Qd = (Qd + Qd.t())*0.5 + eye(n, n)*1e-9;
 
   if (!Qd.is_sympd()) {
     std::cout << "Qd is not symmetric positive definite!" << endl;
   }
 
-  return Qd;
+  return {Qd, Ad};
+}
+
+// Does QR decomposition and extracts the upper triangular nxn part of R when input is rectangular mxn
+mat QRr(const mat &X) {
+  mat _Q;
+  mat _R;
+
+  size_t n = X.n_cols;
+
+  qr(_Q, _R, X);
+
+  mat output = _R.submat(0, 0, n-1, n-1);
+
+  return output;
 }
 

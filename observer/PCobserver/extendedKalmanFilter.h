@@ -15,9 +15,10 @@ class ExtendedKalmanFilter: public KalmanFilter {
 private:
   bool updateJacobians;
   bool updateQ;
+  bool useSRformulation;
 
 protected:
-  vec dx;
+  vec dx; // Continuous derivatives
 
   using Base::dt;
 
@@ -37,13 +38,17 @@ protected:
   using Base::R;
   using Base::S;
 
+  using Base::Ps;
+  using Base::Qs;
+  using Base::Rs;
+  using Base::Ss;
+
   using Base::I;
   using Base::W;
 
 public:
   derivatives_struct dxd;
 
-  // Constructor
   ExtendedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements):
     dx(arma::zeros(NUMBER_STATES_REDUCED)),
     Base(numberStates, numberInputs, numberMeasurements) {
@@ -51,24 +56,38 @@ public:
       dxd.dx = &dx;
       dxd.x_next = &x_pred;
       updateJacobians = 1;
-      updateQ = 0;
+      updateQ = 1;
+      useSRformulation = 1;
     }
 
 
   void predict(vec &u) override {
-    // x = f(x,u)
+    // Predict mean
     eulerForward(x_est, u, dt, dxd);
 
-    mat Ac;
     // Calculates new F
     if (updateJacobians) {
-      // Ac = calculateJacobian(x_est, u, x_pred, 0, 2);
-      // F = discretize_A(Ac, dt);
-      F = calculateJacobian(x_est, u, x_pred, dt, 2);
+      mat Ac = calculateJacobian(x_est, u, x_pred, 0, 2);
+      if (updateQ) {
+        van_loan_struct vls = van_loan(Ac, Q, dt);
+        F = vls.Ad;
+        Q = vls.Qd;
+        if (useSRformulation) {
+          Qs = chol(Q);
+        }
+      } else {
+        F = discretize_A(Ac, dt);
+      }
+      // F = calculateJacobian(x_est, u, x_pred, dt, 2);
     }
 
-    // P = F * P * F^T + Q
-    P = F * P * F.t() + Q;
+    // Predict covariance
+    if (useSRformulation) {
+      Ps = QRr(join_vert(Ps*F.t(), Qs));
+    }
+    else {
+      P = F * P * F.t() + Q;
+    }
   }
 
   void update(vec &z) override {
@@ -86,19 +105,37 @@ public:
       H = calculateJacobian(x_pred, u, z_pred, 0, 2);
     }
 
-    // Calculate innovation
+    // Innovation
     v = z - z_pred;
 
-    // Calculate innovation covariance
-    S = H * P * H.t() + R;
+    // Innovation covariance
+    if (useSRformulation) {
+        Ss = QRr(join_vert(Ps*H.t(), Rs));
+    }
+    else {
+        S = H * P * H.t() + R;
 
+        // Averaging for symmetry. Small regularization for positive definiteness
+        S = (S + S.t())*0.5 + eye(nz, nz)*1e-9;
+        if (!S.is_sympd()) {
+          std::cout << "S is not symmetric positive definite!" << endl;
+        }
+    }
+
+    
     // Only use to calculate NIS; use solve otherwise
     // mat Sinv = inv(S, inv_opts::likely_sympd);
 
     // Calculate Kalman gain
     //W = P * H.t() * Sinv;
-    // S W^T = (P H^T)^T
-    W = solve(S, H*P, solve_opts::likely_sympd).t();
+    if (useSRformulation) {
+      mat _temp = solve(trimatl(Ss.t()), H);
+      mat __temp = solve(trimatu(Ss), _temp);
+      W = (__temp*Ps.t()*Ps).t();
+    }
+    else {
+      W = solve(S, H*P, solve_opts::likely_sympd).t();
+    }
 
     // calculateNIS(v, Sinv);
 
@@ -106,8 +143,13 @@ public:
     x_est = x_pred + W * v;
 
     // Update covariance estimate
-    // P = (I - W * H) * P;
-    P = (I - W*H) * P * (I - W*H).t() + W*R*W.t();
+    if (useSRformulation) {
+      Ps = QRr(join_vert(Ps*(I-W*H).t(), Rs*W.t()));
+    }
+    else {
+      // P = (I - W * H) * P;
+      P = (I - W*H) * P * (I - W*H).t() + W*R*W.t();
+    }
   }
 
 };

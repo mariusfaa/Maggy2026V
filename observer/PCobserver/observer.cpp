@@ -30,9 +30,10 @@ void initObserver() {
   vec x0(NUMBER_STATES_REDUCED, fill::zeros);
 
   // Discretizing system
-  mat Ad = discretize_A(get_A_fast(), dt);
+  van_loan_struct vls = van_loan(get_A_fast(), get_Q(), dt);
+  mat Ad = vls.Ad;
+  mat Qd = vls.Qd;
   mat Bd = discretize_B(get_A_fast(), Ad, get_B_fast());
-  mat Qd = van_loan(get_A_fast(), get_Q(), dt);
 
   mat P0 = get_P0();
   mat H = get_H_fast();

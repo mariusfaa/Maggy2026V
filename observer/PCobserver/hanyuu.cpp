@@ -158,6 +158,7 @@ int main() {
   mat Aleft = A.submat(0,0,2,0);
   mat Abottom = A.submat(2,0,2,2);
   mat Arecon(3,3); Arecon.col(0) = Aleft; Arecon.row(2) = Abottom; Arecon.submat(0,1,1,2) = Atr;
+  mat vcat = join_vert(a.t(), A);
 
   auto start = steady_clock::now();
 
@@ -165,7 +166,7 @@ int main() {
   //Q_diff();
 
   jacobian_diff();
-  
+
 
   auto end = steady_clock::now();
   auto duration = duration_cast<microseconds>(end - start);
