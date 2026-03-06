@@ -1,6 +1,8 @@
 %% validate_field_base.m
 % Step 4: Validate CasADi computeFieldBase_casadi vs MATLAB computeFieldBase
 %
+% Tests the .map()-based field computation against the MATLAB reference.
+%
 % Pass criteria: max relative error < 1%
 
 % clear; clc;
@@ -13,12 +15,14 @@ load_params(MaglevModel.Accurate);
 
 luts = buildLuts(params);
 params.luts = luts;
-nEval = params.luts.nEval;
+
+%% Test parameters
+nTest = 500;
 
 %% Build CasADi function for evaluation
-px_sym = MX.sym('px', 1, nEval);
-py_sym = MX.sym('py', 1, nEval);
-pz_sym = MX.sym('pz', 1, nEval);
+px_sym = MX.sym('px', 1, nTest);
+py_sym = MX.sym('py', 1, nTest);
+pz_sym = MX.sym('pz', 1, nTest);
 u_sym  = MX.sym('u', 4, 1);
 
 [bx_sym, by_sym, bz_sym] = computeFieldBase_casadi(px_sym, py_sym, pz_sym, u_sym, params);
@@ -44,9 +48,9 @@ xy_max = params.lut_opts.perm3d_xy * 0.9;
 z_lo   = params.lut_opts.perm3d_z(1) + 0.001;
 z_hi   = params.lut_opts.perm3d_z(2) - 0.001;
 
-x_test = (2*rand(1, nEval) - 1) * xy_max;
-y_test = (2*rand(1, nEval) - 1) * xy_max;
-z_test = z_lo + rand(1, nEval) * (z_hi - z_lo);
+x_test = (2*rand(1, nTest) - 1) * xy_max;
+y_test = (2*rand(1, nTest) - 1) * xy_max;
+z_test = z_lo + rand(1, nTest) * (z_hi - z_lo);
 
 %% Head-to-head diagnostic
 fprintf('\n--- HEAD-TO-HEAD (u=0, first 3 pts) ---\n');
@@ -72,7 +76,7 @@ end
 fprintf('--- END HEAD-TO-HEAD ---\n');
 
 %% Main test
-fprintf('\n=== Step 4: CasADi Field Base vs MATLAB ===\n');
+fprintf('\n=== Step 4: CasADi Field Base (.map) vs MATLAB ===\n');
 all_pass = true;
 
 for c = 1:length(u_configs)

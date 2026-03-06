@@ -20,25 +20,21 @@ addpath(genpath(fullfile(project_root, 'utilities')));
 
 import casadi.*
 
-save_filename   = 'results_acados_u_on.mat';
-u0 = -ones(nu,1)*1;
-
-% save_filename   = 'results_acados_u_off.mat';
-% u0 = zeros(nu,1);
+save_filename   = 'results_acados.mat';
 
 %% --- Model setup ---
 
 fprintf('--- Setting up model ---\n');
 
 if ~exist("model","var")
-    model = get_maggy_model(params);
+    model = get_maggy_model(params, MaglevModel.Fast);
 end
 
 %% --- BUILD / REUSE SIM SOLVER ---
 
 fprintf('\n--- Building acados sim solver ---\n');
 
-if ~exist("sim","var") || ~exist("sim_solver","var")
+if ~exist("sim_solver","var")
     sim = AcadosSim();
     sim.model = model;
     
@@ -57,11 +53,12 @@ u = u0;
 x = x0;
 
 for i=1:numel(t)
-    % simulate step
-    x = sim_solver.simulate(x,u);
-
+    % record state BEFORE stepping (so x_traj(:,1) = x0 at t=0)
     x_traj(:,i)=x;
     u_traj(:,i)=u;
+
+    % simulate step
+    x = sim_solver.simulate(x,u);
 
     % --- Divergence check ---
     diverged = abs(x(3)) > 0.5       || ...

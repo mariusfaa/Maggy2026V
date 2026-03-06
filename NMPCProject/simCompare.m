@@ -6,10 +6,10 @@
 %% Settings
 %% ==========================================================
 
-file1 = "results_acados_u_on.mat";
-file2 = "results_acados_u_off.mat";
+file1 = "results_acados.mat";
+file2 = "results_ode.mat";
 
-T_end = 0;   % 0 = auto
+T_end = 0.05;   % 0 = auto
 
 %% ==========================================================
 %% Load files

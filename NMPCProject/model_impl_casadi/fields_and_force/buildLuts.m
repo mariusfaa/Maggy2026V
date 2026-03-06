@@ -9,6 +9,8 @@ function luts = buildLuts(params)
 %   2. Single 2D polar LUT for solenoids (shared geometry):
 %      Input (z,rho) -> output (brho,bz) per unit current, nw pre-baked.
 %
+% Also creates split single-output interpolants for efficient .map() usage.
+%
 % Caching: Grid data is saved to lut_cache.mat alongside this file.
 %   On subsequent calls, if parameters match, interpolants are rebuilt
 %   from cached data (fast) instead of recomputing the field grid (slow).
@@ -16,7 +18,7 @@ function luts = buildLuts(params)
 import casadi.*
 
     opts = params.lut_opts;
-    nEval = opts.nRadial * opts.nAxial;
+    nEval = params.magnet.n * opts.nAxial;
 
     % Build fingerprint of all parameters that affect LUT data
     fp = buildFingerprint(params);
@@ -37,24 +39,20 @@ import casadi.*
         % --- Load from cache ---
         fprintf('Loading LUTs from cache...\n');
         cache = load(cache_file);
-
-        % Recreate CasADi interpolants from cached grid data (fast)
-        luts.perm_3d = interpolant('perm3d', opts.method, ...
-            {cache.perm_x_vec, cache.perm_y_vec, cache.perm_z_vec}, ...
-            cache.perm_data);
-
-        luts.sol_field = interpolant('field_sol', opts.method, ...
-            {cache.sol_z_vec, cache.sol_rho_vec}, cache.sol_data);
-
-        fprintf('LUTs loaded from cache (method=%s, nEval=%d).\n', ...
-            opts.method, nEval);
+        perm_x_vec = cache.perm_x_vec;
+        perm_y_vec = cache.perm_y_vec;
+        perm_z_vec = cache.perm_z_vec;
+        perm_data  = cache.perm_data;
+        sol_z_vec   = cache.sol_z_vec;
+        sol_rho_vec = cache.sol_rho_vec;
+        sol_data    = cache.sol_data;
     else
         % --- Build from scratch ---
 
         % 3D combined permanent magnet LUT
         fprintf('Building 3D combined permanent magnet LUT (%dx%dx%d grid)...\n', ...
                 opts.perm3d_N_xy, opts.perm3d_N_xy, opts.perm3d_N_z);
-        [luts.perm_3d, perm_x_vec, perm_y_vec, perm_z_vec, perm_data] = ...
+        [~, perm_x_vec, perm_y_vec, perm_z_vec, perm_data] = ...
             buildCombinedPermanentMagnetLut(params, opts);
         fprintf('  Done.\n');
 
@@ -66,7 +64,7 @@ import casadi.*
 
         fprintf('Building 2D solenoid LUT (r=%.4f, l=%.4f, nw=%d)...\n', ...
                 sol_r, sol_l, nw);
-        [luts.sol_field, sol_z_vec, sol_rho_vec, sol_data] = ...
+        [~, sol_z_vec, sol_rho_vec, sol_data] = ...
             buildSingleLut2D(sol_r, sol_l, mu0, opts, 'sol', nw);
 
         % Save cache
@@ -74,18 +72,37 @@ import casadi.*
         save(cache_file, 'fingerprint', ...
              'perm_x_vec', 'perm_y_vec', 'perm_z_vec', 'perm_data', ...
              'sol_z_vec', 'sol_rho_vec', 'sol_data', '-v7.3');
-        fprintf('LUT cache saved to %s\n', cache_file);
-
-        fprintf('LUT construction complete (method=%s, nEval=%d).\n', ...
-                opts.method, nEval);
+        fprintf('LUT cache saved.\n');
     end
 
-    % Create mapped versions and store discretization params
-    luts.perm_3d_map = luts.perm_3d.map(nEval);
-    luts.sol_field_map = luts.sol_field.map(nEval);
-    luts.nRadial = opts.nRadial;
+    % --- Create all interpolants from grid data ---
+
+    % Combined multi-output interpolants (for validation / backward compat)
+    luts.perm_3d = interpolant('perm3d', opts.method, ...
+        {perm_x_vec, perm_y_vec, perm_z_vec}, perm_data);
+    luts.sol_field = interpolant('field_sol', opts.method, ...
+        {sol_z_vec, sol_rho_vec}, sol_data);
+
+    % Split single-output interpolants (for .map() usage)
+    % perm_data layout: [BX(1),BY(1),BZ(1), BX(2),BY(2),BZ(2), ...]
+    luts.perm_bx = interpolant('perm_bx', opts.method, ...
+        {perm_x_vec, perm_y_vec, perm_z_vec}, perm_data(1:3:end));
+    luts.perm_by = interpolant('perm_by', opts.method, ...
+        {perm_x_vec, perm_y_vec, perm_z_vec}, perm_data(2:3:end));
+    luts.perm_bz = interpolant('perm_bz', opts.method, ...
+        {perm_x_vec, perm_y_vec, perm_z_vec}, perm_data(3:3:end));
+
+    % sol_data layout: [BRHO(1),BZ(1), BRHO(2),BZ(2), ...]
+    luts.sol_brho = interpolant('sol_brho', opts.method, ...
+        {sol_z_vec, sol_rho_vec}, sol_data(1:2:end));
+    luts.sol_bz = interpolant('sol_bz', opts.method, ...
+        {sol_z_vec, sol_rho_vec}, sol_data(2:2:end));
+
+    % Store discretization parameters
     luts.nAxial  = opts.nAxial;
     luts.nEval   = nEval;
+
+    fprintf('LUTs ready (method=%s, nEval=%d).\n', opts.method, nEval);
 end
 
 %% Build fingerprint struct of all parameters that affect LUT data

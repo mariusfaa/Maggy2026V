@@ -28,7 +28,7 @@ params.magnet.l     = 0.0040;
 params.magnet.J     = -1.1;
 params.magnet.m     = 0.060; % (weight on kitchen scale, golden magnet)
 params.magnet.I     = [6.1686e-06, 6.1686e-06, 1.1274e-05];
-params.magnet.n     = 40; % (higher is more accurate, but also more computationally expensive)
+params.magnet.n     = 8; % (higher is more accurate, but also more computationally expensive)
 
 % Sensors - only one sensor 
 params.sensors.x  = [0];
@@ -49,17 +49,16 @@ perm3d_xy_val = max(abs([params.permanent.x, params.permanent.y])) + max(params.
 sol_xy_max = max(abs([params.solenoids.x, params.solenoids.y]));
 params.lut_opts.sol2d_rho_max = sqrt(2) * perm3d_xy_val + sol_xy_max;  % diagonal + solenoid offset
 params.lut_opts.sol2d_z_max   = 0.06;                           % solenoid LUT z range [m]
-params.lut_opts.sol2d_N_rho   = 200;                            % solenoid LUT rho grid points
-params.lut_opts.sol2d_N_z     = 200;                            % solenoid LUT z grid points
+params.lut_opts.sol2d_N_rho   = 50;                            % solenoid LUT rho grid points
+params.lut_opts.sol2d_N_z     = 50;                            % solenoid LUT z grid points
 
 % Permanent magnet 3D LUT bounds (derived from geometry + margin)
 perm_xy_extent = max(abs([params.permanent.x, params.permanent.y])) + max(params.permanent.r);
 params.lut_opts.perm3d_xy     = perm_xy_extent + params.magnet.r + 0.005;  % xy bound with margin for magnet surface
 perm_z_lo = max(params.solenoids.z + params.solenoids.l/2) + 1e-3;        % just above solenoid tops
 params.lut_opts.perm3d_z      = [perm_z_lo, 0.06];              % perm LUT z range [m]
-params.lut_opts.perm3d_N_xy   = 51;                            % perm LUT xy grid points
+params.lut_opts.perm3d_N_xy   = 31;                             % perm LUT xy grid points
 params.lut_opts.perm3d_N_z    = 100;                            % perm LUT z grid points
 
 % Force/torque surface discretization
-params.lut_opts.nRadial       = 40;            % circumferential discretization
-params.lut_opts.nAxial        = 5;             % axial discretization (Accurate model)
+params.lut_opts.nAxial        = 21;                         % axial discretization (Accurate model)

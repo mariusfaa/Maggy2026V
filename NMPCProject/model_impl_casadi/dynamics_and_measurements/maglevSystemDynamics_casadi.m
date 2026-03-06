@@ -1,23 +1,19 @@
-function dx = maglevSystemDynamics_casadi(x, u, params)
+function dx = maglevSystemDynamics_casadi(x, u, params, modelId)
 % MAGLEVSYSTEMDYNAMICS_CASADI implements dxdt = f(x,u) for the magnetic
 % levitation system using CasADi symbolic variables.
 %
-% Mirrors maglevSystemDynamics.m using the Accurate (current sheet) model
-% with modular CasADi field and force/torque functions.
-%
 % Inputs:
-%   x      - State vector (12x1, CasADi MX):
-%            x(1:3)   = [x, y, z] position
-%            x(4:6)   = [roll, pitch, yaw] orientation
-%            x(7:9)   = [vx, vy, vz] linear velocity
-%            x(10:12) = [wx, wy, wz] angular velocity
-%   u      - Solenoid currents (n_sol x 1, CasADi MX)
-%   params - Parameter struct with params.luts field
+%   x       - State vector (12x1, CasADi MX)
+%   u       - Solenoid currents (n_sol x 1, CasADi MX)
+%   params  - Parameter struct with params.luts field
+%   modelId - MaglevModel.Accurate (default) or MaglevModel.Fast
 %
 % Output:
-%   dx     - State derivative (12x1, CasADi MX)
+%   dx      - State derivative (12x1, CasADi MX)
 
     import casadi.*
+
+    if nargin < 4, modelId = MaglevModel.Accurate; end
 
     %% Extract parameters
     m     = params.magnet.m;
@@ -25,7 +21,7 @@ function dx = maglevSystemDynamics_casadi(x, u, params)
     g     = params.physical.g;
 
     %% Compute force and torque
-    [fx, fy, fz, tx, ty, tz] = computeForceAndTorque_casadi(x, u, params);
+    [fx, fy, fz, tx, ty, tz] = computeForceAndTorque_casadi(x, u, params, modelId);
 
     %% System matrices (same structure as maglevSystemDynamics.m)
     A = [zeros(6), eye(6);
