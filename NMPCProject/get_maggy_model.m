@@ -1,8 +1,15 @@
-function model = get_maggy_model(params, modelId)
+function model = get_maggy_model(params, modelId, opts)
+% GET_MAGGY_MODEL  Build AcadosModel for the maglev system.
+%   model = get_maggy_model(params, modelId)
+%   model = get_maggy_model(params, modelId, opts)
+%
+%   opts.discrete_dt  — if set, adds disc_dyn_expr (Euler step with this dt)
+%   opts.xEq, opts.uEq — equilibrium for approximate Jacobian (requires discrete_dt)
 
 import casadi.*
 
 if nargin < 2, modelId = MaglevModel.Accurate; end
+if nargin < 3, opts = struct(); end
 
 % Build LUTs using modular implementation
 fprintf('--- Building LUTs ---\n');
@@ -24,5 +31,6 @@ model.u           = u;
 model.xdot        = xdot;
 model.f_impl_expr = xdot - f_expl;
 model.f_expl_expr = f_expl;
+
 
 end

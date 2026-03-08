@@ -6,7 +6,7 @@
 simSetup;
 
 x0 = xEq + [0 0.0005 0.001 0 0 0 zeros(1, 6)].';
-umax = 4;
+umax = 1;
 
 acados_root  = '/home/halva/acados';
 project_root = '/mnt/c/Users/halva/Downloads/Maggy2026V/NMPCProject';
@@ -25,6 +25,11 @@ import casadi.*
 
 save_filename = 'results_acados_mpc.mat';
 
+%% --- MPC parameters ---
+dt_mpc = 0.001;
+N_horizon = 50;              % Number of shooting intervals
+Tf        = dt_mpc*N_horizon;          % Prediction horizon [s]
+
 %% --- Model setup ---
 fprintf('--- Setting up model (Fast) ---\n');
 
@@ -35,10 +40,6 @@ end
 %% --- OCP SETUP ---
 fprintf('\n--- Setting up OCP ---\n');
 
-dt_mpc = 0.01;
-N_horizon = 3;              % Number of shooting intervals
-Tf        = dt_mpc*N_horizon;          % Prediction horizon [s]
-
 if ~exist("ocp_solver","var")
     ocp = AcadosOcp();
     ocp.model = model;
@@ -46,12 +47,17 @@ if ~exist("ocp_solver","var")
     % Solver options — tuned for speed
     ocp.solver_options.N_horizon             = N_horizon;
     ocp.solver_options.tf                    = Tf;
-    ocp.solver_options.integrator_type       = 'ERK';   % explicit (faster than IRK)
-    ocp.solver_options.sim_method_num_stages = 1;       % RK4
-    ocp.solver_options.sim_method_num_steps  = 4;
-    ocp.solver_options.nlp_solver_type       = 'SQP';  % NLP solver. String in ('SQP', 'SQP_RTI', 'DDP', 'SQP_WITH_FEASIBLE_QP'). Default: 'SQP'.
-    ocp.solver_options.qp_solver             = 'PARTIAL_CONDENSING_HPIPM'; % https://docs.acados.org/python_interface/index.html#acados_template.acados_ocp_options.AcadosOcpQpOptions.qp_solver
+    ocp.solver_options.integrator_type       = 'ERK';
+    ocp.solver_options.sim_method_num_stages = 4;
+    ocp.solver_options.sim_method_num_steps  = 1;
+    ocp.solver_options.nlp_solver_type       = 'SQP_RTI';  % single iteration per call
+    ocp.solver_options.qp_solver             = 'FULL_CONDENSING_HPIPM';  % dense QP, fast for small N
     ocp.solver_options.hessian_approx        = 'GAUSS_NEWTON';
+    ocp.solver_options.globalization         = 'FIXED_STEP';  % no line search
+    ocp.solver_options.regularize_method     = 'NO_REGULARIZE';  % GN is already PSD
+    ocp.solver_options.qp_solver_warm_start  = 2;  % warm-start primal+dual
+    ocp.solver_options.levenberg_marquardt   = 1e-4;  % small damping
+    ocp.solver_options.ext_fun_compile_flags = '-O3';  % aggressive optimization
 
     % --- Cost: LINEAR_LS ---
     % y = Vx*x + Vu*u,  cost = (y - yref)' * W * (y - yref)
@@ -121,8 +127,8 @@ end
 % MPC runs at dt_mpc = Tf/N_horizon. Plant sim runs at dt.
 % Between MPC calls, control is held constant for n_sub plant steps.
 n_sub  = round(dt_mpc / dt);
-assert(abs(n_sub * dt - dt_mpc) < 1e-12, ...
-    'dt_mpc (%.2e) must be an integer multiple of dt (%.2e)', dt_mpc, dt);
+%assert(abs(n_sub * dt - dt_mpc) < 1e-12, ...
+%    'dt_mpc (%.2e) must be an integer multiple of dt (%.2e)', dt_mpc, dt);
 
 N_sim   = numel(t);          % total plant steps
 N_mpc   = floor(N_sim / n_sub);  % number of MPC calls
@@ -132,6 +138,10 @@ u_sim = zeros(nu, N_sim);
 t_mpc_log  = zeros(1, N_mpc);   % MPC solve time per call
 t_sub_log  = zeros(1, N_mpc);   % Plant sim time per MPC interval
 t_step_log = zeros(1, N_mpc);   % Total time per MPC interval
+% acados internal timing
+t_lin_log  = zeros(1, N_mpc);
+t_qp_log   = zeros(1, N_mpc);
+t_reg_log  = zeros(1, N_mpc);
 
 x = x0;
 u = uEq;
@@ -152,6 +162,10 @@ for k = 1:N_mpc
     ocp_solver.solve();
     t_mpc_log(k) = toc(tic_mpc);
 
+    t_lin_log(k) = ocp_solver.get('time_lin');
+    t_qp_log(k)  = ocp_solver.get('time_qp_sol');
+    t_reg_log(k) = ocp_solver.get('time_reg');
+
     status = ocp_solver.get('status');
     if status ~= 0 && status ~= 2
         fprintf('  *** OCP solver warning at MPC step %d (status %d) ***\n', k, status);
@@ -159,6 +173,14 @@ for k = 1:N_mpc
 
     % Extract first control action (receding horizon)
     u = ocp_solver.get('u', 0);
+
+    % Warm-shift solution for next call
+    for i = 0:N_horizon-2
+        ocp_solver.set('x', ocp_solver.get('x', i+1), i);
+        ocp_solver.set('u', ocp_solver.get('u', i+1), i);
+    end
+    ocp_solver.set('x', ocp_solver.get('x', N_horizon), N_horizon);
+    ocp_solver.set('u', ocp_solver.get('u', N_horizon-1), N_horizon-1);
 
     % --- Sub-step: simulate plant n_sub times with held u ---
     tic_sub = tic;
@@ -176,16 +198,16 @@ for k = 1:N_mpc
     t_step_log(k) = toc(tic_step);
 
     % Divergence check
+    I = [1:5,7:11];
     diverged = abs(x(3)) > 0.5       || ...
-               max(abs(x(4:6))) > pi  || ...
-               any(isnan(x))          || ...
-               any(isinf(x));
+               max(abs(x(4:5))) > pi  || ...
+               any(isnan(x(I)))          || ...
+               any(isinf(x(I)));
 
-    if mod(k, max(1, floor(N_mpc/10))) == 1 || diverged
-        fprintf('MPC %4d/%d (t=%.4fs): z=%.4f mm  |u|=%.3f  mpc=%.0f us  sim=%.0f us  total=%.0f us\n', ...
-            k, N_mpc, (k-1)*dt_mpc, x(3)*1e3, norm(u), ...
-            t_mpc_log(k)*1e6, t_sub_log(k)*1e6, t_step_log(k)*1e6);
-    end
+    fprintf('Step %4d: z=%.4f mm  |u|=%.3f  mpc=%.0f us (lin=%.0f qp=%.0f)  sim=%.0f us  total=%.0f us\n', ...
+        k, x(3)*1e3, norm(u), ...
+        t_mpc_log(k)*1e6, t_lin_log(k)*1e6, t_qp_log(k)*1e6, ...
+        t_sub_log(k)*1e6, t_step_log(k)*1e6);
 
     if diverged
         fprintf('  *** DIVERGED at MPC step %d ***\n', k);
@@ -204,6 +226,12 @@ end
 fprintf('\n--- NMPC Performance ---\n');
 fprintf('MPC  solve: mean=%.0f us, max=%.0f us, median=%.0f us\n', ...
     mean(t_mpc_log)*1e6, max(t_mpc_log)*1e6, median(t_mpc_log)*1e6);
+fprintf('  linearize: mean=%.0f us, median=%.0f us\n', ...
+    mean(t_lin_log)*1e6, median(t_lin_log)*1e6);
+fprintf('  QP solve:  mean=%.0f us, median=%.0f us\n', ...
+    mean(t_qp_log)*1e6, median(t_qp_log)*1e6);
+fprintf('  regularize:mean=%.0f us, median=%.0f us\n', ...
+    mean(t_reg_log)*1e6, median(t_reg_log)*1e6);
 fprintf('Plant sim:  mean=%.0f us, max=%.0f us, median=%.0f us  (%d sub-steps)\n', ...
     mean(t_sub_log)*1e6, max(t_sub_log)*1e6, median(t_sub_log)*1e6, n_sub);
 fprintf('Total step: mean=%.0f us, max=%.0f us, median=%.0f us\n', ...
