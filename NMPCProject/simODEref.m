@@ -4,6 +4,10 @@
 % inputs as simAcados so results can be directly compared.
 
 simSetup;
+parameters_maggy_V4;
+
+dt = 0.0001;
+t = 0:dt:0.3;
 
 % Setting up system equations
 f = @(x,u) maglevSystemDynamics(x,u,params,modelId);

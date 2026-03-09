@@ -27,14 +27,15 @@ save_filename = 'results_acados_mpc.mat';
 
 %% --- MPC parameters ---
 dt_mpc = 0.001;
-N_horizon = 50;              % Number of shooting intervals
+N_horizon = 10;              % Number of shooting intervals
 Tf        = dt_mpc*N_horizon;          % Prediction horizon [s]
 
 %% --- Model setup ---
-fprintf('--- Setting up model (Fast) ---\n');
+fprintf('--- Setting up model (Fast, analytical) ---\n');
 
 if ~exist("model","var")
-    model = get_maggy_model(params, MaglevModel.Fast);
+    model_opts.field_method = 'analytical';
+    model = get_maggy_model(params, MaglevModel.Fast, model_opts);
 end
 
 %% --- OCP SETUP ---
