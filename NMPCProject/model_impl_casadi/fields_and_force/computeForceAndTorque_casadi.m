@@ -56,7 +56,11 @@ function [fx,fy,fz,tx,ty,tz] = computeForceAndTorque_casadi(x, u, params, modelI
             pz = p_global(3,:) + x(3);
 
             % Compute field
-            [bx, by, bz] = computeFieldBase_casadi(px, py, pz, u, params, modelId);
+            if params.lut_opts.enabled
+                [bx, by, bz] = computeFieldBase_lut(px, py, pz, u, params);
+            else
+                [bx, by, bz] = computeFieldBase_analytical(px, py, pz, u, params, modelId);
+            end
 
             % Force: F = K*l * (tangent x B)
             tangent_local = [cos(theta + pi/2);
@@ -79,7 +83,7 @@ function [fx,fy,fz,tx,ty,tz] = computeForceAndTorque_casadi(x, u, params, modelI
 
         otherwise  % MaglevModel.Accurate
             %% Accurate model: nRadial x nAxial surface discretization
-            nAxial = params.lut_opts.nAxial;
+            nAxial = params.magnet.n_axial;
             nTotal = nRadial * nAxial;
 
             len = linspace(-magnet_l/2, magnet_l/2, nAxial);
@@ -106,7 +110,11 @@ function [fx,fy,fz,tx,ty,tz] = computeForceAndTorque_casadi(x, u, params, modelI
             pz = p_global(3,:) + x(3);
 
             % Compute field
-            [bx, by, bz] = computeFieldBase_casadi(px, py, pz, u, params, modelId);
+            if params.lut_opts.enabled
+                [bx, by, bz] = computeFieldBase_lut(px, py, pz, u, params);
+            else
+                [bx, by, bz] = computeFieldBase_analytical(px, py, pz, u, params, modelId);
+            end
 
             % Force: F = K * (tangent x B)
             tangent_local = [cos(theta_all + pi/2);

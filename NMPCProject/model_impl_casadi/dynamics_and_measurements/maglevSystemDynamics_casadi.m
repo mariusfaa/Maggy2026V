@@ -13,8 +13,6 @@ function dx = maglevSystemDynamics_casadi(x, u, params, modelId)
 
     import casadi.*
 
-    if nargin < 4, modelId = MaglevModel.Accurate; end
-
     %% Extract parameters
     m     = params.magnet.m;
     I_vec = params.magnet.I;

@@ -1,17 +1,11 @@
-function load_params(modelIdOverride)
-    % Load previously cached parameters if available
-    try
-        cached = load("system_parameters/params.mat");
-        paramsPrev = cached.params;
-        modelIdPrev = cached.modelId;
-    catch
-        paramsPrev = struct([]);
-        modelIdPrev = -1;
-    end
+function params = load_params(modelIdOverride)
+% LOAD_PARAMS  Load and configure maglev system parameters.
+%
+%   params = load_params(modelId)   — returns params, no side effects
+%   load_params(modelId)            — assigns params & modelId to base workspace
 
     % Load current parameters from definition script
     parameters_maggy_V41;
-    assert(exist('params', 'var'), 'parameters_maggy_V41 did not define ''params''');
 
     % Set model ID
     if nargin >= 1 && ~isempty(modelIdOverride)
@@ -20,21 +14,17 @@ function load_params(modelIdOverride)
         modelId = MaglevModel.Accurate;
     end
 
-    % Recompute only if params or modelId changed, and model is not Accurate
-    paramsChanged = ~isequal(paramsPrev, params);
-    modelChanged  = ~isequal(modelIdPrev, modelId);
-    needsRecompute = (paramsChanged || modelChanged) && ~isequal(modelId, MaglevModel.Accurate);
-
-    if needsRecompute
-        fprintf('Recalculating params (model=%s)...\n', char(modelId));
-        paramsFixed = params;
-        paramsFixed.solenoids.r = paramsFixed.solenoids.r / computeSolenoidRadiusCorrectionFactor(params, modelId);
-        save("system_parameters/params.mat", "params", "paramsFixed", "modelId");
-        assignin('base', 'params', paramsFixed);
-    else
-        assignin('base', 'params', params);
+    % Apply solenoid radius correction for Fast/Filament models
+    if ~isequal(modelId, MaglevModel.Accurate)
+        fprintf('Applying solenoid radius correction (model=%s)...\n', char(modelId));
+        params.solenoids.r = params.solenoids.r / computeSolenoidRadiusCorrectionFactor(params, modelId);
     end
 
-    assignin('base', 'modelId', modelId);
+    % Only assign to base workspace when called without output (e.g. from simSetup)
+    if nargout == 0
+        assignin('base', 'params', params);
+        assignin('base', 'modelId', modelId);
+    end
+
     fprintf('Params loaded (model=%s)\n', char(modelId));
 end

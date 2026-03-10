@@ -44,8 +44,8 @@ zetan = z - l/2;
 k2p = 4*r*rho./((r+rho).^2+zetap.^2);
 k2n = 4*r*rho./((r+rho).^2+zetan.^2);
 
-k2p = min(k2p,1-eps); k2p = max(k2p,0);
-k2n = min(k2n,1-eps); k2n = max(k2n,0);
+k2p = min(k2p,1); k2p = max(k2p,0);
+k2n = min(k2n,1); k2n = max(k2n,0);
 
 [Kp,Ep] = ellipke(k2p,1e-7);
 [Kn,En] = ellipke(k2n,1e-7);

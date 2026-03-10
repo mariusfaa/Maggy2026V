@@ -1,35 +1,67 @@
-function model = get_maggy_model(params, modelId, opts)
-% GET_MAGGY_MODEL  Build AcadosModel for the maglev system.
-%   model = get_maggy_model(params, modelId)
-%   model = get_maggy_model(params, modelId, opts)
+function model = get_maggy_model(modelId, opts)
+% GET_MAGGY_MODEL  Build AcadosModel for the full-order maglev system.
 %
-%   opts.field_method - 'lut' (default) or 'analytical'
+%   model = get_maggy_model(modelId)
+%   model = get_maggy_model(modelId, use_luts=true)
+%   model = get_maggy_model(modelId, use_luts=false)
+%
+%   modelId selects the physics model:
+%     MaglevModel.Fast     - Wire-loop field model
+%     MaglevModel.Accurate - Current-sheet field model
+%
+%   use_luts (name-value, optional):
+%     true  - Pre-built LUTs (requires MX symbols)
+%     false - Analytical elliptic integrals (uses SX symbols, faster codegen)
+%     If omitted, uses params.lut_opts.enabled from parameter file.
+%
+%   Parameters are loaded internally (with solenoid correction for Fast).
+
+arguments
+    modelId (1,1) MaglevModel = MaglevModel.Accurate
+    opts.use_luts logical
+end
 
 import casadi.*
 
-if nargin < 2, modelId = MaglevModel.Accurate; end
-if nargin < 3, opts = struct(); end
+% Load params configured for this model
+params = load_params(modelId);
 
-% Set field computation method
-if isfield(opts, 'field_method')
-    params.field_method = opts.field_method;
+% Override LUT setting if provided
+if isfield(opts, 'use_luts')
+    params.lut_opts.enabled = opts.use_luts;
 end
 
-% Build LUTs only if using LUT-based field computation
-if ~isfield(params, 'field_method') || strcmp(params.field_method, 'lut')
-    fprintf('--- Building LUTs ---\n');
-    params.luts = buildLuts(params);
+use_luts = params.lut_opts.enabled;
+
+% Build LUTs if enabled
+if use_luts
+    fprintf('--- Building LUTs (model=%s) ---\n', string(modelId));
+    params.luts = buildLuts(params, modelId);
 else
     fprintf('--- Using analytical field computation (no LUTs) ---\n');
 end
 
-nx   = 12;
-nu   = 4;
-x    = MX.sym('x',    nx);
-u    = MX.sym('u',    nu);
-xdot = MX.sym('xdot', nx);
+nx = 12;
+nu = 4;
 
-fprintf('--- Setting up CasADi dynamics (model=%s) ---\n', string(modelId));
+% SX is faster for pure symbolic expressions (analytical).
+% MX is required for interpolant-based (LUT) expressions.
+if use_luts
+    x    = MX.sym('x',    nx);
+    u    = MX.sym('u',    nu);
+    xdot = MX.sym('xdot', nx);
+else
+    x    = SX.sym('x',    nx);
+    u    = SX.sym('u',    nu);
+    xdot = SX.sym('xdot', nx);
+end
+
+if ~use_luts && modelId == MaglevModel.Accurate
+    warning("Acados model probably will not compile, as dynamics are to complex, consider enabling luts or using the fast model");
+end
+
+fprintf('--- Setting up CasADi dynamics (model=%s, lut=%d) ---\n', ...
+    string(modelId), use_luts);
 f_expl = maglevSystemDynamics_casadi(x, u, params, modelId);
 
 model = AcadosModel();
@@ -39,6 +71,5 @@ model.u           = u;
 model.xdot        = xdot;
 model.f_impl_expr = xdot - f_expl;
 model.f_expl_expr = f_expl;
-
 
 end

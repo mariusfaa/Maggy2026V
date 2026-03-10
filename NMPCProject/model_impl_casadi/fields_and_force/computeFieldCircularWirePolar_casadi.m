@@ -29,11 +29,12 @@ function [brho, bz] = computeFieldCircularWirePolar_casadi(rho, z, r, I, mu0)
 
     % Elliptic integral parameter k^2
     k2 = 4 * r * rho_s ./ ((r + rho_s).^2 + z.^2);
-    k2 = fmin(fmax(k2, 0), 1 - 1e-10);
+    k2 = fmin(fmax(k2, 0), 1 - 1e-6);
 
     % Complete elliptic integrals (Hastings polynomial + log approximation)
-    %[K, E] = ellipke_casadi(k2);
-    [K, E] = ellipke_approx(k2);
+    [K, E] = ellipke_casadi(k2);
+    %[K, E] = ellipke_approx(k2);
+    %[K,E] = ellipke_agm(k2);
 
     % Denominator for field expressions (avoid division by zero)
     denom = (rho_s - r).^2 + z.^2 + eps_val;

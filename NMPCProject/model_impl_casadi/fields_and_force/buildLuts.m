@@ -1,6 +1,12 @@
-function luts = buildLuts(params)
-% BUILDLUTS builds CasADi lookup tables for the current sheet magnetic
-% field model, with automatic caching to avoid recomputation.
+function luts = buildLuts(params, modelId)
+% BUILDLUTS builds CasADi lookup tables for the magnetic field model,
+% with automatic caching to avoid recomputation.
+%
+%   luts = buildLuts(params, modelId)
+%
+%   modelId selects the field function:
+%     MaglevModel.Fast     - Wire-loop (computeFieldCircularWirePolar)
+%     MaglevModel.Accurate - Current-sheet (computeFieldCircularCurrentSheetPolar)
 %
 % Two types of LUT:
 %   1. Combined 3D Cartesian LUT for ALL permanent magnets:
@@ -18,10 +24,9 @@ function luts = buildLuts(params)
 import casadi.*
 
     opts = params.lut_opts;
-    nEval = params.magnet.n * opts.nAxial;
 
     % Build fingerprint of all parameters that affect LUT data
-    fp = buildFingerprint(params);
+    fp = buildFingerprint(params, modelId);
 
     % Check cache
     cache_file = fullfile(fileparts(mfilename('fullpath')), 'lut_cache.mat');
@@ -53,7 +58,7 @@ import casadi.*
         fprintf('Building 3D combined permanent magnet LUT (%dx%dx%d grid)...\n', ...
                 opts.perm3d_N_xy, opts.perm3d_N_xy, opts.perm3d_N_z);
         [~, perm_x_vec, perm_y_vec, perm_z_vec, perm_data] = ...
-            buildCombinedPermanentMagnetLut(params, opts);
+            buildCombinedPermanentMagnetLut(params, opts, modelId);
         fprintf('  Done.\n');
 
         % 2D solenoid LUT (nw pre-baked)
@@ -65,7 +70,7 @@ import casadi.*
         fprintf('Building 2D solenoid LUT (r=%.4f, l=%.4f, nw=%d)...\n', ...
                 sol_r, sol_l, nw);
         [~, sol_z_vec, sol_rho_vec, sol_data] = ...
-            buildSingleLut2D(sol_r, sol_l, mu0, opts, 'sol', nw);
+            buildSingleLut2D(sol_r, sol_l, mu0, opts, 'sol', nw, modelId);
 
         % Save cache
         fingerprint = fp; %#ok<NASGU>
@@ -99,24 +104,27 @@ import casadi.*
         {sol_z_vec, sol_rho_vec}, sol_data(2:2:end));
 
     % Store discretization parameters
-    luts.nAxial  = opts.nAxial;
-    luts.nEval   = nEval;
+    luts.n       = params.magnet.n;
+    luts.n_axial = params.magnet.n_axial;
 
-    fprintf('LUTs ready (method=%s, nEval=%d).\n', opts.method, nEval);
+    fprintf('LUTs ready (method=%s, model=%s).\n', opts.method, string(modelId));
 end
 
 %% Build fingerprint struct of all parameters that affect LUT data
-function fp = buildFingerprint(params)
+function fp = buildFingerprint(params, modelId)
+    fp.modelId = int32(modelId);
     fp.lut_opts = params.lut_opts;
     fp.permanent = params.permanent;
     fp.solenoids_r = params.solenoids.r(1);
     fp.solenoids_l = params.solenoids.l(1);
     fp.solenoids_nw = params.solenoids.nw;
     fp.mu0 = params.physical.mu0;
+    fp.magnet_n = params.magnet.n;
+    fp.magnet_n_axial = params.magnet.n_axial;
 end
 
 %% 3D combined permanent magnet LUT
-function [interp_perm, x_vec, y_vec, z_vec, data] = buildCombinedPermanentMagnetLut(params, opts)
+function [interp_perm, x_vec, y_vec, z_vec, data] = buildCombinedPermanentMagnetLut(params, opts, modelId)
     import casadi.*
 
     mu0    = params.physical.mu0;
@@ -127,13 +135,13 @@ function [interp_perm, x_vec, y_vec, z_vec, data] = buildCombinedPermanentMagnet
 
     N_xy   = opts.perm3d_N_xy;
     N_z    = opts.perm3d_N_z;
-    xy_max = opts.perm3d_xy;
+    xy_max = opts.perm3d_max_xy;
 
     x_vec = linspace(-xy_max, xy_max, N_xy);
     y_vec = linspace(-xy_max, xy_max, N_xy);
 
-    z_lo = opts.perm3d_z(1);
-    z_hi = opts.perm3d_z(2);
+    z_lo = opts.perm3d_max_z(1);
+    z_hi = opts.perm3d_max_z(2);
     z_vec = linspace(z_lo, z_hi, N_z);
 
     fprintf('    Computing field on base grid (%dx%dx%d = %d points)...\n', ...
@@ -153,12 +161,20 @@ function [interp_perm, x_vec, y_vec, z_vec, data] = buildCombinedPermanentMagnet
             dy = yk - params.permanent.y(i);
             dz = zk - params.permanent.z(i);
             rho = sqrt(dx^2 + dy^2);
-            [~, brho_k, bz_k] = computeFieldCircularCurrentSheetPolar( ...
-                0, rho, dz, r_perm, l_perm, 1, mu0);
-            bz_sum = bz_sum + bz_k * I_perm;
+
+            switch modelId
+                case MaglevModel.Fast
+                    [~, brho_k, bz_k] = computeFieldCircularWirePolar( ...
+                        0, rho, dz, r_perm, I_perm, mu0);
+                otherwise  % Accurate
+                    [~, brho_k, bz_k] = computeFieldCircularCurrentSheetPolar( ...
+                        0, rho, dz, r_perm, l_perm, I_perm, mu0);
+            end
+
+            bz_sum = bz_sum + bz_k;
             if rho > 1e-12
-                bx_sum = bx_sum + brho_k * I_perm * dx / rho;
-                by_sum = by_sum + brho_k * I_perm * dy / rho;
+                bx_sum = bx_sum + brho_k * dx / rho;
+                by_sum = by_sum + brho_k * dy / rho;
             end
         end
         BX(k) = bx_sum;  BY(k) = by_sum;  BZ(k) = bz_sum;
@@ -174,13 +190,13 @@ function [interp_perm, x_vec, y_vec, z_vec, data] = buildCombinedPermanentMagnet
 end
 
 %% 2D polar LUT for a single source geometry
-function [interp_field, z_vec, rho_vec, data] = buildSingleLut2D(r, l, mu0, opts, tag, scale)
+function [interp_field, z_vec, rho_vec, data] = buildSingleLut2D(r, l, mu0, opts, tag, scale, modelId)
     import casadi.*
 
     N_rho = opts.sol2d_N_rho;
     N_z = opts.sol2d_N_z;
-    rho_max = opts.sol2d_rho_max;
-    z_max = opts.sol2d_z_max;
+    rho_max = opts.sol2d_max_rho;
+    z_max = opts.sol2d_max_z;
 
     rho_vec = linspace(0, rho_max, N_rho);
     z_vec = linspace(-l/2, z_max, N_z);
@@ -193,8 +209,14 @@ function [interp_field, z_vec, rho_vec, data] = buildSingleLut2D(r, l, mu0, opts
         rho_k = RHO(k);
         z_k   = ZZ(k);
 
-        [~, brho_k, bz_k] = computeFieldCircularCurrentSheetPolar( ...
-            0, rho_k, z_k, r, l, 1, mu0);
+        switch modelId
+            case MaglevModel.Fast
+                [~, brho_k, bz_k] = computeFieldCircularWirePolar( ...
+                    0, rho_k, z_k, r, 1, mu0);
+            otherwise  % Accurate
+                [~, brho_k, bz_k] = computeFieldCircularCurrentSheetPolar( ...
+                    0, rho_k, z_k, r, l, 1, mu0);
+        end
 
         if isnan(brho_k), brho_k = 0; end
         if isnan(bz_k),   bz_k   = 0; end
