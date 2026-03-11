@@ -17,8 +17,8 @@ int main() {
 
     initObserver();
 
-    float meas[1][NUMBER_MEASUREMENTS] = {};
-    float input[NUMBER_INPUTS] = {};
+    double meas[1][NUMBER_MEASUREMENTS] = {};
+    double input[NUMBER_INPUTS] = {};
     double stateEstimates[NUMBER_STATES] = {};
 
     for (int i = 0; i < 4; ++i) {

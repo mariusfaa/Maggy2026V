@@ -68,10 +68,9 @@ public:
         Ss(arma::eye(nz, nz)),
 
         I(arma::eye(nx, nx)),
-        W(arma::zeros(nx, nz))
-        {
-        useSRformulation = 1;
-        }
+        W(arma::zeros(nx, nz)),
+        useSRformulation(1)
+        {}
 
     virtual void init(vec &initialState,
               mat &initialCovariance,

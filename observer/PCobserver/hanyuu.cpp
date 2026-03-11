@@ -145,6 +145,26 @@ void jacobian_diff() {
 
 }
 
+
+void cholUpdateTest() {
+  mat P = {{100, -50},
+           {-50, 100}};
+  mat L = chol(P, "lower");
+  vec x = {1, 2};
+  mat xmat = {{1, 2},
+              {2, 1}};
+  double c = -1;
+
+  mat smart = cholUpdate(L, x, c);
+  mat smart2 = cholUpdate(L, xmat, c);
+  mat naive = chol(L*L.t() + c*xmat.col(0)*xmat.col(0).t(), "lower");
+  mat naive2 = chol(naive*naive.t() + c*xmat.col(1)*xmat.col(1).t(), "lower");
+
+  std::cout << smart2 << endl;
+  std::cout << naive2 << endl;
+}
+
+
 int main() {
 
   vec a = {4, 5, 6};
@@ -165,12 +185,13 @@ int main() {
   //AB_diff();
   //Q_diff();
 
-  jacobian_diff();
+  // jacobian_diff();
+  cholUpdateTest();
 
 
   auto end = steady_clock::now();
   auto duration = duration_cast<microseconds>(end - start);
-  std::cout << duration.count() << endl;
+  // std::cout << duration.count() << endl;
 
   return 0;
 }

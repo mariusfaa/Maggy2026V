@@ -1,4 +1,5 @@
 
+#include "unscentedKalmanFilter.h"
 #include "extendedKalmanFilter.h"
 #include "kalmanFilter.h"
 #include "matrices.h"
@@ -10,6 +11,7 @@ double NIS = 0;
 
 KalmanFilter KF(NUMBER_STATES_REDUCED, NUMBER_INPUTS, NUMBER_MEASUREMENTS);
 ExtendedKalmanFilter EKF(NUMBER_STATES_REDUCED, NUMBER_INPUTS, NUMBER_MEASUREMENTS);
+UnscentedKalmanFilter UKF(NUMBER_STATES_REDUCED, NUMBER_INPUTS, NUMBER_MEASUREMENTS);
 
 
 // Filter independent way of running an entire estimating cycle
@@ -41,7 +43,8 @@ void initObserver() {
 
   // Initialize filter
   // KF.init(x0, P0, Ad, Bd, Qd, H, R, dt);
-  EKF.init(x0, P0, Ad, Bd, Qd, H, R, dt);
+  // EKF.init(x0, P0, Ad, Bd, Qd, H, R, dt);
+  UKF.init(x0, P0, Qd, R, dt);
 }
 
 
@@ -64,7 +67,7 @@ void runObserver(const double input[NUMBER_INPUTS], const double (*z)[NUMBER_MEA
   meas(1) = z[0][1]*1e-3;   // by
   meas(2) = -z[0][2]*1e-3;  // bz; is inverted
 
-  vec estimate = runFilter(EKF, u, meas);
+  vec estimate = runFilter(UKF, u, meas);
 
   // Add back rotation around z axis as 0
   increaseStateSpace(estimate, stateEstimates);

@@ -51,13 +51,13 @@ public:
 
   ExtendedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements):
     dx(arma::zeros(NUMBER_STATES_REDUCED)),
+    updateJacobians(1),
+    updateQ(1),
+    useSRformulation(1),
     Base(numberStates, numberInputs, numberMeasurements) {
       maglevModel_initialize();
       dxd.dx = &dx;
       dxd.x_next = &x_pred;
-      updateJacobians = 1;
-      updateQ = 1;
-      useSRformulation = 1;
     }
 
 
@@ -122,7 +122,7 @@ public:
         }
     }
 
-    
+
     // Only use to calculate NIS; use solve otherwise
     // mat Sinv = inv(S, inv_opts::likely_sympd);
 
