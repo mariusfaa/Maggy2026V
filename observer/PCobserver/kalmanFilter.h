@@ -101,7 +101,8 @@ public:
 
         // Predict covariance
         if (useSRformulation) {
-            Ps = QRr(join_vert(Ps*F.t(), Qs));
+            mat _Q;
+            qr_econ(_Q, Ps, join_vert(Ps*F.t(), Qs));
         }
         else {
             P = F * P * F.t() + Q;
@@ -117,7 +118,9 @@ public:
 
         // Innovation covariance
         if (useSRformulation) {
-            Ss = QRr(join_vert(Ps*H.t(), Rs));
+            mat _Q;
+            qr_econ(_Q, Ss, join_vert(Ps*H.t(), Rs));
+ 
         }
         else {
             S = H * P * H.t() + R;
@@ -143,7 +146,8 @@ public:
 
         // Update covariance estimate
         if (useSRformulation) {
-            Ps = QRr(join_vert(Ps*(I-W*H).t(), Rs*W.t()));
+            mat _Q;
+            qr_econ(_Q, Ps, join_vert(Ps*(I-W*H).t(), Rs*W.t()));
         }
         else {
             // P = (I - W * H) * P;

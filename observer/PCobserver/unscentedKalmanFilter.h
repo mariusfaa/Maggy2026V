@@ -58,8 +58,11 @@ protected:
     vec weights_mean;
     vec weights_cov;
 
-    // Square root of weights
+    // Square root of covariance weights
     vec weights_cov_sr;
+
+    // Sign of central covariance weight
+    double central_cov_sgn;
 
 public:
     UnscentedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements):
@@ -88,9 +91,9 @@ public:
         Q = processNoise;
         R = measurementNoise;
 
-        Ps = chol(P);
-        Qs = chol(Q);
-        Rs = chol(R);
+        Ps = chol(P, "lower");
+        Qs = chol(Q, "lower");
+        Rs = chol(R, "lower");
     }
 
     void setParameters(const double &alpha_=1e-3, const double &beta_=2.0, const double &kappa_=0) {
@@ -105,19 +108,14 @@ public:
         weights_cov(0) = lambda/(nx + lambda) + 1.0 - pow(alpha, 2) + beta;
 
         if (useSRformulation) {
-            // 0th weight might be negative; keep sign and sqrt only absolute value to avoid imaginary number
-            double _sign = 1.0;
-            if (weights_cov(0) < 0) {
-                _sign = -1.0;
-            }
-
-            weights_cov_sr(0) = _sign*sqrt(fabs(weights_cov(0)));
+            weights_cov_sr(0) = sqrt(fabs(weights_cov(0)));
+            central_cov_sgn = (weights_cov(0) >= 0.0) ? 1.0 : -1.0;
         }
 
         for (size_t i = 1; i < ns; ++i) {
             weights_mean(i) = weights_cov(i) = 0.5/(nx + lambda);
             if (useSRformulation) {
-                weights_cov_sr(i) = sqrt(weights_mean(i));
+                weights_cov_sr(i) = sqrt(fabs(weights_mean(i)));
             }
         }
     }
@@ -125,7 +123,7 @@ public:
     void predict(vec &u) override {
 
         if (!useSRformulation) {
-            Ps = chol(P);
+            Ps = chol(P, "lower");
         }
 
         // Calculate sigma points
@@ -137,7 +135,7 @@ public:
 
         // Predict transformed state of sigma points
         for (size_t i = 0; i < ns; ++i) {
-            eulerForward(sigma_points.col(i), u, dt, dxd);
+            rk4(sigma_points.col(i), u, dt, dxd);
             sigma_points_pred.col(i) = x_pred;
         }
 
@@ -149,14 +147,18 @@ public:
 
         // Calculate covariance of predicted sigma points
         if (useSRformulation) {
-            mat _left = arma::zeros(nx, ns-1);
+            mat _X(nx, ns-1 + nx, arma::fill::zeros);
             for (size_t i = 1; i < ns; ++i) {
-                _left.col(i-1) = weights_cov_sr(i) * (sigma_points_pred.col(i) - x_pred);
+                _X.col(i-1) = weights_cov_sr(i) * (sigma_points_pred.col(i) - x_pred);
             }
-            Ps = QRr(join_horiz(_left, Qs).t());
-            Ps = cholUpdate(Ps.t(), sigma_points_pred.col(0) - x_pred, weights_cov_sr(0)).t();
+            _X.cols(ns-1, ns-1+nx-1) = Qs;
+            mat _Q;
+            mat _R;
+            qr_econ(_Q, _R, _X.t());
+            Ps = _R.t();
+            cholUpdate(Ps, weights_cov_sr(0)*(sigma_points_pred.col(0) - x_pred), central_cov_sgn);
         }
-        if(1) {
+        else {
             P = Q;
             for (size_t i = 1; i < ns; ++i) {
                 vec _e = sigma_points_pred.col(i) - x_pred;
@@ -169,6 +171,14 @@ public:
                 std::cout << "P is not symmetric positive definite!" << endl;
             }
         }
+        // std::cout << chol(P, "lower") << endl;
+        // std::cout << Ps << endl;
+        // std::cout << P << endl;
+        // std::cout << Ps*Ps.t() << endl;
+        // std::cout << P - Ps*Ps.t() << endl;
+        // std::cout << norm(P) << endl;
+        // std::cout << norm(Ps*Ps.t()) << endl;
+        // std::cout << norm(P - Ps*Ps.t(), "fro") << endl;
     }
 
     void update(vec &z) override {
@@ -190,29 +200,35 @@ public:
             z_pred += weights_mean(i) * sigma_points_meas.col(i);
         }
 
-        // Innovation
-        v = z - z_pred;
-
         // Calculate covariance of predicted measurements
         if (useSRformulation) {
-            mat _left = arma::zeros(nz, ns-1);
+            mat _X(nz, ns-1 + nz, arma::fill::zeros);
             for (size_t i = 1; i < ns; ++i) {
-                _left.col(i-1) = weights_cov_sr(i) * (sigma_points_meas.col(i) - z_pred);
+                _X.col(i-1) = weights_cov_sr(i) * (sigma_points_meas.col(i) - z_pred);
             }
-            Ss = QRr(join_horiz(_left, Rs).t());
-            Ss = cholUpdate(Ss.t(), sigma_points_meas.col(0) - z_pred, weights_cov_sr(0)).t();
+            _X.cols(ns-1, ns-1+nz-1) = Rs;
+            mat _Q;
+            mat _R;
+            qr_econ(_Q, _R, _X.t());
+            Ss = _R.t();
+            vec _e = sigma_points_meas.col(0) - z_pred;
+            // Ss = chol(Ss*Ss.t() + weights_cov(0)*_e*_e.t(), "lower");
+            cholUpdate(Ss, weights_cov_sr(0)*(sigma_points_meas.col(0) - z_pred), central_cov_sgn);
         }
-        if(1) {
+        else {
             S = R;
             for (size_t i = 0; i < ns; ++i) {
                 vec _e = sigma_points_meas.col(i) - z_pred;
                 S += weights_cov(i) * _e * _e.t();
             }
             // Averaging for symmetry. Small regularization for positive definiteness
-            // S = (S + S.t())*0.5 + eye(nz, nz)*1e-12;
+            S = (S + S.t())*0.5 + eye(nz, nz)*1e-12;
             if (!S.is_sympd()) {
                 std::cout << "S is not symmetric positive definite!" << endl;
             }
+        // std::cout << chol(S, "lower") << endl;
+        // std::cout << Ss << endl;
+        // std::cout << S - Ss*Ss.t() << endl;
         }
 
         // Calculate cross-covariance
@@ -223,9 +239,15 @@ public:
             Pxz += weights_cov(i) * _e * _ee.t();
         }
 
+        // double *ps = Ps.memptr();
+        // double *p = P.memptr();
+        // double *ss = Ss.memptr();
+        // double *s = S.memptr();
+        // double *pxz = Pxz.memptr();
+        // double *w = W.memptr();
         if (useSRformulation) {
             // W = solve(Ss.t()*Ss, Pxz.t(), solve_opts::likely_sympd).t();
-            W = solve(trimatu(Ss), solve(trimatl(Ss.t()), Pxz.t())).t();
+            W = solve(trimatl(Ss), solve(trimatu(Ss.t()), Pxz.t())).t();
         }
         else {
             // Only use to calculate NIS; use solve otherwise
@@ -236,20 +258,19 @@ public:
             W = solve(S, Pxz.t(), solve_opts::likely_sympd).t();
         }
 
+        // Innovation
+        v = z - z_pred;
+
         // Update state estimate
         x_est = x_pred + W * v;
 
         if (useSRformulation) {
-            Ps = cholUpdate(Ps.t(), W*Ss, -1.0).t();
+            cholUpdate(Ps, W*Ss, -1.0);
         }
-        if(1) {
+        else {
             // Update covariance estimate
             P = P - W * S * W.t();
         }
-        std::cout << P << endl;
-        std::cout << Ps.t()*Ps << endl;
-        std::cout << S << endl;
-        std::cout << Ss.t()*Ss << endl;
     }
 };
 

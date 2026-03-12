@@ -180,26 +180,12 @@ van_loan_struct van_loan(const mat &A, const mat &Q, const double &dt) {
 }
 
 
-// Does QR decomposition and extracts the upper triangular nxn part of R when input is rectangular mxn
-mat QRr(const mat &X) {
-  mat _Q;
-  mat _R;
-
-  size_t n = X.n_cols;
-
-  qr(_Q, _R, X);
-
-  return _R.submat(0, 0, n-1, n-1);
-}
-
-
-// If L = chol(P, "lower") then this computes chol(P + u*v*v^T, "lower")
-mat cholUpdate(const mat &L_, const mat &x_, const double &c_) {
+// If L = chol(P, "lower") then this computes chol(P + c*x*x^T, "lower")
+void cholUpdate(mat &L, const mat &x_, const double &c_) {
   size_t n = x_.n_rows;
   size_t m = x_.n_cols;
   vec x = x_.col(m-1);
   double c = c_;
-  mat L;
 
   // If u is a matrix
   if (m != 1) {
@@ -207,23 +193,19 @@ mat cholUpdate(const mat &L_, const mat &x_, const double &c_) {
     mat _x = x_.submat(0, 0, n-1, m-2);
 
     // Modify cholesky factor recursively
-    L = cholUpdate(L_, _x, c);
-  } else {
-    L = L_;
+    cholUpdate(L, _x, c);
   }
 
   // Rank 1 update
-  mat output = arma::zeros(n, n);
   for (size_t i = 0; i < n-1; ++i) {
     vec l = L.col(i);
     double li = l(i);
     double xi = x(i);
     double di = sqrt(pow(li, 2) + c*pow(xi, 2)); // New diagonal value
-    output.col(i) = (li/di)*l + (c*xi/di)*x;     // New column value
+    L.col(i) = (li/di)*l + (c*xi/di)*x;     // New column value
     x = x - l*(xi/li);
     c = c * pow(li/di, 2);
   }
-  output(n-1, n-1) = sqrt(pow(L(n-1, n-1), 2) + c*pow(x(n-1), 2));
-  return output;
+  L(n-1, n-1) = sqrt(pow(L(n-1, n-1), 2) + c*pow(x(n-1), 2));
 }
 

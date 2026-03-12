@@ -151,12 +151,14 @@ void cholUpdateTest() {
            {-50, 100}};
   mat L = chol(P, "lower");
   vec x = {1, 2};
-  mat xmat = {{1, 2},
-              {2, 1}};
+  mat xmat = {{1, 3},
+              {2, 4}};
   double c = -1;
 
-  mat smart = cholUpdate(L, x, c);
-  mat smart2 = cholUpdate(L, xmat, c);
+  mat smart = L;
+  mat smart2 = L;
+  cholUpdate(smart, x, c);
+  cholUpdate(smart2, xmat, c);
   mat naive = chol(L*L.t() + c*xmat.col(0)*xmat.col(0).t(), "lower");
   mat naive2 = chol(naive*naive.t() + c*xmat.col(1)*xmat.col(1).t(), "lower");
 

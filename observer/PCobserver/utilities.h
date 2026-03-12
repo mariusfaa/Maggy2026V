@@ -27,4 +27,4 @@ mat discretize_A(const mat &A, const double &dt);
 mat discretize_B(const mat &A, const mat &Ad, const mat &B);
 van_loan_struct van_loan(const mat &A, const mat &Q, const double &dt);
 mat QRr(const mat &X);
-mat cholUpdate(const mat &L, const mat &x, const double &c);
+void cholUpdate(mat &L, const mat &x, const double &c);
