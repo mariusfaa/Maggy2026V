@@ -4,11 +4,25 @@ simSetup;
 import casadi.*
 
 umax = 4;
-save_filename = 'results_acados_mpc.mat';
+nx = 10;
+
+save_filename = 'results_acados_mpc_reduced_15.mat';
+
+%% --- Recompute equilibrium using the MPC model (Fast) ---
+% simSetup uses Accurate model for equilibrium, but the MPC uses Fast.
+% These have different physics, so we need the Fast equilibrium.
+params_fast = load_params(MaglevModel.Fast);
+[zEq_fast, ~, ~, ~] = computeSystemEquilibria(params_fast, MaglevModel.Fast);
+xEq = [0; 0; zEq_fast(1); zeros(7,1)];  % 10-state reduced equilibrium
+uEq = zeros(nu, 1);
+
+% Apply same perturbation relative to Fast equilibrium
+x0_full = [0; 0; zEq_fast(1); zeros(9,1)] + [0; 0.001; 0.001; 0; 0; 0; zeros(6,1)];
+x0 = x0_full([1:5,7:11]);
 
 %% --- MPC parameters ---
-dt_mpc    = 0.005;
-N_horizon = 10;
+dt_mpc    = 0.001;
+N_horizon = 15;
 Tf        = dt_mpc * N_horizon;
 
 %% --- Model setup ---
@@ -25,25 +39,26 @@ if ~exist("ocp_solver","var")
 
     ocp.solver_options.N_horizon             = N_horizon;
     ocp.solver_options.tf                    = Tf;
-    ocp.solver_options.integrator_type       = 'IRK';
+    ocp.solver_options.integrator_type       = 'ERK';
     ocp.solver_options.sim_method_num_stages = 4;
     ocp.solver_options.sim_method_num_steps  = 1;
-    ocp.solver_options.nlp_solver_type = 'SQP'; % 'SQP_RTI' for real-time
+    ocp.solver_options.nlp_solver_type = 'SQP_RTI'; % 'SQP_RTI' for real-time
     ocp.solver_options.nlp_solver_max_iter = 200;
-    ocp.solver_options.qp_solver = 'FULL_CONDENSING_HPIPM';
-    ocp.solver_options.hessian_approx = 'GAUSS_NEWTON';
+    %ocp.solver_options.nlp_solver_warm_start_first_qp = true;
+    ocp.solver_options.qp_solver = 'FULL_CONDENSING_DAQP'; % FULL_CONDENSING_DAQP, FULL_CONDENSING_QPOASES, FULL_CONDENSING_HPIPM
+    %ocp.solver_options.hessian_approx = 'GAUSS_NEWTON';
     ocp.solver_options.globalization = 'MERIT_BACKTRACKING';
-    ocp.solver_options.ext_fun_compile_flags = '-O3';
+    ocp.solver_options.ext_fun_compile_flags = '-O2';
 
     % --- Cost: LINEAR_LS ---
     Q = diag([...
-        1e6, 1e6, ...       % x, y
-        1e5, ...             % z
-        1e2, 1e2, 0, ...    % roll, pitch, yaw (yaw free)
-        1e1, 1e1, 1e1, ...  % linear velocities
-        1e1, 1e1, 0 ...     % angular velocities (wz free)
+        1e4, 1e4, ...       % x, y (lateral — less critical)
+        1e6, ...             % z (unstable direction — highest priority)
+        1e3, 1e3, ...       % roll, pitch
+        1e2, 1e2, 1e3, ...  % vx, vy, vz (vz high for damping)
+        1e2, 1e2 ...        % wx, wy
     ]);
-    R = eye(nu) * 1e1;
+    R = eye(nu) * 1e0;
 
     ocp.cost.cost_type   = 'LINEAR_LS';
     ocp.cost.cost_type_0 = 'LINEAR_LS';
@@ -57,7 +72,7 @@ if ~exist("ocp_solver","var")
 
     ocp.cost.W   = blkdiag(Q, R);
     ocp.cost.W_0 = blkdiag(Q, R);
-    ocp.cost.W_e = Q;
+    ocp.cost.W_e = 10 * Q;  % heavier terminal cost for unstable system
 
     ocp.cost.yref   = [xEq; uEq];
     ocp.cost.yref_0 = [xEq; uEq];
@@ -88,7 +103,7 @@ if ~exist("sim_solver","var")
     sim.model = model;
 
     sim.solver_options.Tsim            = dt;
-    sim.solver_options.integrator_type = 'IRK';
+    sim.solver_options.integrator_type = 'ERK';
     sim.solver_options.num_stages      = 4;
     sim.solver_options.num_steps       = 1;
 
@@ -161,11 +176,10 @@ for k = 1:N_mpc
     t_step_log(k) = toc(tic_step);
 
     % Divergence check
-    I = [1:5, 7:11];
     diverged = abs(x(3)) > 0.5       || ...
                max(abs(x(4:5))) > pi  || ...
-               any(isnan(x(I)))       || ...
-               any(isinf(x(I)));
+               any(isnan(x))       || ...
+               any(isinf(x));
 
     fprintf('Step %4d: z=%.4f mm  |u|=%.3f  mpc=%.0f us (lin=%.0f qp=%.0f)  sim=%.0f us  total=%.0f us\n', ...
         k, x(3)*1e3, norm(u), ...
@@ -203,7 +217,7 @@ fprintf('Real-time factor: %.2fx (dt_mpc=%.0f us, avg step=%.0f us)\n', ...
     dt_mpc / mean(t_step_log), dt_mpc*1e6, mean(t_step_log)*1e6);
 fprintf('\nFinal state: z=%.4f mm (eq=%.4f mm)\n', x(3)*1e3, xEq(3)*1e3);
 fprintf('Final |pos error|=%.4f mm, |ang error|=%.4f deg\n', ...
-    norm(x(1:3)-xEq(1:3))*1e3, norm(x(4:6)-xEq(4:6))*180/pi);
+    norm(x(1:3)-xEq(1:3))*1e3, norm(x(4:5)-xEq(4:5))*180/pi);
 
 %% --- SAVE ---
 sim_data        = struct();

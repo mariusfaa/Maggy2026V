@@ -44,17 +44,12 @@ end
 nx = 10;
 nu = 4;
 
-% SX is faster for pure symbolic expressions (analytical).
-% MX is required for interpolant-based (LUT) expressions.
-if use_luts
-    x    = MX.sym('x',    nx);
-    u    = MX.sym('u',    nu);
-    xdot = MX.sym('xdot', nx);
-else
-    x    = SX.sym('x',    nx);
-    u    = SX.sym('u',    nu);
-    xdot = SX.sym('xdot', nx);
-end
+% Always use MX for outer symbols. This preserves CasADi Function/map
+% structure in the expression graph — acados generates loops instead of
+% unrolled code. Inner Functions use SX for efficient scalar AD.
+x    = MX.sym('x',    nx);
+u    = MX.sym('u',    nu);
+xdot = MX.sym('xdot', nx);
 
 if ~use_luts && modelId == MaglevModel.Accurate
     warning("Acados model probably will not compile, as dynamics are to complex, consider enabling luts or using the fast model");

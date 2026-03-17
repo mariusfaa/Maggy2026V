@@ -4,7 +4,12 @@ simSetup;
 import casadi.*
 
 %clear sim_solver;
-save_filename = 'results_acados_reduced3.mat';
+save_filename = 'results_acados_reduced.mat';
+
+
+nx = 10;
+x0 = x0([1:5,7:11]);
+xEq = xEq([1:5,7:11]);
 
 %% --- Model setup ---
 fprintf('--- Setting up model ---\n');
@@ -21,7 +26,7 @@ if ~exist("sim_solver","var")
     sim.model = model;
 
     sim.solver_options.Tsim            = dt;
-    sim.solver_options.integrator_type = 'IRK';
+    sim.solver_options.integrator_type = 'ERK';
     sim.solver_options.num_stages      = 4;
     sim.solver_options.num_steps       = 1;
 

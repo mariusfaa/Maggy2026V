@@ -14,9 +14,14 @@ files = [
 
 
 files = [
-    "results_ode_fast.mat"
-    "results_acados_reduced.mat"
-    "results_acados_reduced2.mat"
+    % "results_ode_fast.mat"
+    % "results_acados_reduced.mat"
+    "results_acados_mpc_reduced_40.mat"
+    "results_acados_mpc_reduced_30.mat"
+    "results_acados_mpc_reduced_20.mat"
+    "results_acados_mpc_reduced_15.mat"
+    % "results_acados_mpc_reduced.mat"
+    % "results_acados_reduced2.mat"
     % "simresults/sim_fn_irk_4_1_1ms.mat"
     % "simresults/sim_fn_irk_4_1_5ms.mat"
     % "simresults/sim_fn_irk_4_1_7ms.mat"
@@ -24,7 +29,7 @@ files = [
 ];
 
 
-T_end = 0.05;   % 0 = auto
+T_end = 1.0;   % 0 = auto
 
 % Error threshold markers: mark points where |error| vs first file exceeds
 % these thresholds. Set to 0 or Inf to disable.
