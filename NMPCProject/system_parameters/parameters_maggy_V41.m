@@ -28,8 +28,8 @@ params.magnet.l     = 0.0040;
 params.magnet.J     = -1.1;
 params.magnet.m     = 0.060; % (weight on kitchen scale, golden magnet)
 params.magnet.I     = [6.1686e-06, 6.1686e-06, 1.1274e-05];
-params.magnet.n     = 8; % Radial discretization points on levitating disk (higher is more accurate, but also more computationally expensive)
-params.magnet.n_axial = 21; % keep odd for best accuracy
+params.magnet.n     = 16; % Radial discretization points on levitating disk (higher is more accurate, but also more computationally expensive)
+params.magnet.n_axial = 1; % keep odd for best accuracy
 
 % Sensors - only one sensor 
 params.sensors.x  = [-0.0003];
@@ -59,5 +59,5 @@ perm_xy_extent = max(abs([params.permanent.x, params.permanent.y])) + max(params
 params.lut_opts.perm3d_max_xy     = perm_xy_extent + params.magnet.r + 0.005;  % xy bound with margin for magnet surface
 perm_z_lo = max(params.solenoids.z + params.solenoids.l/2) + 1e-3;        % just above solenoid tops
 params.lut_opts.perm3d_max_z      = [perm_z_lo, 0.06];              % perm LUT z range [m]
-params.lut_opts.perm3d_N_xy   = 51;                             % perm LUT xy grid points
-params.lut_opts.perm3d_N_z    = 150;                            % perm LUT z grid points
+params.lut_opts.perm3d_N_xy   = 31;                             % perm LUT xy grid points
+params.lut_opts.perm3d_N_z    = 100;                            % perm LUT z grid points

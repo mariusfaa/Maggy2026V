@@ -7,11 +7,29 @@
 %% ==========================================================
 
 files = [
-    "results_acados_accurate_luts.mat"
-    "results_ode.mat"
+    "results_ode_fast.mat"
+    "results_ode_accurate.mat"
+    % "results_ode.mat"
 ];
 
+
+files = [
+    "results_ode_fast.mat"
+    "results_acados_reduced.mat"
+    "results_acados_reduced2.mat"
+    % "simresults/sim_fn_irk_4_1_1ms.mat"
+    % "simresults/sim_fn_irk_4_1_5ms.mat"
+    % "simresults/sim_fn_irk_4_1_7ms.mat"
+    % "simresults/sim_fn_irk_4_1_10ms.mat"
+];
+
+
 T_end = 0.05;   % 0 = auto
+
+% Error threshold markers: mark points where |error| vs first file exceeds
+% these thresholds. Set to 0 or Inf to disable.
+err_thresh_mm  = 4;     % position threshold (mm)
+err_thresh_deg = Inf;   % orientation threshold (deg) — disabled by default
 
 %% ==========================================================
 %% Load files
@@ -28,6 +46,17 @@ for f = 1:nFiles
     data{f} = load(files(f));
     [~, n, ~] = fileparts(files(f));
     names{f} = strrep(n, '_', ' ');
+
+    % Expand 10-state (reduced, no yaw) to 12-state for compatibility
+    if size(data{f}.x, 1) == 10
+        N = size(data{f}.x, 2);
+        data{f}.x = [data{f}.x(1:5,:); zeros(1,N); ...
+                     data{f}.x(6:10,:); zeros(1,N)];
+        fprintf('  %s: expanded 10-state -> 12-state (yaw/wz = 0)\n', names{f});
+    end
+    if numel(data{f}.xEq) == 10
+        data{f}.xEq = [data{f}.xEq(1:5); 0; data{f}.xEq(6:10); 0];
+    end
 end
 
 xEq = data{1}.xEq;
@@ -73,6 +102,19 @@ for i = 1:3
         plot(data{f}.t, data{f}.x(i,:)*pos_scale, ...
             '-','Color',colors(f,:),'LineWidth',1.5,'DisplayName',names{f});
     end
+    % Error threshold markers (vs first file)
+    if isfinite(err_thresh_mm) && err_thresh_mm > 0
+        ref_t = data{1}.t;
+        for f = 2:nFiles
+            xi = interp1(data{f}.t, data{f}.x(i,:)', ref_t, 'pchip')';
+            err_mm = abs(data{1}.x(i,:) - xi) * pos_scale;
+            bad = err_mm > err_thresh_mm;
+            if any(bad)
+                scatter(ref_t(bad), xi(bad)*pos_scale, ...
+                    20, colors(f,:), 'x', 'LineWidth', 1.5, 'HandleVisibility','off');
+            end
+        end
+    end
     yline(xEq(i)*pos_scale,'k:','HandleVisibility','off');
     xlabel('Time (s)');
     ylabel(pos_unit);
@@ -94,6 +136,19 @@ for i = 1:3
     for f = 1:nFiles
         plot(data{f}.t, data{f}.x(si,:)*ang_scale, ...
             '-','Color',colors(f,:),'LineWidth',1.5,'DisplayName',names{f});
+    end
+    % Error threshold markers (vs first file)
+    if isfinite(err_thresh_deg) && err_thresh_deg > 0
+        ref_t = data{1}.t;
+        for f = 2:nFiles
+            xi = interp1(data{f}.t, data{f}.x(si,:)', ref_t, 'pchip')';
+            err_deg = abs(data{1}.x(si,:) - xi) * ang_scale;
+            bad = err_deg > err_thresh_deg;
+            if any(bad)
+                scatter(ref_t(bad), xi(bad)*ang_scale, ...
+                    20, colors(f,:), 'x', 'LineWidth', 1.5, 'HandleVisibility','off');
+            end
+        end
     end
     yline(xEq(si)*ang_scale,'k:','HandleVisibility','off');
     xlabel('Time (s)');

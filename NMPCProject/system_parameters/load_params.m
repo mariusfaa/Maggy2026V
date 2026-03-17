@@ -17,7 +17,7 @@ function params = load_params(modelIdOverride)
     % Apply solenoid radius correction for Fast/Filament models
     if ~isequal(modelId, MaglevModel.Accurate)
         fprintf('Applying solenoid radius correction (model=%s)...\n', char(modelId));
-        params.solenoids.r = params.solenoids.r / computeSolenoidRadiusCorrectionFactor(params, modelId);
+        params.solenoids.r = params.solenoids.r * computeSolenoidRadiusCorrectionFactor(params, modelId);
     end
 
     % Only assign to base workspace when called without output (e.g. from simSetup)

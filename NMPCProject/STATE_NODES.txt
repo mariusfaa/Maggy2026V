@@ -1,0 +1,39 @@
+f=f_expl 12 state fast nolut
+f           nodes: 13011
+J_x         nodes: 105628
+J_u         nodes: 7793
+J_xdot      nodes: 0
+H_xx        nodes: 1292727
+H_xu        nodes: 62642
+
+f=f_expl 10 state fast nolut
+f           nodes: 12916
+J_x         nodes: 89123
+J_u         nodes: 7712
+J_xdot      nodes: 0
+H_xx        nodes: 909432
+H_xu        nodes: 52083
+
+f=f_expl 10 state acurate nolut
+f           nodes: 64827
+J_x         nodes: 411434
+J_u         nodes: 33718
+J_xdot      nodes: 0
+H_xx        nodes: 4107022
+H_xu        nodes: 213503
+
+f=f_expl 10 state acurate luts
+f           nodes: 2197
+J_x         nodes: 11146
+J_u         nodes: 5696
+J_xdot      nodes: 0
+H_xx        nodes: 79549
+H_xu        nodes: 36911
+
+f=f_expl 10 state fast nolut approx-ellipke
+f           nodes: 10222
+J_x         nodes: 66368
+J_u         nodes: 6362
+J_xdot      nodes: 0
+H_xx        nodes: 623663
+H_xu        nodes: 40704

@@ -5,7 +5,7 @@ function [bx, by, bz] = computeFieldBase_lut(px, py, pz, u, params)
 
     N = size(px, 2);
     n_sol = length(params.solenoids.r);
-    eps_val = 1e-9;
+    eps_val = 1e-12;
 
     % Create mapped versions for this N
     perm_bx_map = params.luts.perm_bx.map(N);

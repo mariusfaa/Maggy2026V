@@ -14,8 +14,9 @@ addpath(fullfile(acados_root, 'interfaces', 'acados_matlab_octave'));
 addpath(fullfile(acados_root, 'external',   'jsonlab'));
 addpath(fullfile(acados_root, 'external',   'casadi-matlab'));
 
-addpath(genpath(fullfile(project_root, 'model_impl_casadi')));
-addpath(genpath(fullfile(project_root, 'model_impl_matlab')));
+addpath(genpath(fullfile(project_root, 'model_matlab')));
+% addpath(genpath(fullfile(project_root, 'model_casadi')));
+addpath(genpath(fullfile(project_root, 'model_reduced_casadi')));
 addpath(genpath(fullfile(project_root, 'system_parameters')));
 addpath(genpath(fullfile(project_root, 'utilities')));
 

@@ -41,7 +41,7 @@ else
     fprintf('--- Using analytical field computation (no LUTs) ---\n');
 end
 
-nx = 12;
+nx = 10;
 nu = 4;
 
 % SX is faster for pure symbolic expressions (analytical).
@@ -62,7 +62,7 @@ end
 
 fprintf('--- Setting up CasADi dynamics (model=%s, lut=%d) ---\n', ...
     string(modelId), use_luts);
-f_expl = maglevSystemDynamics_casadi(x, u, params, modelId);
+f_expl = maglevSystemDynamicsReduced_casadi(x, u, params, modelId);
 
 model = AcadosModel();
 model.name        = 'maglev_sim';

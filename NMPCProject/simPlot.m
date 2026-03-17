@@ -11,6 +11,17 @@ if ~isfile(results_file)
 end
 
 data = load(results_file);
+
+% Expand 10-state (reduced, no yaw) to 12-state for compatibility
+if size(data.x, 1) == 10
+    N = size(data.x, 2);
+    data.x = [data.x(1:5,:); zeros(1,N); data.x(6:10,:); zeros(1,N)];
+    fprintf('Expanded 10-state -> 12-state (yaw/wz = 0)\n');
+end
+if numel(data.xEq) == 10
+    data.xEq = [data.xEq(1:5); 0; data.xEq(6:10); 0];
+end
+
 xEq = data.xEq;
 
 if T_end == 0

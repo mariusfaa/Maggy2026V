@@ -2,11 +2,10 @@
 
 simSetup;
 
-save_filename = 'results_ode.mat';
+save_filename = 'results_ode_fast.mat';
 
-% Force 'accurate' settings (from hansolini repo)
-params.magnet.n = 100;
-params.magnet.n_axial = 21;
+modelId = MaglevModel.Fast;
+params = load_params(modelId);  % reload with correct solenoid correction
 
 %% --- System equations ---
 f_ode = @(x, u) maglevSystemDynamics(x, u, params, modelId);

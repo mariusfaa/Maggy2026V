@@ -12,8 +12,6 @@ N_horizon = 10;
 Tf        = dt_mpc * N_horizon;
 
 %% --- Model setup ---
-fprintf('--- Setting up model (Fast, analytical) ---\n');
-
 if ~exist("model","var")
     model = get_maggy_model(MaglevModel.Fast, use_luts=false);
 end
@@ -27,16 +25,14 @@ if ~exist("ocp_solver","var")
 
     ocp.solver_options.N_horizon             = N_horizon;
     ocp.solver_options.tf                    = Tf;
-    ocp.solver_options.integrator_type       = 'ERK';
+    ocp.solver_options.integrator_type       = 'IRK';
     ocp.solver_options.sim_method_num_stages = 4;
-    ocp.solver_options.sim_method_num_steps  = 5;
-    ocp.solver_options.nlp_solver_type       = 'SQP_RTI';
-    ocp.solver_options.qp_solver             = 'FULL_CONDENSING_HPIPM';
-    ocp.solver_options.hessian_approx        = 'GAUSS_NEWTON';
-    ocp.solver_options.globalization         = 'FIXED_STEP';
-    ocp.solver_options.regularize_method     = 'NO_REGULARIZE';
-    ocp.solver_options.qp_solver_warm_start  = 2;
-    ocp.solver_options.levenberg_marquardt   = 1e-4;
+    ocp.solver_options.sim_method_num_steps  = 1;
+    ocp.solver_options.nlp_solver_type = 'SQP'; % 'SQP_RTI' for real-time
+    ocp.solver_options.nlp_solver_max_iter = 200;
+    ocp.solver_options.qp_solver = 'FULL_CONDENSING_HPIPM';
+    ocp.solver_options.hessian_approx = 'GAUSS_NEWTON';
+    ocp.solver_options.globalization = 'MERIT_BACKTRACKING';
     ocp.solver_options.ext_fun_compile_flags = '-O3';
 
     % --- Cost: LINEAR_LS ---
@@ -92,7 +88,7 @@ if ~exist("sim_solver","var")
     sim.model = model;
 
     sim.solver_options.Tsim            = dt;
-    sim.solver_options.integrator_type = 'ERK';
+    sim.solver_options.integrator_type = 'IRK';
     sim.solver_options.num_stages      = 4;
     sim.solver_options.num_steps       = 1;
 
@@ -127,11 +123,9 @@ for k = 1:N_mpc
     tic_step = tic;
 
     % --- MPC solve ---
-    tic_mpc = tic;
     ocp_solver.set('constr_x0', x);
     ocp_solver.solve();
-    t_mpc_log(k) = toc(tic_mpc);
-
+    t_mpc_log(k) = ocp_solver.get('time_tot');
     t_lin_log(k) = ocp_solver.get('time_lin');
     t_qp_log(k)  = ocp_solver.get('time_qp_sol');
     t_reg_log(k) = ocp_solver.get('time_reg');
