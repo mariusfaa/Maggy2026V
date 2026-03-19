@@ -5,29 +5,33 @@
 // File: maglevModel.h
 //
 // MATLAB Coder version            : 25.2
-// C/C++ source code generated on  : 24-Feb-2026 11:41:58
+// C/C++ source code generated on  : 18-Mar-2026 14:10:12
 //
 
 #ifndef MAGLEVMODEL_H
 #define MAGLEVMODEL_H
 
 // Include Files
-#include "maglevModel_spec.h"
 #include "rtwtypes.h"
 #include <cstddef>
 #include <cstdlib>
 
 // Function Declarations
-MAGLEVMODEL_DLL_EXPORT extern void maglevModel_initialize();
+extern void maglevModel_initialize();
 
-MAGLEVMODEL_DLL_EXPORT extern void maglevModel_terminate();
+extern void maglevModel_terminate();
 
-MAGLEVMODEL_DLL_EXPORT extern void
-maglevSystemDynamics_fast(const double x[12], const double u[4], double dx[12]);
+extern void maglevSystemDynamics_red(const double x[10], const double u[4],
+                                     double dx[10]);
 
-MAGLEVMODEL_DLL_EXPORT extern void
-maglevSystemMeasurements_fast(const double x[12], const double u[4],
-                              double y[3]);
+extern void maglevSystemDynamics_xred(const double x[8], const double u[4],
+                                      double dx[8]);
+
+extern void maglevSystemMeasurements_red(const double x[10], const double u[4],
+                                         double y[3]);
+
+extern void maglevSystemMeasurements_xred(const double x[8], const double u[4],
+                                          double y[3]);
 
 #endif
 //

@@ -10,8 +10,9 @@ using namespace arma;
 class KalmanFilter {
 private:
     bool useSRformulation;
+    bool useNIS;
 
-protected:
+public:
     double dt; // Discretization time
 
     size_t nx; // Number of states
@@ -30,6 +31,7 @@ protected:
     mat Q; // Process covariance
     mat R; // Measurement covariance
     mat S; // Innovation covariance
+    mat Sinv; // Inverse innovation covariance
 
     // Square roots of covariances
     mat Ps;
@@ -43,8 +45,7 @@ protected:
     vec v; // Innovations
     double nis; // Normalized innovations squared
 
-public:
-    KalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements):
+    KalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, bool useNIS):
         nx(numberStates),
         nu(numberInputs),
         nz(numberMeasurements),
@@ -61,6 +62,7 @@ public:
         Q(arma::eye(nx, nx)),
         R(arma::eye(nz, nz)),
         S(arma::eye(nz, nz)),
+        Sinv(arma::eye(nz, nz)),
 
         Ps(arma::eye(nx, nx)),
         Qs(arma::eye(nx, nx)),
@@ -69,7 +71,8 @@ public:
 
         I(arma::eye(nx, nx)),
         W(arma::zeros(nx, nz)),
-        useSRformulation(1)
+        useSRformulation(useSRformulation),
+        useNIS(useNIS)
         {}
 
     virtual void init(vec &initialState,
@@ -127,7 +130,12 @@ public:
         }
 
         // Only use to calculate NIS; use solve otherwise
-        // mat Sinv = inv(S, inv_opts::likely_sympd);
+        if (useNIS) {
+            if (useSRformulation) {
+                S = Ss.t() * Ss;
+            }
+            Sinv = inv(S, inv_opts::likely_sympd);
+        }
 
         // Calculate Kalman gain
         //W = P * H.t() * Sinv;
@@ -139,7 +147,9 @@ public:
         else {
             W = solve(S, H*P, solve_opts::likely_sympd).t();
         }
-        // calculateNIS(v, Sinv);
+        if (useNIS) {
+            calculateNIS(v, Sinv);
+        }
 
         // Update state estimate
         x_est = x_pred + W * v;

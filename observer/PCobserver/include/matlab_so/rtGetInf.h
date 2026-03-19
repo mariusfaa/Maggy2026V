@@ -2,14 +2,14 @@
 // Academic License - for use in teaching, academic research, and meeting
 // course requirements at degree granting institutions only.  Not for
 // government, commercial, or other organizational use.
-// File: rt_nonfinite.h
+// File: rtGetInf.h
 //
 // MATLAB Coder version            : 25.2
-// C/C++ source code generated on  : 18-Mar-2026 14:10:12
+// C/C++ source code generated on  : 24-Feb-2026 11:41:58
 //
 
-#ifndef RT_NONFINITE_H
-#define RT_NONFINITE_H
+#ifndef RTGETINF_H
+#define RTGETINF_H
 
 // Include Files
 #include "rtwtypes.h"
@@ -18,19 +18,17 @@
 extern "C" {
 #endif
 
-extern real_T rtInf;
-extern real_T rtMinusInf;
-extern real_T rtNaN;
-extern real32_T rtInfF;
-extern real32_T rtMinusInfF;
-extern real32_T rtNaNF;
+extern real_T rtGetInf(void);
+extern real32_T rtGetInfF(void);
+extern real_T rtGetMinusInf(void);
+extern real32_T rtGetMinusInfF(void);
 
 #ifdef __cplusplus
 }
 #endif
 #endif
 //
-// File trailer for rt_nonfinite.h
+// File trailer for rtGetInf.h
 //
 // [EOF]
 //

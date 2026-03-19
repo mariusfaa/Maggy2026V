@@ -3,6 +3,7 @@
 #include "include/matlab/maglevModel.h"
 #include "integrator.h"
 #include <armadillo>
+#include <cstddef>
 #include <cstdio>
 
 using namespace arma;
@@ -10,8 +11,8 @@ using namespace arma;
 
 // Set states that are observed
 void increaseStateSpace(const vec &x, double x_pad[NUMBER_STATES]) {
-  int offset = 0;
-  for (int i = 0; i < NUMBER_STATES; i++) {
+  size_t offset = 0;
+  for (size_t i = 0; i < NUMBER_STATES; i++) {
     if (i == 5 || i == 11) {
       offset++;
     } else {
@@ -24,7 +25,7 @@ void increaseStateSpace(const vec &x, double x_pad[NUMBER_STATES]) {
 // Pop unobservable states
 void reduceStateSpace(const double x_pad[NUMBER_STATES], vec &x) {
   int offset = 0;
-  for (int i = 0; i < NUMBER_STATES; i++) {
+  for (size_t i = 0; i < NUMBER_STATES; i++) {
     if (i == 5 || i == 11) {
       offset++;
     } else {
@@ -34,22 +35,46 @@ void reduceStateSpace(const double x_pad[NUMBER_STATES], vec &x) {
 }
 
 
+void dynamics_f(const vec &x, const vec &u, vec &dx) {
+  switch (x.n_elem) {
+    case NUMBER_STATES_REDUCED:
+    maglevSystemDynamics_red(x.memptr(), u.memptr(), dx.memptr());
+    break;
+
+    case NUMBER_STATES_REDUCED_EXTRA:
+    maglevSystemDynamics_xred(x.memptr(), u.memptr(), dx.memptr());
+    break;
+  }
+}
+
+
+void measurements_h(const vec &x, const vec &u, vec &z) {
+  switch (x.n_elem) {
+    case NUMBER_STATES_REDUCED:
+    maglevSystemMeasurements_red(x.memptr(), u.memptr(), z.memptr());
+    break;
+
+    case NUMBER_STATES_REDUCED_EXTRA:
+    maglevSystemMeasurements_xred(x.memptr(), u.memptr(), z.memptr());
+    break;
+  }
+}
+
 // mode: 0 forward differemce, 1 backward difference, 2 central
-mat calculateJacobian(const vec &x, const vec &u, const vec &curr, const double &dt, const int &mode) {
+// jacType: 1 is process, 0 is measurement
+mat calculateJacobian(const vec &x, const vec &u, const bool &jacType, const vec &curr,  const double &dt, const int &mode) {
 
   double delta = 1e-12;
 
   size_t n = curr.n_rows;
+  size_t m = x.n_elem;
 
-  mat jac = zeros(n, NUMBER_STATES_REDUCED);
+  mat jac = zeros(n, m);
 
-  for (int i = 0; i < NUMBER_STATES_REDUCED; ++i) {
-
-    // Initialize in loop to ensure reset to 0
-    double x_pad[NUMBER_STATES] = {};
+  for (int i = 0; i < m; ++i) {
 
     // Zero except for the index of the variable to be differentiated
-    vec deltavec = zeros(NUMBER_STATES_REDUCED);
+    vec deltavec = zeros(m);
     deltavec(i) = delta;
 
     vec x_diff = x + deltavec;
@@ -57,29 +82,24 @@ mat calculateJacobian(const vec &x, const vec &u, const vec &curr, const double 
 
 
     // Container for f(x + delta)
-    vec df = zeros(NUMBER_STATES_REDUCED);
+    vec df = zeros(n);
 
     // Container for f(x - delta)
-    vec fd = zeros(NUMBER_STATES_REDUCED);
+    vec fd = zeros(n);
 
-
-    if (n == NUMBER_STATES_REDUCED) {
+    // True is process jacobian
+    if (jacType) {
       if (dt == 0) { // continuous jacobian Ac
-        double dx_pad[NUMBER_STATES] = {};
 
         if (mode == 0 || mode == 2) {
-          increaseStateSpace(x_diff, x_pad);
-          maglevSystemDynamics_fast(x_pad, u.memptr(), dx_pad);
-          reduceStateSpace(dx_pad, df);
+          dynamics_f(x_diff, u, df);
         }
         if (mode == 1 || mode == 2) {
-          increaseStateSpace(diff_x, x_pad);
-          maglevSystemDynamics_fast(x_pad, u.memptr(), dx_pad);
-          reduceStateSpace(dx_pad, fd);
+          dynamics_f(diff_x, u, fd);
         }
       }
       else { // discrete jacobian F
-        vec dx = zeros(NUMBER_STATES_REDUCED);
+        vec dx = zeros(m);
         derivatives_struct ds;
         derivatives_struct sd;
         ds.dx = &dx; // unused
@@ -100,24 +120,17 @@ mat calculateJacobian(const vec &x, const vec &u, const vec &curr, const double 
       double dh[NUMBER_MEASUREMENTS] = {};
 
       if (mode == 0 || mode == 2) {
-        increaseStateSpace(x_diff, x_pad);
-        maglevSystemMeasurements_fast(x_pad, u.memptr(), dh);
-        df.resize(3);
-        memcpy(df.memptr(), dh, sizeof(dh));
+        measurements_h(x_diff, u, df);
       }
       if (mode == 1 || mode == 2) {
-        increaseStateSpace(diff_x, x_pad);
-        maglevSystemMeasurements_fast(x_pad, u.memptr(), dh);
-        fd.resize(3);
-        memcpy(fd.memptr(), dh, sizeof(dh));
+        measurements_h(diff_x, u, fd);
       }
-
     }
     else {
       printf("Unknown Jacobian type!");
     }
 
-    vec col = zeros(NUMBER_STATES_REDUCED);
+    vec col = zeros(m);
 
     if (mode == 0) {
       col = (df - curr)/delta;

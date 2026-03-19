@@ -16,9 +16,11 @@ private:
   bool updateJacobians;
   bool updateQ;
   bool useSRformulation;
+  bool useNIS;
 
 protected:
   vec dx; // Continuous derivatives
+  derivatives_struct dxd;
 
   using Base::dt;
 
@@ -37,6 +39,7 @@ protected:
   using Base::Q;
   using Base::R;
   using Base::S;
+  using Base::Sinv;
 
   using Base::Ps;
   using Base::Qs;
@@ -47,14 +50,11 @@ protected:
   using Base::W;
 
 public:
-  derivatives_struct dxd;
-
-  ExtendedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements):
+  ExtendedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, bool useNIS, bool updateJacobians=1, bool updateQ=0):
     dx(arma::zeros(NUMBER_STATES_REDUCED)),
-    updateJacobians(1),
-    updateQ(1),
-    useSRformulation(1),
-    Base(numberStates, numberInputs, numberMeasurements) {
+    updateJacobians(updateJacobians),
+    updateQ(updateQ),
+    Base(numberStates, numberInputs, numberMeasurements, useSRformulation, useNIS) {
       maglevModel_initialize();
       dxd.dx = &dx;
       dxd.x_next = &x_pred;
@@ -67,7 +67,7 @@ public:
 
     // Calculates new F
     if (updateJacobians) {
-      mat Ac = calculateJacobian(x_est, u, x_pred, 0, 2);
+      mat Ac = calculateJacobian(x_est, u, 1, x_pred, 0, 2);
       if (updateQ) {
         van_loan_struct vls = van_loan(Ac, Q, dt);
         F = vls.Ad;
@@ -78,7 +78,7 @@ public:
       } else {
         F = discretize_A(Ac, dt);
       }
-      // F = calculateJacobian(x_est, u, x_pred, dt, 2);
+      // F = calculateJacobian(x_est, u, 1, x_pred, dt, 2);
     }
 
     // Predict covariance
@@ -92,18 +92,16 @@ public:
   }
 
   void update(vec &z) override {
-    double x_pad[NUMBER_STATES] = {};
 
     // Assuming feedthrough is compensated for
     vec u = zeros(nu);
 
     // z_pred = h(x)
-    increaseStateSpace(x_est, x_pad);
-    maglevSystemMeasurements_fast(x_pad, u.memptr(), z_pred.memptr());
+    measurements_h(x_est, u, z_pred);
 
     // Calculates new H
     if (updateJacobians) {
-      H = calculateJacobian(x_pred, u, z_pred, 0, 2);
+      H = calculateJacobian(x_pred, u, 0, z_pred, 0, 2);
     }
 
     // Innovation
@@ -126,7 +124,12 @@ public:
 
 
     // Only use to calculate NIS; use solve otherwise
-    // mat Sinv = inv(S, inv_opts::likely_sympd);
+    if (useNIS) {
+      if (useSRformulation) {
+        S = Ss.t() * Ss;
+      }
+      Sinv = inv(S, inv_opts::likely_sympd);
+    }
 
     // Calculate Kalman gain
     //W = P * H.t() * Sinv;
@@ -139,7 +142,9 @@ public:
       W = solve(S, H*P, solve_opts::likely_sympd).t();
     }
 
-    // calculateNIS(v, Sinv);
+    if (useNIS) {
+      calculateNIS(v, Sinv);
+    }
 
     // Update state estimate
     x_est = x_pred + W * v;

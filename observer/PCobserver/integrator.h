@@ -7,27 +7,17 @@
 using namespace arma;
 
 template<typename struct_type>
-void eulerForward(const vec &x_k, const vec &u_k, const double &dt, struct_type &s) {
-  double x_k_pad[NUMBER_STATES] = {};
-  vec dx(NUMBER_STATES, arma::fill::zeros);
-  vec x_next(NUMBER_STATES_REDUCED, arma::fill::zeros);
+void eulerForward(const vec &x, const vec &u, const double &dt, struct_type &s) {
 
-  increaseStateSpace(x_k, x_k_pad);
-
-  maglevSystemDynamics_fast(x_k_pad, u_k.memptr(), dx.memptr());
-
-  reduceStateSpace(dx.memptr(), x_next);
-
-  // save the reduced form of the derivative
-  *s.dx = x_next;
+  // Derivative is saved in the value pointed at by s.dx
+  dynamics_f(x, u, *s.dx);
 
   // euler forward
-  x_next = x_k + x_next * dt;
+  *s.x_next = x + *s.dx * dt;
 
-  // save discretized next value
-  *s.x_next = x_next;
 }
 
+/*
 template<typename struct_type>
 void rk4(const vec &x_k, const vec &u_k, const double &dt, struct_type &s) {
   // Pad the initial state
@@ -83,3 +73,4 @@ void rk4(const vec &x_k, const vec &u_k, const double &dt, struct_type &s) {
   // Save discretized next value
   *s.x_next = x_next;
 }
+*/

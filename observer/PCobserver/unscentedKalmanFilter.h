@@ -19,6 +19,7 @@ class UnscentedKalmanFilter: public ExtendedKalmanFilter {
 
 private:
     bool useSRformulation;
+    bool useNIS;
 
 protected:
     using Base::dt;
@@ -35,6 +36,7 @@ protected:
     using Base::Q;
     using Base::R;
     using Base::S;
+    using Base::Sinv;
 
     using Base::Ps;
     using Base::Qs;
@@ -65,8 +67,8 @@ protected:
     double central_cov_sgn;
 
 public:
-    UnscentedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements):
-    Base(numberStates, numberInputs, numberMeasurements),
+    UnscentedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, bool useNIS):
+    Base(numberStates, numberInputs, numberMeasurements, useSRformulation, useNIS),
     ns(2*nx+1),
     sigma_points(arma::zeros(nx, ns)),
     sigma_points_pred(arma::zeros(nx, ns)),
@@ -74,7 +76,8 @@ public:
     weights_mean(arma::zeros(ns)),
     weights_cov(arma::zeros(ns)),
     weights_cov_sr(arma::zeros(ns)),
-    useSRformulation(1)
+    useSRformulation(useSRformulation),
+    useNIS(useNIS)
     {
     setParameters();
     }
@@ -135,7 +138,7 @@ public:
 
         // Predict transformed state of sigma points
         for (size_t i = 0; i < ns; ++i) {
-            rk4(sigma_points.col(i), u, dt, dxd);
+            eulerForward(sigma_points.col(i), u, dt, dxd);
             sigma_points_pred.col(i) = x_pred;
         }
 
@@ -187,10 +190,7 @@ public:
 
         // Predicted measurement for each predicted sigma point
         for (size_t i = 0; i < ns; ++i) {
-            double x_pad[NUMBER_STATES] = {};
-
-            increaseStateSpace(sigma_points_pred.col(i), x_pad);
-            maglevSystemMeasurements_fast(x_pad, u.memptr(), z_pred.memptr());
+            measurements_h(sigma_points_pred.col(i), u, z_pred);
             sigma_points_meas.col(i) = z_pred;
         }
 
@@ -239,6 +239,14 @@ public:
             Pxz += weights_cov(i) * _e * _ee.t();
         }
 
+        // Only use to calculate NIS; use solve otherwise
+        if (useNIS) {
+            if (useSRformulation) {
+                S = Ss * Ss.t();
+            }
+            Sinv = inv(S, inv_opts::likely_sympd);
+        }
+
         // double *ps = Ps.memptr();
         // double *p = P.memptr();
         // double *ss = Ss.memptr();
@@ -250,8 +258,6 @@ public:
             W = solve(trimatl(Ss), solve(trimatu(Ss.t()), Pxz.t())).t();
         }
         else {
-            // Only use to calculate NIS; use solve otherwise
-            // mat Sinv = inv(S, inv_opts::likely_sympd);
 
             // Calculate Kalman gain
             //W = Pxz * Sinv;
@@ -260,6 +266,10 @@ public:
 
         // Innovation
         v = z - z_pred;
+
+        if (useNIS) {
+            calculateNIS(v, Sinv);
+        }
 
         // Update state estimate
         x_est = x_pred + W * v;
