@@ -13,6 +13,11 @@ using namespace arma;
 void increaseStateSpace(const vec &x, double x_pad[NUMBER_STATES]) {
   size_t offset = 0;
   for (size_t i = 0; i < NUMBER_STATES; i++) {
+    if (x.n_elem == NUMBER_STATES_REDUCED_EXTRA) {
+      if (i == 9 || i == 10) {
+        offset++;
+      }
+    }
     if (i == 5 || i == 11) {
       offset++;
     } else {
@@ -22,7 +27,7 @@ void increaseStateSpace(const vec &x, double x_pad[NUMBER_STATES]) {
 }
 
 
-// Pop unobservable states
+// Pop unobserved states
 void reduceStateSpace(const double x_pad[NUMBER_STATES], vec &x) {
   int offset = 0;
   for (size_t i = 0; i < NUMBER_STATES; i++) {
@@ -161,7 +166,7 @@ mat discretize_A(const mat &A, const double &dt) {
 // Exact discretization of input matrix. Assumes that A is invertible
 mat discretize_B(const mat &A, const mat &Ad, const mat &B) {
   size_t n = A.n_cols;
-  return inv(A)*(Ad + eye(n,n))*B;
+  return solve(A, (Ad + eye(n,n))*B);
 }
 
 

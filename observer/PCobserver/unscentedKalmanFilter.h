@@ -17,11 +17,10 @@ using namespace arma;
 class UnscentedKalmanFilter: public ExtendedKalmanFilter {
     using Base = ExtendedKalmanFilter;
 
-private:
-    bool useSRformulation;
-    bool useNIS;
-
 protected:
+    using Base::useSRformulation;
+    using Base::useNIS;
+
     using Base::dt;
 
     using Base::nx;
@@ -75,9 +74,7 @@ public:
     sigma_points_meas(arma::zeros(nz, ns)),
     weights_mean(arma::zeros(ns)),
     weights_cov(arma::zeros(ns)),
-    weights_cov_sr(arma::zeros(ns)),
-    useSRformulation(useSRformulation),
-    useNIS(useNIS)
+    weights_cov_sr(arma::zeros(ns))
     {
     setParameters();
     }
@@ -258,7 +255,6 @@ public:
             W = solve(trimatl(Ss), solve(trimatu(Ss.t()), Pxz.t())).t();
         }
         else {
-
             // Calculate Kalman gain
             //W = Pxz * Sinv;
             W = solve(S, Pxz.t(), solve_opts::likely_sympd).t();
@@ -281,6 +277,9 @@ public:
             // Update covariance estimate
             P = P - W * S * W.t();
         }
+        // std::cout << cond(P) << endl;
+        // std::cout << cond(S) << endl;
+        // std::cout << x_est << endl;
     }
 };
 

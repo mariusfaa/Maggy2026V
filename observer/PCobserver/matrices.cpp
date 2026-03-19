@@ -50,6 +50,10 @@ mat get_B_fast() {
   };
 }
 
+mat get_B_xred() {
+  return get_B_fast().rows(0, NUMBER_STATES_REDUCED_EXTRA-1);
+}
+
 mat get_B_d() {
   return {
   {1.01137272166542e-07,0,-1.01137272166542e-07,0},
@@ -75,6 +79,11 @@ mat get_H_fast() {
 };
 
 
+mat get_H_xred() {
+  return get_H_fast().cols(0, NUMBER_STATES_REDUCED_EXTRA-1);
+}
+
+
 // Covariance matrices
 // Initial covariance
 mat get_P0() {
@@ -92,6 +101,9 @@ mat get_P0() {
   };
 }
 
+mat get_P0_xred() {
+  return get_P0().submat(0, 0, NUMBER_STATES_REDUCED_EXTRA-1, NUMBER_STATES_REDUCED_EXTRA-1);
+}
 
 // State transition covariance
 mat get_Q() {
@@ -109,7 +121,7 @@ mat get_Q() {
  };
 }
 
-mat get_Q_redred() {
+mat get_Q_xred() {
   return get_Q().submat(0, 0, NUMBER_STATES_REDUCED_EXTRA-1, NUMBER_STATES_REDUCED_EXTRA-1);
 }
 

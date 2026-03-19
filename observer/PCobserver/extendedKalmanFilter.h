@@ -15,12 +15,13 @@ class ExtendedKalmanFilter: public KalmanFilter {
 private:
   bool updateJacobians;
   bool updateQ;
-  bool useSRformulation;
-  bool useNIS;
 
 protected:
   vec dx; // Continuous derivatives
   derivatives_struct dxd;
+
+  using Base::useSRformulation;
+  using Base::useNIS;
 
   using Base::dt;
 
@@ -50,8 +51,8 @@ protected:
   using Base::W;
 
 public:
-  ExtendedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, bool useNIS, bool updateJacobians=1, bool updateQ=0):
-    dx(arma::zeros(NUMBER_STATES_REDUCED)),
+  ExtendedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, bool useNIS, bool updateJacobians=1, bool updateQ=1):
+    dx(arma::zeros(numberStates)),
     updateJacobians(updateJacobians),
     updateQ(updateQ),
     Base(numberStates, numberInputs, numberMeasurements, useSRformulation, useNIS) {

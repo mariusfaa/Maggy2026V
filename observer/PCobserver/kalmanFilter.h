@@ -8,11 +8,10 @@
 using namespace arma;
 
 class KalmanFilter {
-private:
+protected:
     bool useSRformulation;
     bool useNIS;
 
-public:
     double dt; // Discretization time
 
     size_t nx; // Number of states
@@ -45,6 +44,7 @@ public:
     vec v; // Innovations
     double nis; // Normalized innovations squared
 
+public:
     KalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, bool useNIS):
         nx(numberStates),
         nu(numberInputs),

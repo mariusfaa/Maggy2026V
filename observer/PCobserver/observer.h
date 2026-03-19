@@ -1,21 +1,20 @@
 #pragma once
 
 #include <armadillo>
+#include <cstddef>
 #include "utilities.h"
 #include "kalmanFilter.h"
 #include "extendedKalmanFilter.h"
 #include "unscentedKalmanFilter.h"
 
-// Extern variables and objects
-extern volatile bool newSensorReading;
-extern volatile unsigned long observerTime;
+// Externs
 extern double NIS;
 extern KalmanFilter KF;
 extern ExtendedKalmanFilter EKF;
 extern UnscentedKalmanFilter UKF;
 
 // Prototypes
-void initObserver();
+void initObserver(size_t filterVariant = 1);
 void runObserver(const double input[NUMBER_INPUTS], const double (*z)[NUMBER_MEASUREMENTS],
-    double stateEstimates[NUMBER_STATES]);
+    double stateEstimates[NUMBER_STATES], size_t filterVariant = 2);
 
