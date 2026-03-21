@@ -2,20 +2,17 @@
 #include "unscentedKalmanFilter.h"
 #include "extendedKalmanFilter.h"
 #include "kalmanFilter.h"
-#include "include/matlab/maglevModel.h"
 #include "matrices.h"
 #include "utilities.h"
 #include <armadillo>
 
-#define NUMBER_OBSERVER_STATES NUMBER_STATES_REDUCED_EXTRA
+#define NUMBER_OBSERVER_STATES NUMBER_STATES_REDUCED
 
 using namespace arma;
 
-double NIS = 0;
-
-KalmanFilter KF(NUMBER_OBSERVER_STATES, NUMBER_INPUTS, NUMBER_MEASUREMENTS, 1, 0);
-ExtendedKalmanFilter EKF(NUMBER_OBSERVER_STATES, NUMBER_INPUTS, NUMBER_MEASUREMENTS, 1, 0);
-UnscentedKalmanFilter UKF(NUMBER_OBSERVER_STATES, NUMBER_INPUTS, NUMBER_MEASUREMENTS, 0, 0);
+KalmanFilter KF(NUMBER_OBSERVER_STATES, NUMBER_INPUTS, NUMBER_MEASUREMENTS, 0, 1);
+ExtendedKalmanFilter EKF(NUMBER_OBSERVER_STATES, NUMBER_INPUTS, NUMBER_MEASUREMENTS, 0, 1);
+UnscentedKalmanFilter UKF(NUMBER_OBSERVER_STATES, NUMBER_INPUTS, NUMBER_MEASUREMENTS, 0, 1);
 
 
 // Filter independent way of running an entire estimating cycle
@@ -23,7 +20,6 @@ template<typename FilterType>
 vec runFilter(FilterType &filter, vec &u, vec &z) {
   filter.predict(u);
   filter.update(z);
-  NIS = filter.getNIS();
   return filter.getState();
 }
 
@@ -52,14 +48,15 @@ void initObserver(size_t filterVariant) {
   mat H = calculateJacobian(xEq, uEq, 0, meas, dt, 2);
 
   // Discretizing system
-  mat Q = NUMBER_OBSERVER_STATES == NUMBER_STATES_REDUCED ? get_Q() : get_Q_xred();
-  mat B = NUMBER_OBSERVER_STATES == NUMBER_STATES_REDUCED ? get_B_fast() : get_B_xred();
+  mat Q = get_Q();
+  mat B = get_B_fast();
   van_loan_struct vls = van_loan(A, Q, dt);
   mat Ad = vls.Ad;
   mat Qd = vls.Qd;
+
   mat Bd = discretize_B(A, Ad, B);
 
-  mat P0 = NUMBER_OBSERVER_STATES == NUMBER_STATES_REDUCED ? get_P0() : get_P0_xred();
+  mat P0 = get_P0();
   mat R = get_R();
 
   // Initialize filter
@@ -80,20 +77,29 @@ void initObserver(size_t filterVariant) {
 
 
 // Stores estimates in provided stateEstimates array
-void runObserver(const double input[NUMBER_INPUTS], const double (*z)[NUMBER_MEASUREMENTS],
+void runObserver(const double input[NUMBER_INPUTS], const double z[NUMBER_MEASUREMENTS],
     double stateEstimates[NUMBER_STATES], size_t filterVariant) {
 
-  vec u(NUMBER_INPUTS);  // ux, uy, -ux, -uy
+  vec u(NUMBER_INPUTS);
   u(0) = input[0];
   u(1) = input[1];
   u(2) = input[2];
   u(3) = input[3];
   vec meas(NUMBER_MEASUREMENTS);
 
+  bool sim = 1;
+  if (!sim) {
   // reading is in mT, but h(x) uses T
-  meas(0) = z[0][0]*1e-3;   // bx
-  meas(1) = z[0][1]*1e-3;   // by
-  meas(2) = -z[0][2]*1e-3;  // bz; is inverted
+  meas(0) = z[0]*1e-3;   // bx
+  meas(1) = z[1]*1e-3;   // by
+  meas(2) = -z[2]*1e-3;  // bz; is inverted
+  }
+  else {
+    meas(0) = z[0];
+    meas(1) = z[1];
+    meas(2) = z[2];
+  }
+
 
   vec estimate;
 

@@ -62,7 +62,7 @@ public:
     }
 
 
-  void predict(vec &u) override {
+   virtual void predict(vec &u) override {
     // Predict mean
     eulerForward(x_est, u, dt, dxd);
 
@@ -92,7 +92,7 @@ public:
     }
   }
 
-  void update(vec &z) override {
+  virtual void update(vec &z) override {
 
     // Assuming feedthrough is compensated for
     vec u = zeros(nu);

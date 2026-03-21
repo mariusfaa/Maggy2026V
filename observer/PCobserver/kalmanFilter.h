@@ -180,14 +180,39 @@ public:
         return P;
     }
 
+    // Get square root covariance
+    mat getSRCovariance() const {
+        return Ps;
+    }
+
+    // Get innovation covariance
+    mat getInnovationCovariance() const {
+        return S;
+    }
+
+    // Get square root covariance
+    mat getSRInnovationCovariance() const {
+        return Ps;
+    }
+
     // Get system matrix
     mat getF() const {
         return F;
     }
 
+    // Get measurement matrix
+    mat getH() const {
+        return H;
+    }
+
     // Get input matrix
     mat getB() const {
         return B;
+    }
+
+    // Get Kalman gain
+    mat getKalmanGain() const {
+        return W;
     }
 
     // Calculate normalised innovations squared

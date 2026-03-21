@@ -36,6 +36,7 @@ protected:
     using Base::R;
     using Base::S;
     using Base::Sinv;
+    mat Pxz; // Cross-covariance
 
     using Base::Ps;
     using Base::Qs;
@@ -74,7 +75,8 @@ public:
     sigma_points_meas(arma::zeros(nz, ns)),
     weights_mean(arma::zeros(ns)),
     weights_cov(arma::zeros(ns)),
-    weights_cov_sr(arma::zeros(ns))
+    weights_cov_sr(arma::zeros(ns)),
+    Pxz(arma::zeros(nx, nz))
     {
     setParameters();
     }
@@ -136,7 +138,7 @@ public:
         // Predict transformed state of sigma points
         for (size_t i = 0; i < ns; ++i) {
             eulerForward(sigma_points.col(i), u, dt, dxd);
-            sigma_points_pred.col(i) = x_pred;
+            sigma_points_pred.col(i) = *(dxd.x_next);
         }
 
         // Calculate mean of predicted sigma points
@@ -171,14 +173,6 @@ public:
                 std::cout << "P is not symmetric positive definite!" << endl;
             }
         }
-        // std::cout << chol(P, "lower") << endl;
-        // std::cout << Ps << endl;
-        // std::cout << P << endl;
-        // std::cout << Ps*Ps.t() << endl;
-        // std::cout << P - Ps*Ps.t() << endl;
-        // std::cout << norm(P) << endl;
-        // std::cout << norm(Ps*Ps.t()) << endl;
-        // std::cout << norm(P - Ps*Ps.t(), "fro") << endl;
     }
 
     void update(vec &z) override {
@@ -209,7 +203,6 @@ public:
             qr_econ(_Q, _R, _X.t());
             Ss = _R.t();
             vec _e = sigma_points_meas.col(0) - z_pred;
-            // Ss = chol(Ss*Ss.t() + weights_cov(0)*_e*_e.t(), "lower");
             cholUpdate(Ss, weights_cov_sr(0)*(sigma_points_meas.col(0) - z_pred), central_cov_sgn);
         }
         else {
@@ -223,13 +216,10 @@ public:
             if (!S.is_sympd()) {
                 std::cout << "S is not symmetric positive definite!" << endl;
             }
-        // std::cout << chol(S, "lower") << endl;
-        // std::cout << Ss << endl;
-        // std::cout << S - Ss*Ss.t() << endl;
         }
 
         // Calculate cross-covariance
-        mat Pxz = arma::zeros(nx, nz);
+        Pxz = arma::zeros(nx, nz);
         for (size_t i = 0; i < ns; ++i) {
             vec _e = sigma_points_pred.col(i) - x_pred;
             vec _ee = sigma_points_meas.col(i) - z_pred;
@@ -244,12 +234,6 @@ public:
             Sinv = inv(S, inv_opts::likely_sympd);
         }
 
-        // double *ps = Ps.memptr();
-        // double *p = P.memptr();
-        // double *ss = Ss.memptr();
-        // double *s = S.memptr();
-        // double *pxz = Pxz.memptr();
-        // double *w = W.memptr();
         if (useSRformulation) {
             // W = solve(Ss.t()*Ss, Pxz.t(), solve_opts::likely_sympd).t();
             W = solve(trimatl(Ss), solve(trimatu(Ss.t()), Pxz.t())).t();
@@ -277,9 +261,22 @@ public:
             // Update covariance estimate
             P = P - W * S * W.t();
         }
-        // std::cout << cond(P) << endl;
-        // std::cout << cond(S) << endl;
-        // std::cout << x_est << endl;
+    }
+
+    mat getSigmaPoints() const {
+        return sigma_points;
+    }
+
+    mat getSigmaPoints_pred() const {
+        return sigma_points_pred;
+    }
+
+    mat getSigmaPointsMeas() const {
+        return sigma_points_meas;
+    }
+
+    mat getCrossCovariance() const {
+        return Pxz;
     }
 };
 

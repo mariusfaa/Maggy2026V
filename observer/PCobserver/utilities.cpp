@@ -47,7 +47,7 @@ void dynamics_f(const vec &x, const vec &u, vec &dx) {
     break;
 
     case NUMBER_STATES_REDUCED_EXTRA:
-    maglevSystemDynamics_xred(x.memptr(), u.memptr(), dx.memptr());
+    // maglevSystemDynamics_xred(x.memptr(), u.memptr(), dx.memptr());
     break;
   }
 }
@@ -60,7 +60,7 @@ void measurements_h(const vec &x, const vec &u, vec &z) {
     break;
 
     case NUMBER_STATES_REDUCED_EXTRA:
-    maglevSystemMeasurements_xred(x.memptr(), u.memptr(), z.memptr());
+    // maglevSystemMeasurements_xred(x.memptr(), u.memptr(), z.memptr());
     break;
   }
 }

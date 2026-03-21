@@ -7,6 +7,7 @@ NMPCProject/build/
 c_generated_code/
 NMPCProject/c_generated_code/
 **/c_generated_code/
+**/codegen
 
 # Ignore JSON files
 *.json
@@ -15,3 +16,16 @@ NMPCProject/c_generated_code/
 # Platformio
 .pio/
 .vscode/
+
+# Generated data files
+*.csv
+
+# Images
+*.pdf
+
+# Compiled code
+observer/PCobserver/target
+.mexa64
+
+# Virtual environments
+*.venv

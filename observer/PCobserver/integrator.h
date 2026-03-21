@@ -17,60 +17,47 @@ void eulerForward(const vec &x, const vec &u, const double &dt, struct_type &s) 
 
 }
 
-/*
+
 template<typename struct_type>
-void rk4(const vec &x_k, const vec &u_k, const double &dt, struct_type &s) {
-  // Pad the initial state
-  double x_k_pad[NUMBER_STATES] = {};
-  increaseStateSpace(x_k, x_k_pad);
+void rk4(const vec &x, const vec &u, const double &dt, struct_type &s) {
 
   // Storage for RK4 stages
-  double k1_pad[NUMBER_STATES] = {};
-  double k2_pad[NUMBER_STATES] = {};
-  double k3_pad[NUMBER_STATES] = {};
-  double k4_pad[NUMBER_STATES] = {};
+  vec k1(NUMBER_STATES_REDUCED, arma::fill::zeros);
+  vec k2(NUMBER_STATES_REDUCED, arma::fill::zeros);
+  vec k3(NUMBER_STATES_REDUCED, arma::fill::zeros);
+  vec k4(NUMBER_STATES_REDUCED, arma::fill::zeros);
 
   // Temporary vectors for intermediate states
-  double temp_pad[NUMBER_STATES] = {};
-
-  // Reduced form outputs for each stage
-  vec k1_reduced(NUMBER_STATES_REDUCED, arma::fill::zeros);
-  vec k2_reduced(NUMBER_STATES_REDUCED, arma::fill::zeros);
-  vec k3_reduced(NUMBER_STATES_REDUCED, arma::fill::zeros);
-  vec k4_reduced(NUMBER_STATES_REDUCED, arma::fill::zeros);
+  vec temp(NUMBER_STATES_REDUCED, arma::fill::zeros);
 
   // Final next state
   vec x_next(NUMBER_STATES_REDUCED, arma::fill::zeros);
 
   // k1: derivative at initial state
-  maglevSystemDynamics_fast(x_k_pad, u_k.memptr(), k1_pad);
-  reduceStateSpace(k1_pad, k1_reduced);
+  dynamics_f(x, u, k1);
 
   // k2: derivative at x_k + (dt/2)*k1
-  for(int i = 0; i < NUMBER_STATES; i++) {
-    temp_pad[i] = x_k_pad[i] + 0.5 * dt * k1_pad[i];
+  for(int i = 0; i < NUMBER_STATES_REDUCED; i++) {
+    temp(i) = x(i) + 0.5 * dt * k1(i);
   }
-  maglevSystemDynamics_fast(temp_pad, u_k.memptr(), k2_pad);
-  reduceStateSpace(k2_pad, k2_reduced);
+  dynamics_f(temp, u, k2);
 
   // k3: derivative at x_k + (dt/2)*k2
-  for(int i = 0; i < NUMBER_STATES; i++) {
-    temp_pad[i] = x_k_pad[i] + 0.5 * dt * k2_pad[i];
+  for(int i = 0; i < NUMBER_STATES_REDUCED; i++) {
+    temp(i) = x(i) + 0.5 * dt * k2(i);
   }
-  maglevSystemDynamics_fast(temp_pad, u_k.memptr(), k3_pad);
-  reduceStateSpace(k3_pad, k3_reduced);
+  dynamics_f(temp, u, k3);
 
   // k4: derivative at x_k + dt*k3
-  for(int i = 0; i < NUMBER_STATES; i++) {
-    temp_pad[i] = x_k_pad[i] + dt * k3_pad[i];
+  for(int i = 0; i < NUMBER_STATES_REDUCED; i++) {
+    temp(i) = x(i) + dt * k3(i);
   }
-  maglevSystemDynamics_fast(temp_pad, u_k.memptr(), k4_pad);
-  reduceStateSpace(k4_pad, k4_reduced);
+  dynamics_f(temp, u, k4);
 
-  // RK4 update: x_next = x_k + (dt/6)*(k1 + 2*k2 + 2*k3 + k4)
-  x_next = x_k + (dt/6.0) * (k1_reduced + 2.0*k2_reduced + 2.0*k3_reduced + k4_reduced);
+  // RK4 update
+  x_next = x + (dt/6.0) * (k1 + 2.0*k2 + 2.0*k3 + k4);
 
   // Save discretized next value
   *s.x_next = x_next;
 }
-*/
+
