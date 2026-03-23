@@ -11,3 +11,5 @@ NMPCProject/c_generated_code/
 # Ignore JSON files
 *.json
 **/*.json
+
+*.mat

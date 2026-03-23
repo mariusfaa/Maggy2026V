@@ -20,7 +20,7 @@ configs = struct([]);
 integrators  = {'ERK', 'IRK'};
 stages_list  = [1, 2, 4];
 steps_list   = [1, 2, 4];
-n_radial     = [4, 8, 12, 16];
+n_radial     = [8, 12, 16];
 
 idx = 0;
 for iInt = 1:length(integrators)

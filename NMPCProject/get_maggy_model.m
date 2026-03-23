@@ -8,6 +8,7 @@ function model = get_maggy_model(modelId, opts)
 %   modelId selects the physics model:
 %     MaglevModel.Fast     - Wire-loop field model
 %     MaglevModel.Accurate - Current-sheet field model
+%     MaglevModel.Dipole   - Magnetic dipole approximation (fastest)
 %
 %   use_luts (name-value, optional):
 %     true  - Pre-built LUTs (requires MX symbols)
@@ -26,38 +27,41 @@ import casadi.*
 % Load params configured for this model
 params = load_params(modelId);
 
-% Override LUT setting if provided
-if isfield(opts, 'use_luts')
-    params.lut_opts.enabled = opts.use_luts;
-end
-
-use_luts = params.lut_opts.enabled;
-
-% Build LUTs if enabled
-if use_luts
-    fprintf('--- Building LUTs (model=%s) ---\n', string(modelId));
-    params.luts = buildLuts(params, modelId);
-else
-    fprintf('--- Using analytical field computation (no LUTs) ---\n');
-end
-
 nx = 10;
 nu = 4;
 
-% Always use MX for outer symbols. This preserves CasADi Function/map
-% structure in the expression graph — acados generates loops instead of
-% unrolled code. Inner Functions use SX for efficient scalar AD.
 x    = MX.sym('x',    nx);
 u    = MX.sym('u',    nu);
 xdot = MX.sym('xdot', nx);
 
-if ~use_luts && modelId == MaglevModel.Accurate
-    warning("Acados model probably will not compile, as dynamics are to complex, consider enabling luts or using the fast model");
-end
+% Dipole model: separate code path (no LUTs, no elliptic integrals)
+if modelId == MaglevModel.Dipole
+    fprintf('--- Setting up CasADi dynamics (model=Dipole) ---\n');
+    f_expl = maglevSystemDynamicsDipole_casadi(x, u, params);
+else
+    % Override LUT setting if provided
+    if isfield(opts, 'use_luts')
+        params.lut_opts.enabled = opts.use_luts;
+    end
 
-fprintf('--- Setting up CasADi dynamics (model=%s, lut=%d) ---\n', ...
-    string(modelId), use_luts);
-f_expl = maglevSystemDynamicsReduced_casadi(x, u, params, modelId);
+    use_luts = params.lut_opts.enabled;
+
+    % Build LUTs if enabled
+    if use_luts
+        fprintf('--- Building LUTs (model=%s) ---\n', string(modelId));
+        params.luts = buildLuts(params, modelId);
+    else
+        fprintf('--- Using analytical field computation (no LUTs) ---\n');
+    end
+
+    if ~use_luts && modelId == MaglevModel.Accurate
+        warning("Acados model probably will not compile, as dynamics are to complex, consider enabling luts or using the fast model");
+    end
+
+    fprintf('--- Setting up CasADi dynamics (model=%s, lut=%d) ---\n', ...
+        string(modelId), use_luts);
+    f_expl = maglevSystemDynamicsReduced_casadi(x, u, params, modelId);
+end
 
 model = AcadosModel();
 model.name        = 'maglev_sim';

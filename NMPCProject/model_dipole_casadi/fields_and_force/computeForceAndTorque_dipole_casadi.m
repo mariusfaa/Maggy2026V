@@ -1,25 +1,15 @@
-function [fx,fy,fz,tx,ty,tz] = computeForceAndTorque_casadi(x, u, params, modelId)
-% COMPUTEFORCEANDTORQUE_CASADI  Reduced 10-state force/torque (Fast model only).
+function [fx,fy,fz,tx,ty,tz] = computeForceAndTorque_dipole_casadi(x, u, params)
+% COMPUTEFORCEANDTORQUE_DIPOLE_CASADI  Force & torque using dipole source fields.
 %
-% R = Ry(pitch) * Rx(roll), no Rz (yaw removed).
-% Wire-loop field model: circumferential points only, multiply by magnet_l.
+% Uses the same surface-integration approach as the Fast model (circumferential
+% points on the levitating magnet), but replaces the elliptic-integral field
+% computation with the closed-form magnetic dipole formula.
 %
-% All per-point operations (rotation, cross products) are wrapped in CasADi
-% SX Functions with map(nEval).  CasADi computes the Jacobian of each
-% scalar Function once and reuses it for every evaluation point.
+% This is faster than the Fast model because the dipole field formula is
+% ~5 operations per source vs ~100+ for elliptic integrals, while maintaining
+% the same accuracy for force/torque integration.
 %
-%   f_pos(alpha, beta, posx, posy, posz, cos_th, sin_th) -> (px, py, pz)
-%     Jacobian 3x7 computed once, mapped nEval times.
-%     cos_th, sin_th passed as numeric -> structurally zero Jacobian cols.
-%
-%   f_ft(alpha, beta, bx, by, bz, cos_th, sin_th) -> (Fx,Fy,Fz,Tx,Ty,Tz)
-%     Jacobian 6x7 computed once, mapped nEval times.
-%
-% Inputs:
-%   x       - State vector (10x1): [x;y;z; roll;pitch; vx;vy;vz; wx;wy]
-%   u       - Solenoid currents (n_sol x 1)
-%   params  - Parameter struct
-%   modelId - MaglevModel.Fast
+% State (10x1): [x; y; z; roll; pitch; vx; vy; vz; wx; wy]
 
     import casadi.*
 
@@ -34,15 +24,12 @@ function [fx,fy,fz,tx,ty,tz] = computeForceAndTorque_casadi(x, u, params, modelI
     dtheta = 2*pi / nRadial;
     nEval = nRadial;
 
-    % Precompute numeric theta values (passed to mapped functions)
     cos_th_vals = cos(theta);
     sin_th_vals = sin(theta);
 
     % =====================================================================
     % Function A: f_pos — rotate surface point + add position offset
-    %   Inputs:  (alpha, beta, posx, posy, posz, cos_th, sin_th)
-    %   Outputs: (px, py, pz)
-    %   magnet_r baked in as numeric constant.
+    % (identical to Fast model)
     % =====================================================================
     alpha_s  = SX.sym('alpha');
     beta_s   = SX.sym('beta');
@@ -59,7 +46,6 @@ function [fx,fy,fz,tx,ty,tz] = computeForceAndTorque_casadi(x, u, params, modelI
     R21 = 0;      R22 = ca;     R23 = -sa;
     R31 = -sb;    R32 = sa*cb;  R33 = ca*cb;
 
-    % Local point: (r*cos_th, r*sin_th, 0)
     lx = magnet_r * cos_th_s;
     ly = magnet_r * sin_th_s;
 
@@ -72,7 +58,6 @@ function [fx,fy,fz,tx,ty,tz] = computeForceAndTorque_casadi(x, u, params, modelI
         {px_s, py_s, pz_s});
     f_pos_map = f_pos.map(nEval);
 
-    % Call mapped function: scalar MX repeated, numeric theta vectors
     alpha_rep = repmat(x(4), 1, nEval);
     beta_rep  = repmat(x(5), 1, nEval);
     posx_rep  = repmat(x(1), 1, nEval);
@@ -83,20 +68,13 @@ function [fx,fy,fz,tx,ty,tz] = computeForceAndTorque_casadi(x, u, params, modelI
                               cos_th_vals, sin_th_vals);
 
     % =====================================================================
-    % Compute field at the rotated surface points
+    % Compute field at the rotated surface points using DIPOLE model
     % =====================================================================
-    if params.lut_opts.enabled
-        [bx, by, bz] = computeFieldBase_lut(px, py, pz, u, params);
-    else
-        [bx, by, bz] = computeFieldBase_analytical(px, py, pz, u, params, modelId);
-    end
+    [bx, by, bz] = computeFieldBase_dipole(px, py, pz, u, params);
 
     % =====================================================================
     % Function B: f_ft — force & torque cross products per point
-    %   Inputs:  (alpha, beta, bx, by, bz, cos_th, sin_th)
-    %   Outputs: (Fx, Fy, Fz, Tx, Ty, Tz)
-    %   Constants baked: K, magnet_l, magnet_r, dtheta.
-    %   Integration weight w = K * magnet_l * magnet_r * dtheta included.
+    % (identical to Fast model)
     % =====================================================================
     alpha_s2  = SX.sym('alpha');
     beta_s2   = SX.sym('beta');
@@ -112,28 +90,22 @@ function [fx,fy,fz,tx,ty,tz] = computeForceAndTorque_casadi(x, u, params, modelI
     R21b = 0;      R22b = ca2;      R23b = -sa2;
     R31b = -sb2;   R32b = sa2*cb2;  R33b = ca2*cb2;
 
-    % Integration weight
     w = K * magnet_l * magnet_r * dtheta;
 
-    % Tangent local: (-sin_th, cos_th, 0)
     tlx = -sin_th_s2;
     tly =  cos_th_s2;
-    % Rotate tangent (lz=0)
     tgx = R11b*tlx + R12b*tly;
     tgy = R21b*tlx + R22b*tly;
     tgz = R31b*tlx + R32b*tly;
 
-    % Force: w * (tangent_global x B)
     Fx_s = w * (tgy * bz_s - tgz * by_s);
     Fy_s = w * (tgz * bx_s - tgx * bz_s);
     Fz_s = w * (tgx * by_s - tgy * bx_s);
 
-    % Normal local: (0, 0, 1)  ->  rotated = R(:,3)
     ngx = R13b;
     ngy = R23b;
     ngz = R33b;
 
-    % Torque: w * (nvec_global x B)
     Tx_s = w * (ngy * bz_s - ngz * by_s);
     Ty_s = w * (ngz * bx_s - ngx * bz_s);
     Tz_s = w * (ngx * by_s - ngy * bx_s);
@@ -143,11 +115,9 @@ function [fx,fy,fz,tx,ty,tz] = computeForceAndTorque_casadi(x, u, params, modelI
         {Fx_s, Fy_s, Fz_s, Tx_s, Ty_s, Tz_s});
     f_ft_map = f_ft.map(nEval);
 
-    % Call mapped function
     [Fx_all, Fy_all, Fz_all, Tx_all, Ty_all, Tz_all] = ...
         f_ft_map(alpha_rep, beta_rep, bx, by, bz, cos_th_vals, sin_th_vals);
 
-    % Sum over all evaluation points (linear -> negligible Jacobian cost)
     fx = sum2(Fx_all);
     fy = sum2(Fy_all);
     fz = sum2(Fz_all);

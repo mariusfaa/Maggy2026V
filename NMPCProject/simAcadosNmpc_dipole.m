@@ -1,4 +1,4 @@
-%% simAcadosNmpc — NMPC control loop with acados
+%% simAcadosNmpc_dipole — NMPC control loop with acados (Dipole model)
 
 simSetup;
 import casadi.*
@@ -6,18 +6,18 @@ import casadi.*
 umax = 4;
 nx = 10;
 
-save_filename = 'results_acados_mpc_reduced.mat';
+save_filename = 'results_acados_mpc_dipole.mat';
 
-%% --- Recompute equilibrium using the MPC model (Fast) ---
-% simSetup uses Accurate model for equilibrium, but the MPC uses Fast.
-% These have different physics, so we need the Fast equilibrium.
-params_fast = load_params(MaglevModel.Fast);
-[zEq_fast, ~, ~, ~] = computeSystemEquilibria(params_fast, MaglevModel.Fast);
-xEq = [0; 0; zEq_fast(1); zeros(7,1)];  % 10-state reduced equilibrium
+%% --- Recompute equilibrium using the Dipole model ---
+params_dipole = load_params(MaglevModel.Dipole);
+[zEq_dipole, ~, ~, ~] = computeSystemEquilibria(params_dipole, MaglevModel.Dipole);
+xEq = [0; 0; zEq_dipole(1); zeros(7,1)];  % 10-state reduced equilibrium
 uEq = zeros(nu, 1);
 
-% Apply same perturbation relative to Fast equilibrium
-x0_full = [0; 0; zEq_fast(1); zeros(9,1)] + [0; 0.001; 0.001; 0; 0; 0; zeros(6,1)];
+fprintf('Dipole equilibrium: z = %.4f mm\n', zEq_dipole(1)*1e3);
+
+% Apply perturbation relative to Dipole equilibrium
+x0_full = [0; 0; zEq_dipole(1); zeros(9,1)] + [0; 0.001; 0.001; 0; 0; 0; zeros(6,1)];
 x0 = x0_full([1:5,7:11]);
 
 %% --- MPC parameters ---
@@ -27,7 +27,7 @@ Tf        = dt_mpc * N_horizon;
 
 %% --- Model setup ---
 if ~exist("model","var")
-    model = get_maggy_model(MaglevModel.Fast, use_luts=false);
+    model = get_maggy_model(MaglevModel.Dipole);
 end
 
 %% --- OCP SETUP ---
@@ -40,23 +40,20 @@ if ~exist("ocp_solver","var")
     ocp.solver_options.N_horizon             = N_horizon;
     ocp.solver_options.tf                    = Tf;
     ocp.solver_options.integrator_type       = 'ERK';
-    ocp.solver_options.sim_method_num_stages = 4;
+    ocp.solver_options.sim_method_num_stages = 1;
     ocp.solver_options.sim_method_num_steps  = 1;
-    ocp.solver_options.nlp_solver_type = 'SQP_RTI'; % 'SQP_RTI' for real-time
+    ocp.solver_options.nlp_solver_type = 'SQP_RTI';
     ocp.solver_options.nlp_solver_max_iter = 200;
-    %ocp.solver_options.nlp_solver_warm_start_first_qp = true;
-    ocp.solver_options.qp_solver = 'PARTIAL_CONDENSING_HPIPM'; % FULL_CONDENSING_DAQP, FULL_CONDENSING_QPOASES, FULL_CONDENSING_HPIPM
-    %ocp.solver_options.hessian_approx = 'GAUSS_NEWTON';
+    ocp.solver_options.qp_solver = 'PARTIAL_CONDENSING_HPIPM';
     ocp.solver_options.globalization = 'MERIT_BACKTRACKING';
     ocp.solver_options.ext_fun_compile_flags = '-O2';
-    ocp.solver_options.with_batch_functionality = true;
 
     % --- Cost: LINEAR_LS ---
     Q = diag([...
-        1e4, 1e4, ...       % x, y (lateral — less critical)
-        1e6, ...             % z (unstable direction — highest priority)
+        1e4, 1e4, ...       % x, y
+        1e6, ...             % z
         1e3, 1e3, ...       % roll, pitch
-        1e2, 1e2, 1e3, ...  % vx, vy, vz (vz high for damping)
+        1e2, 1e2, 1e3, ...  % vx, vy, vz
         1e2, 1e2 ...        % wx, wy
     ]);
     R = eye(nu) * 1e0;
@@ -73,7 +70,7 @@ if ~exist("ocp_solver","var")
 
     ocp.cost.W   = blkdiag(Q, R);
     ocp.cost.W_0 = blkdiag(Q, R);
-    ocp.cost.W_e = 10 * Q;  % heavier terminal cost for unstable system
+    ocp.cost.W_e = 10 * Q;
 
     ocp.cost.yref   = [xEq; uEq];
     ocp.cost.yref_0 = [xEq; uEq];
@@ -88,7 +85,7 @@ if ~exist("ocp_solver","var")
     ocp_solver = AcadosOcpSolver(ocp);
 end
 
-% Warm-start: initialize all shooting nodes to equilibrium
+% Warm-start
 for k = 0:N_horizon
     ocp_solver.set('x', xEq, k);
 end
@@ -128,7 +125,7 @@ t_reg_log  = zeros(1, N_mpc);
 x = x0;
 u = uEq;
 
-fprintf('\n--- Running NMPC simulation ---\n');
+fprintf('\n--- Running NMPC simulation (Dipole model) ---\n');
 fprintf('  T=%.3fs, dt=%.1f us, dt_mpc=%.1f us, n_sub=%d\n', ...
     t(end), dt*1e6, dt_mpc*1e6, n_sub);
 fprintf('  Plant steps: %d, MPC calls: %d\n', N_sim, N_mpc);
@@ -201,15 +198,13 @@ for k = 1:N_mpc
 end
 
 %% --- Performance summary ---
-fprintf('\n--- NMPC Performance ---\n');
+fprintf('\n--- NMPC Performance (Dipole) ---\n');
 fprintf('MPC  solve: mean=%.0f us, max=%.0f us, median=%.0f us\n', ...
     mean(t_mpc_log)*1e6, max(t_mpc_log)*1e6, median(t_mpc_log)*1e6);
 fprintf('  linearize: mean=%.0f us, median=%.0f us\n', ...
     mean(t_lin_log)*1e6, median(t_lin_log)*1e6);
 fprintf('  QP solve:  mean=%.0f us, median=%.0f us\n', ...
     mean(t_qp_log)*1e6, median(t_qp_log)*1e6);
-fprintf('  regularize:mean=%.0f us, median=%.0f us\n', ...
-    mean(t_reg_log)*1e6, median(t_reg_log)*1e6);
 fprintf('Plant sim:  mean=%.0f us, max=%.0f us, median=%.0f us  (%d sub-steps)\n', ...
     mean(t_sub_log)*1e6, max(t_sub_log)*1e6, median(t_sub_log)*1e6, n_sub);
 fprintf('Total step: mean=%.0f us, max=%.0f us, median=%.0f us\n', ...

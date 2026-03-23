@@ -1,3 +1,4 @@
+%% 
 %% simBenchMpc — Sweep NMPC solver settings and compare performance
 %
 % Loops over combinations of MPC settings (QP solver, horizon, integrator,
@@ -35,10 +36,10 @@ R = eye(nu) * 1e0;
 configs = struct([]);
 
 qp_solvers   = {'PARTIAL_CONDENSING_HPIPM', 'FULL_CONDENSING_DAQP', 'FULL_CONDENSING_HPIPM', 'FULL_CONDENSING_QPOASES'};
-nlp_solvers  = {'SQP_RTI', 'SQP', 'SQP_WITH_FEASIBLE_QP'};
-horizons     = [10, 20, 30, 40, 50];
-dt_mpcs      = [0.001, 0.002, 0.003, 0.004, 0.005];
-ocp_stages   = [1, 2, 4];
+nlp_solvers  = {'SQP_RTI'};%, 'SQP', 'SQP_WITH_FEASIBLE_QP'};
+horizons     = [10, 20, 30];
+dt_mpcs      = [0.001, 0.002, 0.003, 0.005];
+ocp_stages   = [4];
 n_radials    = [12];
 
 idx = 0;

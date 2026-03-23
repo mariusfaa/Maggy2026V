@@ -67,6 +67,35 @@ switch modelId
         ty = trapz(len,params.magnet.r*trapz([theta,2*pi],[Ty, Ty(:,1)],2));
         tz = trapz(len,params.magnet.r*trapz([theta,2*pi],[Tz, Tz(:,1)],2));
 
+    case MaglevModel.Dipole
+        % Same surface integration as Fast, but with dipole source fields
+        theta = linspace(0,2*pi-2*pi/params.magnet.n,params.magnet.n);
+        px = params.magnet.r*cos(theta);
+        py = params.magnet.r*sin(theta);
+        pz = zeros(size(px));
+
+        R = rot(x(4),x(5),x(6));
+        p = R*[px;py;pz] + x(1:3);
+
+        % Compute magnetic field using dipole model
+        [bx,by,bz] = computeFieldBase(p(1,:),p(2,:),p(3,:),u,params,modelId);
+
+        % Compute force
+        tangent = R*[cos(theta+pi/2); sin(theta+pi/2); zeros(size(theta))];
+        F = cross(K*params.magnet.l*tangent,[bx;by;bz]);
+
+        fx = params.magnet.r*trapz([theta,2*pi],[F(1,:),F(1,1)]);
+        fy = params.magnet.r*trapz([theta,2*pi],[F(2,:),F(2,1)]);
+        fz = params.magnet.r*trapz([theta,2*pi],[F(3,:),F(3,1)]);
+
+        % Compute torque
+        nvec = R*[zeros(2,params.magnet.n); ones(1,params.magnet.n)];
+        T = cross(K*params.magnet.l*nvec,[bx;by;bz]);
+
+        tx = params.magnet.r*trapz([theta,2*pi],[T(1,:),T(1,1)]);
+        ty = params.magnet.r*trapz([theta,2*pi],[T(2,:),T(2,1)]);
+        tz = params.magnet.r*trapz([theta,2*pi],[T(3,:),T(3,1)]);
+
     otherwise % Default is MaglevModel.Fast
         % Points along circumfrence
         theta = linspace(0,2*pi-2*pi/params.magnet.n,params.magnet.n);

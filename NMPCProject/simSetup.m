@@ -17,6 +17,7 @@ addpath(fullfile(acados_root, 'external',   'casadi-matlab'));
 addpath(genpath(fullfile(project_root, 'model_matlab')));
 % addpath(genpath(fullfile(project_root, 'model_casadi')));
 addpath(genpath(fullfile(project_root, 'model_reduced_casadi')));
+addpath(genpath(fullfile(project_root, 'model_dipole_casadi')));
 addpath(genpath(fullfile(project_root, 'system_parameters')));
 addpath(genpath(fullfile(project_root, 'utilities')));
 

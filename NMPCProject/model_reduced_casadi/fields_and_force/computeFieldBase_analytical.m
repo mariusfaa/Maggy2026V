@@ -1,11 +1,15 @@
 %% --- Analytical field computation using CasADi Function + map ---
 %
-% Architecture: define a SCALAR SX Function for one source at one eval
-% point, then .map() it over all (n_sources × nEval) pairs. With MX
-% outer symbols, the map structure is preserved in the expression graph:
-%   - acados generates ONE C function body, called in a loop
-%   - Jacobian is ONE block, applied N times (block-diagonal)
-%   - ~N× reduction in generated code size and AD cost
+% Split into two specialized functions with baked-in constants:
+%
+%   f_perm(px, py, pz)     — 3 inputs, Jacobian 3×3, structurally zero w.r.t. u
+%   f_sol(px, py, pz, I)   — 4 inputs, Jacobian 3×4, geometry baked in
+%
+% Constants (source positions, radii, lengths) are substituted numerically
+% into the SX graph at model creation time, so CasADi can:
+%   - Fold constant subexpressions in the generated C code
+%   - Produce smaller Jacobian blocks (3×3 and 3×4 instead of 3×9)
+%   - Know that df_perm/du = 0 structurally (no u in the expression)
 %
 function [bx, by, bz] = computeFieldBase_analytical(px, py, pz, u, params, modelId)
     import casadi.*
@@ -16,82 +20,88 @@ function [bx, by, bz] = computeFieldBase_analytical(px, py, pz, u, params, model
     n_sol  = length(params.solenoids.r);
     nEval  = size(px, 2);
 
-    % --- Build SCALAR SX Function: one source, one eval point ---
-    px_s  = SX.sym('px');
-    py_s  = SX.sym('py');
-    pz_s  = SX.sym('pz');
-    src_x = SX.sym('src_x');
-    src_y = SX.sym('src_y');
-    src_z = SX.sym('src_z');
-    src_r = SX.sym('src_r');
-    src_l = SX.sym('src_l');
-    src_I = SX.sym('src_I');
+    % =====================================================================
+    % Permanent magnets: f_perm(px, py, pz) — all source params baked in
+    % =====================================================================
+    I_perm_vals = params.permanent.J / mu0 * params.permanent.l;
 
-    dx_s  = px_s - src_x;
-    dy_s  = py_s - src_y;
-    dz_s  = pz_s - src_z;
-    rho_s = sqrt(dx_s^2 + dy_s^2);
+    bx_acc = zeros(1, nEval);  % numeric accumulator (will become MX via addition)
+    by_acc = zeros(1, nEval);
+    bz_acc = zeros(1, nEval);
 
-    switch modelId
-        case MaglevModel.Fast
-            [brho_s, bz_s] = computeFieldCircularWirePolar_casadi(...
-                rho_s, dz_s, src_r, src_I, mu0);
-        otherwise  % Accurate
-            [brho_s, bz_s] = computeFieldCircularCurrentSheetPolar_casadi(...
-                rho_s, dz_s, src_r, src_l, src_I, mu0);
+    for i = 1:n_perm
+        % Build SX function with this source's constants baked in
+        px_s = SX.sym('px');
+        py_s = SX.sym('py');
+        pz_s = SX.sym('pz');
+
+        dx_s  = px_s - params.permanent.x(i);
+        dy_s  = py_s - params.permanent.y(i);
+        dz_s  = pz_s - params.permanent.z(i);
+        rho_s = sqrt(dx_s^2 + dy_s^2);
+
+        switch modelId
+            case MaglevModel.Fast
+                [brho_s, bz_s] = computeFieldCircularWirePolar_casadi(...
+                    rho_s, dz_s, params.permanent.r(i), I_perm_vals(i), mu0);
+            otherwise
+                [brho_s, bz_s] = computeFieldCircularCurrentSheetPolar_casadi(...
+                    rho_s, dz_s, params.permanent.r(i), params.permanent.l(i), I_perm_vals(i), mu0);
+        end
+
+        bx_s = brho_s * dx_s / (rho_s + eps_val);
+        by_s = brho_s * dy_s / (rho_s + eps_val);
+
+        f_p = Function(sprintf('f_perm%d', i), ...
+            {px_s, py_s, pz_s}, {bx_s, by_s, bz_s});
+        f_p_map = f_p.map(nEval);
+
+        [bx_i, by_i, bz_i] = f_p_map(px, py, pz);
+        bx_acc = bx_acc + bx_i;
+        by_acc = by_acc + by_i;
+        bz_acc = bz_acc + bz_i;
     end
 
-    bx_s = brho_s * dx_s / (rho_s + eps_val);
-    by_s = brho_s * dy_s / (rho_s + eps_val);
+    bx = bx_acc;
+    by = by_acc;
+    bz = bz_acc;
 
-    f_pt = Function('f_pt', ...
-        {px_s, py_s, pz_s, src_x, src_y, src_z, src_r, src_l, src_I}, ...
-        {bx_s, by_s, bz_s});
+    % =====================================================================
+    % Solenoids: f_sol(px, py, pz, I) — geometry baked in, current symbolic
+    % =====================================================================
+    for i = 1:n_sol
+        px_s = SX.sym('px');
+        py_s = SX.sym('py');
+        pz_s = SX.sym('pz');
+        I_s  = SX.sym('I');
 
-    % --- Permanent magnets: map over n_perm * nEval pairs ---
-    n_total_perm = n_perm * nEval;
-    f_perm = f_pt.map(n_total_perm);
+        dx_s  = px_s - params.solenoids.x(i);
+        dy_s  = py_s - params.solenoids.y(i);
+        dz_s  = pz_s - params.solenoids.z(i);
+        rho_s = sqrt(dx_s^2 + dy_s^2);
 
-    % Build input vectors: layout [src1_pt1, ..., src1_ptN, src2_pt1, ..., srcM_ptN]
-    I_perm = params.permanent.J / mu0 * params.permanent.l;
+        switch modelId
+            case MaglevModel.Fast
+                [brho_s, bz_s] = computeFieldCircularWirePolar_casadi(...
+                    rho_s, dz_s, params.solenoids.r(i), I_s, mu0);
+            otherwise
+                [brho_s, bz_s] = computeFieldCircularCurrentSheetPolar_casadi(...
+                    rho_s, dz_s, params.solenoids.r(i), params.solenoids.l(i), I_s, mu0);
+        end
 
-    [bx_p, by_p, bz_p] = f_perm(...
-        repmat(px, 1, n_perm), ...                              % eval points repeated per source
-        repmat(py, 1, n_perm), ...
-        repmat(pz, 1, n_perm), ...
-        kron(params.permanent.x, ones(1, nEval)), ...           % source params repeated per eval point
-        kron(params.permanent.y, ones(1, nEval)), ...
-        kron(params.permanent.z, ones(1, nEval)), ...
-        kron(params.permanent.r, ones(1, nEval)), ...
-        kron(params.permanent.l, ones(1, nEval)), ...
-        kron(I_perm, ones(1, nEval)));
+        bx_s = brho_s * dx_s / (rho_s + eps_val);
+        by_s = brho_s * dy_s / (rho_s + eps_val);
 
-    % Reshape (1, n_perm*nEval) -> (nEval, n_perm), sum over sources
-    bx = sum2(reshape(bx_p, nEval, n_perm))';
-    by = sum2(reshape(by_p, nEval, n_perm))';
-    bz = sum2(reshape(bz_p, nEval, n_perm))';
+        f_s = Function(sprintf('f_sol%d', i), ...
+            {px_s, py_s, pz_s, I_s}, {bx_s, by_s, bz_s});
+        f_s_map = f_s.map(nEval);
 
-    % --- Solenoids: map over n_sol * nEval pairs ---
-    n_total_sol = n_sol * nEval;
-    f_sol = f_pt.map(n_total_sol);
+        I_sym = params.solenoids.nw * u(i);
+        I_rep = repmat(I_sym, 1, nEval);
 
-    % Effective current per solenoid: nw * u(i), symbolic
-    % Repeat each element nEval times: [nw*u(1) × nEval, nw*u(2) × nEval, ...]
-    I_sol_vec = (params.solenoids.nw * u)';                     % (1, n_sol) symbolic
-    I_sol_rep = reshape(ones(nEval, 1) * I_sol_vec, 1, n_total_sol);  % (1, n_sol*nEval)
-
-    [bx_sol, by_sol, bz_sol] = f_sol(...
-        repmat(px, 1, n_sol), ...
-        repmat(py, 1, n_sol), ...
-        repmat(pz, 1, n_sol), ...
-        kron(params.solenoids.x, ones(1, nEval)), ...
-        kron(params.solenoids.y, ones(1, nEval)), ...
-        kron(params.solenoids.z, ones(1, nEval)), ...
-        kron(params.solenoids.r, ones(1, nEval)), ...
-        kron(params.solenoids.l, ones(1, nEval)), ...
-        I_sol_rep);
-
-    bx = bx + sum2(reshape(bx_sol, nEval, n_sol))';
-    by = by + sum2(reshape(by_sol, nEval, n_sol))';
-    bz = bz + sum2(reshape(bz_sol, nEval, n_sol))';
+        [bx_i, by_i, bz_i] = f_s_map(px, py, pz, I_rep);
+        bx = bx + bx_i;
+        by = by + by_i;
+        bz = bz + bz_i;
+    end
 end
