@@ -13,3 +13,7 @@ NMPCProject/c_generated_code/
 **/*.json
 
 *.mat
+
+# Platformio
+.pio/
+.vscode/
