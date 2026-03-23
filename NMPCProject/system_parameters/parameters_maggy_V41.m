@@ -28,7 +28,7 @@ params.magnet.l     = 0.0040;
 params.magnet.J     = -1.1;
 params.magnet.m     = 0.060; % (weight on kitchen scale, golden magnet)
 params.magnet.I     = [6.1686e-06, 6.1686e-06, 1.1274e-05];
-params.magnet.n     = 8; % Radial discretization points on levitating disk (higher is more accurate, but also more computationally expensive)
+params.magnet.n     = 16; % Radial discretization points on levitating disk (higher is more accurate, but also more computationally expensive)
 params.magnet.n_axial = 1; % keep odd for best accuracy
 
 % Sensors - only one sensor 
@@ -41,7 +41,7 @@ params.physical.g   = 9.81;                                                % Gra
 params.physical.mu0 = 4*pi*1e-7;                                           % Permeability of free space (air) [N/A^2]
 
 % LUT options for CasADi model
-params.lut_opts.enabled = true;
+params.lut_opts.enabled = false;
 params.lut_opts.method       = 'linear';        % 'bspline' or 'linear'
 
 % Solenoid 2D LUT bounds (derived from geometry + margin)

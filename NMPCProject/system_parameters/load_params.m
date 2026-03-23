@@ -14,10 +14,10 @@ function params = load_params(modelIdOverride)
         modelId = MaglevModel.Accurate;
     end
 
-    if isequal(modelId, MaglevModel.Accurate)
-        params.magnet.n = 80;
-        params.magnet.n_axial = 7;
-    end
+    % if isequal(modelId, MaglevModel.Accurate)
+    %     params.magnet.n = 80;
+    %     params.magnet.n_axial = 7;
+    % end
 
     % Apply solenoid radius correction for Fast/Filament models
     % (not needed for Accurate or Dipole)

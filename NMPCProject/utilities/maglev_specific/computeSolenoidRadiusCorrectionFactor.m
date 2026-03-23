@@ -16,7 +16,10 @@ function c = computeSolenoidRadiusCorrectionFactor(params,modelId)
 
     % Optimize
     options = optimoptions('fmincon', 'Display', 'off');
-    target = computeVerticalForce(zEq,params,MaglevModel.Filament);
+    params_fil = params;
+    params_fil.magnet.n = 80;
+    params_fil.magnet.n_axial = 21;
+    target = computeVerticalForce(zEq,params_fil,MaglevModel.Filament);
     c = fmincon(@(c) objfun(c,zEq,params,modelId,target),1,[],[],[],[],0,inf,[],options);
 
     % Helping functions

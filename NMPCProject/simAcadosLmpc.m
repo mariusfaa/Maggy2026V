@@ -1,4 +1,4 @@
-%% simAcadosNmpc — NMPC control loop with acados
+%% simAcadosNmpc — Linear MPC control loop with acados
 
 simSetup;
 import casadi.*

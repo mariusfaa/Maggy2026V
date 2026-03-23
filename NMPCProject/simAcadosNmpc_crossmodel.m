@@ -43,7 +43,7 @@ model_mpc = get_maggy_model(MaglevModel.Dipole);
 
 %% --- Build Plant model (Accurate, with LUTs for speed) ---
 fprintf('\n--- Building Plant model (Accurate + LUT) ---\n');
-model_plant = get_maggy_model(MaglevModel.Accurate, use_luts=true);
+model_plant = get_maggy_model(MaglevModel.Accurate, use_luts=false);
 
 %% --- OCP SETUP (Dipole controller) ---
 fprintf('\n--- Setting up OCP (Dipole) ---\n');

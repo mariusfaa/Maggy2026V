@@ -4,7 +4,7 @@ simSetup;
 import casadi.*
 
 %clear sim_solver;
-save_filename = 'results_acados_reduced.mat';
+save_filename = 'acados_fast_n80_na1.mat';
 
 
 nx = 10;

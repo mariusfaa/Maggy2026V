@@ -29,15 +29,18 @@ nx = 12;
 nu = length(params.solenoids.r);
 
 %% --- Equilibrium ---
+params_acc = params;
+params_acc.magnet.n = 80;
+params_acc.magnet.n_axial = 21;
 [zEq, ~, ~, ~] = computeSystemEquilibria(params, modelId);
-
 xEq = [0; 0; zEq(1); zeros(9,1)];
 uEq = zeros(nu, 1);
 
 %% --- Simulation time ---
-dt = 0.001;
+dt = 0.0001;
 t  = 0:dt:0.5;
 
 %% --- Initial conditions ---
+x0 = xEq + [0; 0.0001; 0.005; 0; 0; 0; zeros(6,1)];
 x0 = xEq + [0; 0.001; 0.001; 0; 0; 0; zeros(6,1)];
 u0 = [-0.25; 0.5; -0.5; 0.75];

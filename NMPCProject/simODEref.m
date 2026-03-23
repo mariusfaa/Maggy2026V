@@ -2,10 +2,10 @@
 
 simSetup;
 
-save_filename = 'results_ode_fast.mat';
-
-modelId = MaglevModel.Fast;
+modelId = MaglevModel.Accurate;
 params = load_params(modelId);  % reload with correct solenoid correction
+save_filename = sprintf('ode_acc_n%d_na%d.mat',params.magnet.n,params.magnet.n_axial);
+fprintf("%s\n",save_filename);
 
 %% --- System equations ---
 f_ode = @(x, u) maglevSystemDynamics(x, u, params, modelId);

@@ -7,29 +7,38 @@
 %% ==========================================================
 
 files = [
-    "results_ode_fast.mat"
-    "results_ode_accurate.mat"
-    % "results_ode.mat"
-];
+    "sim_results/ode_acc_n80_na21.mat"
+    % "sim_results/ode_acc_n80_na7.mat"
+    % "sim_results/ode_acc_n80_na1.mat"
+    % "sim_results/ode_acc_n24_na1.mat"
+    "sim_results/ode_acc_n16_na1.mat"
+    % "sim_results/ode_acc_n12_na1.mat"
+    % "sim_results/ode_acc_n10_na1.mat"
+   "sim_results/ode_fast_n80_na1.mat"
+    % "sim_results/ode_fast_n16_na1.mat"
+    % "sim_results/ode_fast_n8_na1.mat"
 
+
+    "sim_results/acados_acc_n80_na1.mat"
+    "sim_results/acados_acc_n16_na1.mat"
+    "sim_results/acados_acc_n8_na1.mat"
+
+    "sim_results/acados_fast_n80_na1.mat"
+    "sim_results/acados_fast_n16_na1.mat"
+    "sim_results/acados_fast_n8_na1.mat"
+];
 
 files = [
-    % "results_ode_fast.mat"
-    % "results_acados_reduced.mat"
-    "results_acados_mpc_reduced_40.mat"
-    "results_acados_mpc_reduced_30.mat"
-    "results_acados_mpc_reduced_20.mat"
-    "results_acados_mpc_reduced_15.mat"
-    % "results_acados_mpc_reduced.mat"
-    % "results_acados_reduced2.mat"
-    % "simresults/sim_fn_irk_4_1_1ms.mat"
-    % "simresults/sim_fn_irk_4_1_5ms.mat"
-    % "simresults/sim_fn_irk_4_1_7ms.mat"
-    % "simresults/sim_fn_irk_4_1_10ms.mat"
-];
+    "sim_results/ode_accurate_n80_na21.mat"
+    % "sim_results/ode_fast_n80_na1.mat"
+    % "sim_results/acados_accurate_n80_na1.mat"
+    % "sim_results/acados_accurate_n16_na1.mat"
+    "sim_results/acados_accurate_n16_na1.mat"
+    % "sim_results/acados_accurate_n8_na1.mat"
+    % "acados_fast_n80_na1.mat"
+]
 
-
-T_end = 1.0;   % 0 = auto
+T_end = 0.05;   % 0 = auto
 
 % Error threshold markers: mark points where |error| vs first file exceeds
 % these thresholds. Set to 0 or Inf to disable.
@@ -78,6 +87,18 @@ for f = 1:nFiles
     fprintf('%s: %d points, dt=%.6f\n', names{f}, length(data{f}.t), data{f}.dt);
 end
 fprintf('T_end = %.4f s\n', T_end);
+
+%% ==========================================================
+%% Normalize initial state (static offset vs first file)
+%% ==========================================================
+
+x0_ref = data{1}.x(:,1);   % reference initial state
+
+for f = 2:nFiles
+    x0 = data{f}.x(:,1);
+    offset = x0_ref - x0;
+    data{f}.x = data{f}.x + offset;
+end
 
 %% ==========================================================
 %% Units & labels

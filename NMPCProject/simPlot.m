@@ -2,7 +2,7 @@
 % clear; clc;
 
 %% --- Settings ---
-results_file = "results_acados_mpc_reduced.mat";
+results_file = "results_lmpc.mat";
 T_end = 0;  % 0 for auto
 
 %% --- Load raw results ---
