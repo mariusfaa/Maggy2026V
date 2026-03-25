@@ -17,7 +17,7 @@ addpath(fullfile(acados_root, 'external',   'casadi-matlab'));
 addpath(genpath(fullfile(project_root, 'model_matlab')));
 % addpath(genpath(fullfile(project_root, 'model_casadi')));
 addpath(genpath(fullfile(project_root, 'model_reduced_casadi')));
-addpath(genpath(fullfile(project_root, 'model_dipole_casadi')));
+% addpath(genpath(fullfile(project_root, 'model_dipole_casadi')));
 addpath(genpath(fullfile(project_root, 'system_parameters')));
 addpath(genpath(fullfile(project_root, 'utilities')));
 
@@ -25,22 +25,35 @@ addpath(genpath(fullfile(project_root, 'utilities')));
 modelId = MaglevModel.Accurate;
 params = load_params(modelId);
 
-nx = 12;
-nu = length(params.solenoids.r);
+nx = 10;
+nu = 4;
 
-%% --- Equilibrium ---
+% --- Equilibrium ---
 params_acc = params;
 params_acc.magnet.n = 80;
 params_acc.magnet.n_axial = 21;
 [zEq, ~, ~, ~] = computeSystemEquilibria(params, modelId);
-xEq = [0; 0; zEq(1); zeros(9,1)];
+xEq_full = [0; 0; zEq(1); zeros(9,1)];
+xEq = [0; 0; zEq(1); zeros(7,1)];
 uEq = zeros(nu, 1);
 
-%% --- Simulation time ---
+% --- MPC parameters ---
+N_horizon = 30;
+dt_mpc = 0.001;
+
+% --- Simulation time ---
 dt = 0.0001;
 t  = 0:dt:0.5;
 
-%% --- Initial conditions ---
-x0 = xEq + [0; 0.0001; 0.005; 0; 0; 0; zeros(6,1)];
-x0 = xEq + [0; 0.001; 0.001; 0; 0; 0; zeros(6,1)];
+% --- Initial conditions ---
+x0_full = xEq_full + [0; 0.001; 0.001; 0; 0; 0; zeros(6,1)];
+x0 = x0_full([1:5,7:11]);
 u0 = [-0.25; 0.5; -0.5; 0.75];
+
+% Setup sim object
+if ~exist("sim_solver","var")
+    model = getSimModel();
+    sim_solver = getSimSolver(model,dt);
+end
+
+assert(mod(dt_mpc,dt) == 0,"dt_mpc must be a multiple of dt");

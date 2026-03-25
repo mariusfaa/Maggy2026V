@@ -48,5 +48,5 @@ function params = load_params(modelIdOverride)
         assignin('base', 'modelId', modelId);
     end
 
-    fprintf('Params loaded (model=%s)\n', char(modelId));
+    %fprintf('Params loaded (model=%s)\n', char(modelId));
 end

@@ -19,18 +19,8 @@ if ~exist("model","var")
 end
 
 %% --- BUILD / REUSE SIM SOLVER ---
-fprintf('\n--- Building acados sim solver ---\n');
-
 if ~exist("sim_solver","var")
-    sim = AcadosSim();
-    sim.model = model;
-
-    sim.solver_options.Tsim            = dt;
-    sim.solver_options.integrator_type = 'ERK';
-    sim.solver_options.num_stages      = 4;
-    sim.solver_options.num_steps       = 1;
-
-    sim_solver = AcadosSimSolver(sim);
+    sim_solver = getSimSolver();
 end
 
 %% --- Run simulation ---

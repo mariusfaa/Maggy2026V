@@ -151,6 +151,7 @@ N_mpc  = floor(N_sim / n_sub);
 x_sim      = zeros(nx, N_sim);
 u_sim      = zeros(nu, N_sim);
 t_mpc_log  = zeros(1, N_mpc);
+t_qp_log   = zeros(1, N_mpc);
 t_jac_log  = zeros(1, N_mpc);
 t_sub_log  = zeros(1, N_mpc);
 t_step_log = zeros(1, N_mpc);
@@ -186,6 +187,7 @@ for k = 1:N_mpc
     ocp_solver.set('constr_x0', x);
     ocp_solver.solve();
     t_mpc_log(k) = ocp_solver.get('time_tot');
+    t_qp_log(k)  = ocp_solver.get('time_qp_sol');
 
     status = ocp_solver.get('status');
     if status ~= 0 && status ~= 2
@@ -203,15 +205,16 @@ for k = 1:N_mpc
     ocp_solver.set('u', ocp_solver.get('u', N_horizon-1), N_horizon-1);
 
     % --- Plant sub-steps ---
-    tic_sub = tic;
+    t_sub_acc = 0;
     for j = 1:n_sub
         idx = (k-1)*n_sub + j;
         if idx > N_sim, break; end
         x_sim(:, idx) = x;
         u_sim(:, idx) = u;
         x = sim_solver.simulate(x, u);
+        t_sub_acc = t_sub_acc + sim_solver.get('time_tot');
     end
-    t_sub_log(k)  = toc(tic_sub);
+    t_sub_log(k) = t_sub_acc;
     t_step_log(k) = toc(tic_step);
 
     diverged = abs(x(3)) > 0.5      || ...
@@ -237,12 +240,18 @@ for k = 1:N_mpc
 end
 
 %% --- Summary ---
-t_total_log = t_mpc_log + t_jac_log;
+t_ctrl_log = t_mpc_log + t_jac_log;
 fprintf('\n--- SOL-MPC Performance ---\n');
-fprintf('Jacobian:   mean=%.0f us, median=%.0f us\n', mean(t_jac_log)*1e6, median(t_jac_log)*1e6);
-fprintf('QP solve:   mean=%.0f us, median=%.0f us\n', mean(t_mpc_log)*1e6, median(t_mpc_log)*1e6);
-fprintf('Total ctrl: mean=%.0f us, median=%.0f us, max=%.0f us\n', ...
-    mean(t_total_log)*1e6, median(t_total_log)*1e6, max(t_total_log)*1e6);
+fprintf('Jacobian+expm: mean=%.0f us, median=%.0f us  (tic/toc, incl. MATLAB overhead)\n', ...
+    mean(t_jac_log)*1e6, median(t_jac_log)*1e6);
+fprintf('OCP total:  mean=%.0f us, median=%.0f us\n', mean(t_mpc_log)*1e6, median(t_mpc_log)*1e6);
+fprintf('  QP solve: mean=%.0f us, median=%.0f us\n', mean(t_qp_log)*1e6, median(t_qp_log)*1e6);
+fprintf('Plant sim:  mean=%.0f us, max=%.0f us  (%d sub-steps, acados internal)\n', ...
+    mean(t_sub_log)*1e6, max(t_sub_log)*1e6, n_sub);
+fprintf('Ctrl total: mean=%.0f us, median=%.0f us, max=%.0f us  (jac+ocp)\n', ...
+    mean(t_ctrl_log)*1e6, median(t_ctrl_log)*1e6, max(t_ctrl_log)*1e6);
+fprintf('Total step: mean=%.0f us, max=%.0f us  (wall-clock, incl. MATLAB overhead)\n', ...
+    mean(t_step_log)*1e6, max(t_step_log)*1e6);
 fprintf('Real-time factor: %.2fx (dt_mpc=%.0f us)\n', ...
     dt_mpc/mean(t_step_log), dt_mpc*1e6);
 fprintf('\nFinal: z=%.4f mm (eq=%.4f mm), |pos err|=%.4f mm\n', ...
@@ -258,6 +267,7 @@ sim_data.uEq         = uEq;
 sim_data.dt          = dt;
 sim_data.dt_mpc      = dt_mpc;
 sim_data.t_mpc       = t_mpc_log;
+sim_data.t_qp        = t_qp_log;
 sim_data.t_jac       = t_jac_log;
 sim_data.t_sim       = t_sub_log;
 sim_data.t_step      = t_step_log;
