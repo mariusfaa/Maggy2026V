@@ -43,7 +43,7 @@ dt_mpc = 0.001;
 
 % --- Simulation time ---
 dt = 0.0001;
-t  = 0:dt:0.5;
+t  = 0:dt:0.05;
 
 % --- Initial conditions ---
 x0_full = xEq_full + [0; 0.001; 0.001; 0; 0; 0; zeros(6,1)];

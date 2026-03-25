@@ -3,7 +3,7 @@ function sim_solver = getSimSolver(model, dt)
 % model.
 
 % Setup sim solver object
-fprintf('--- Building sim solver ---');
+fprintf('--- Building sim solver ---\n');
 
 sim = AcadosSim();
 sim.model = model;
