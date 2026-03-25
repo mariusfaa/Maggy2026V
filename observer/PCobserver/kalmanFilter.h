@@ -21,6 +21,7 @@ protected:
     vec x_est;  // Estimated states
     vec x_pred; // Predicted states
     vec z_pred; // Predicted measurements
+    vec innovation; // Innovation
 
     mat F; // State transition matrix
     mat B; // Input matrix
@@ -30,7 +31,6 @@ protected:
     mat Q; // Process covariance
     mat R; // Measurement covariance
     mat S; // Innovation covariance
-    mat Sinv; // Inverse innovation covariance
 
     // Square roots of covariances
     mat Ps;
@@ -41,11 +41,12 @@ protected:
     mat I; // Identity matrix
     mat W; // Kalman gain
 
-    vec v; // Innovations
-    double nis; // Normalized innovations squared
-
 public:
-    KalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, bool useNIS):
+    // Destructor
+    ~KalmanFilter() = default;
+
+    // Constructor
+    KalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation):
         nx(numberStates),
         nu(numberInputs),
         nz(numberMeasurements),
@@ -53,6 +54,7 @@ public:
         x_est(arma::zeros(nx)),
         x_pred(arma::zeros(nx)),
         z_pred(arma::zeros(nz)),
+        innovation(arma::zeros(nz)),
 
         F(arma::zeros(nx, nx)),
         B(arma::zeros(nx, nu)),
@@ -62,7 +64,6 @@ public:
         Q(arma::eye(nx, nx)),
         R(arma::eye(nz, nz)),
         S(arma::eye(nz, nz)),
-        Sinv(arma::eye(nz, nz)),
 
         Ps(arma::eye(nx, nx)),
         Qs(arma::eye(nx, nx)),
@@ -71,27 +72,18 @@ public:
 
         I(arma::eye(nx, nx)),
         W(arma::zeros(nx, nz)),
-        useSRformulation(useSRformulation),
-        useNIS(useNIS)
+        useSRformulation(useSRformulation)
         {}
 
-    virtual void init(vec &initialState,
-              mat &initialCovariance,
-              mat &stateTransition,
-              mat &inputMatrix,
-              mat &processNoise,
-              mat &measurementMatrix,
-              mat &measurementNoise,
-              double &discretizationTime
-              ) {
-        dt = discretizationTime;
-        x_est = initialState;
-        P = initialCovariance;
-        F = stateTransition;
-        B = inputMatrix;
-        Q = processNoise;
-        H = measurementMatrix;
-        R = measurementNoise;
+    virtual void init(const FilterParams &params) {
+        x_est = params.x0; // Initial state
+        P = params.P0;     // Initial covariance
+        F = params.Ad;     // State transition matrix
+        B = params.Bd;     // Input matrix
+        Q = params.Qd;     // Process noise covariance
+        H = params.H;      // Measurement matrix
+        R = params.R;      // Measurement noise covariance
+        dt = params.dt;    // Discretization time
 
         Ps = chol(P);
         Qs = chol(Q);
@@ -109,6 +101,10 @@ public:
         }
         else {
             P = F * P * F.t() + Q;
+            P = (P + P.t())*0.5 + eye(nx, nx)*1e-9;
+            if (!P.is_sympd(1e-9)) {
+                std::cout << "P is not symmetric positive definite!" << endl;
+            }
         }
     }
 
@@ -117,7 +113,7 @@ public:
         z_pred = H * x_pred;
 
         // Innovation
-        v = z - z_pred;
+        innovation = z - z_pred;
 
         // Innovation covariance
         if (useSRformulation) {
@@ -127,14 +123,6 @@ public:
         }
         else {
             S = H * P * H.t() + R;
-        }
-
-        // Only use to calculate NIS; use solve otherwise
-        if (useNIS) {
-            if (useSRformulation) {
-                S = Ss.t() * Ss;
-            }
-            Sinv = inv(S, inv_opts::likely_sympd);
         }
 
         // Calculate Kalman gain
@@ -147,12 +135,9 @@ public:
         else {
             W = solve(S, H*P, solve_opts::likely_sympd).t();
         }
-        if (useNIS) {
-            calculateNIS(v, Sinv);
-        }
 
         // Update state estimate
-        x_est = x_pred + W * v;
+        x_est = x_pred + W * innovation;
 
         // Update covariance estimate
         if (useSRformulation) {
@@ -162,12 +147,20 @@ public:
         else {
             // P = (I - W * H) * P;
             P = (I - W*H) * P * (I - W*H).t() + W*R*W.t();
+            if (!P.is_sympd(1e-9)) {
+                std::cout << "P is not symmetric positive definite!" << endl;
+            }
         }
     }
 
     // Get state estimate
     vec getState() const {
         return x_est;
+    }
+
+    // Get predicted state
+    vec getStatePred() const {
+        return x_pred;
     }
 
     // Get predicted measurement
@@ -177,7 +170,18 @@ public:
 
     // Get covariance
     mat getCovariance() const {
-        return P;
+        if (useSRformulation) {
+            if (Ps.is_trimatu()) {
+                return Ps.t()*Ps;
+            } else if(Ss.is_trimatl()) {
+                return Ps*Ps.t();
+            } else {
+                std::cout << "Covariance square root is not triangular!" << endl;
+                return eye(nx, nx);
+            }
+        } else {
+            return P;
+        }
     }
 
     // Get square root covariance
@@ -187,7 +191,18 @@ public:
 
     // Get innovation covariance
     mat getInnovationCovariance() const {
-        return S;
+        if (useSRformulation) {
+            if (Ss.is_trimatu()) {
+                return Ss.t()*Ss;
+            } else if(Ss.is_trimatl()) {
+                return Ss*Ss.t();
+            } else {
+                std::cout << "Innovation covariance square root is not triangular!" << endl;
+                return eye(nz, nz);
+            }
+        } else {
+            return S;
+        }
     }
 
     // Get square root covariance
@@ -215,14 +230,9 @@ public:
         return W;
     }
 
-    // Calculate normalised innovations squared
-    void calculateNIS(vec &v, mat &Sinv) {
-        //vi = Sinv*v;
-        double nis = as_scalar(v.t()*Sinv*v);
-    }
-
-    double getNIS() const {
-        return nis;
+    // Get Innovation
+    vec getInnovation() const {
+        return innovation;
     }
 };
 

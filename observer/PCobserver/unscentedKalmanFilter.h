@@ -4,6 +4,7 @@
 #include <armadillo>
 #include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <iostream>
 #include <vector>
 #include "include/matlab/maglevModel.h"
@@ -17,9 +18,13 @@ using namespace arma;
 class UnscentedKalmanFilter: public ExtendedKalmanFilter {
     using Base = ExtendedKalmanFilter;
 
+private:
+    bool cubature;
+
 protected:
+    using Base::dxd;
+
     using Base::useSRformulation;
-    using Base::useNIS;
 
     using Base::dt;
 
@@ -30,12 +35,12 @@ protected:
     using Base::x_est;
     using Base::x_pred;
     using Base::z_pred;
+    using Base::innovation;
 
     using Base::P;
     using Base::Q;
     using Base::R;
     using Base::S;
-    using Base::Sinv;
     mat Pxz; // Cross-covariance
 
     using Base::Ps;
@@ -67,9 +72,10 @@ protected:
     double central_cov_sgn;
 
 public:
-    UnscentedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, bool useNIS):
-    Base(numberStates, numberInputs, numberMeasurements, useSRformulation, useNIS),
-    ns(2*nx+1),
+    UnscentedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, bool cubature=0):
+    Base(numberStates, numberInputs, numberMeasurements, useSRformulation),
+    cubature(cubature),
+    ns(2*nx+static_cast<size_t>(!cubature)),
     sigma_points(arma::zeros(nx, ns)),
     sigma_points_pred(arma::zeros(nx, ns)),
     sigma_points_meas(arma::zeros(nz, ns)),
@@ -78,27 +84,28 @@ public:
     weights_cov_sr(arma::zeros(ns)),
     Pxz(arma::zeros(nx, nz))
     {
-    setParameters();
+    if (cubature) {
+        weights_cov = weights_mean = ones(ns)/(2*ns);
+        eta = sqrt(nx);
+    } else {
+        setParameters();
+    }
     }
 
-    virtual void init(vec &initialState,
-            mat &initialCovariance,
-            mat &processNoise,
-            mat &measurementNoise,
-            double &discretizationTime
-            ) {
-        dt = discretizationTime;
-        x_est = initialState;
-        P = initialCovariance;
-        Q = processNoise;
-        R = measurementNoise;
+    virtual void init(const FilterParams &params) override {
+        x_est = params.x0; // Initial state
+        P = params.P0;     // Initial covariance
+        Q = params.Qd;     // Process noise covariance
+        R = params.R;      // Measurement noise covariance
+        dt = params.dt;    // Discretization time
 
         Ps = chol(P, "lower");
         Qs = chol(Q, "lower");
         Rs = chol(R, "lower");
     }
 
-    void setParameters(const double &alpha_=1e-3, const double &beta_=2.0, const double &kappa_=0) {
+    void setParameters(const double alpha_=1e-3, const double beta_=2.0, const double kappa_=0.0) {
+
         alpha = alpha_;
         beta = beta_;
         kappa = kappa_;
@@ -129,22 +136,33 @@ public:
         }
 
         // Calculate sigma points
-        sigma_points.col(0) = x_est;
-        for (size_t i = 1; i < nx + 1; ++i) {
-            sigma_points.col(i) = x_est + eta*Ps.col(i-1);
-            sigma_points.col(i + nx) = x_est - eta*Ps.col(i-1);
+        if (cubature) {
+            for (size_t i = 0; i < nx; ++i) {
+                sigma_points.col(i) = x_est + eta*Ps.col(i);
+                sigma_points.col(i + nx) = x_est - eta*Ps.col(i);
+            }
+        }
+        else {
+            sigma_points.col(0) = x_est;
+            for (size_t i = 1; i < nx + 1; ++i) {
+                sigma_points.col(i) = x_est + eta*Ps.col(i-1);
+                sigma_points.col(i + nx) = x_est - eta*Ps.col(i-1);
+            }
         }
 
         // Predict transformed state of sigma points
         for (size_t i = 0; i < ns; ++i) {
             eulerForward(sigma_points.col(i), u, dt, dxd);
+            // rk4_multi(sigma_points.col(i), u, dt, 10, dxd);
             sigma_points_pred.col(i) = *(dxd.x_next);
+
         }
 
         // Calculate mean of predicted sigma points
         x_pred = arma::zeros(nx);
         for (size_t i = 0; i < ns; ++i) {
             x_pred += weights_mean(i) * sigma_points_pred.col(i);
+
         }
 
         // Calculate covariance of predicted sigma points
@@ -159,17 +177,18 @@ public:
             qr_econ(_Q, _R, _X.t());
             Ps = _R.t();
             cholUpdate(Ps, weights_cov_sr(0)*(sigma_points_pred.col(0) - x_pred), central_cov_sgn);
+            Ps = trimatl(Ps); // Ensure triangular
         }
         else {
             P = Q;
-            for (size_t i = 1; i < ns; ++i) {
+            for (size_t i = 0; i < ns; ++i) {
                 vec _e = sigma_points_pred.col(i) - x_pred;
                 P += weights_cov(i) * _e * _e.t();
             }
 
             // Averaging for symmetry. Small regularization for positive definiteness
             P = (P + P.t())*0.5 + eye(nx, nx)*1e-12;
-            if (!P.is_sympd()) {
+            if (!P.is_sympd(1e-9)) {
                 std::cout << "P is not symmetric positive definite!" << endl;
             }
         }
@@ -204,6 +223,7 @@ public:
             Ss = _R.t();
             vec _e = sigma_points_meas.col(0) - z_pred;
             cholUpdate(Ss, weights_cov_sr(0)*(sigma_points_meas.col(0) - z_pred), central_cov_sgn);
+            Ss = trimatl(Ss); // Ensure triangular
         }
         else {
             S = R;
@@ -213,7 +233,7 @@ public:
             }
             // Averaging for symmetry. Small regularization for positive definiteness
             S = (S + S.t())*0.5 + eye(nz, nz)*1e-12;
-            if (!S.is_sympd()) {
+            if (!S.is_sympd(1e-9)) {
                 std::cout << "S is not symmetric positive definite!" << endl;
             }
         }
@@ -226,16 +246,9 @@ public:
             Pxz += weights_cov(i) * _e * _ee.t();
         }
 
-        // Only use to calculate NIS; use solve otherwise
-        if (useNIS) {
-            if (useSRformulation) {
-                S = Ss * Ss.t();
-            }
-            Sinv = inv(S, inv_opts::likely_sympd);
-        }
-
         if (useSRformulation) {
             // W = solve(Ss.t()*Ss, Pxz.t(), solve_opts::likely_sympd).t();
+            std::cout << Ss << endl;
             W = solve(trimatl(Ss), solve(trimatu(Ss.t()), Pxz.t())).t();
         }
         else {
@@ -245,22 +258,53 @@ public:
         }
 
         // Innovation
-        v = z - z_pred;
-
-        if (useNIS) {
-            calculateNIS(v, Sinv);
-        }
+        innovation = z - z_pred;
 
         // Update state estimate
-        x_est = x_pred + W * v;
+        x_est = x_pred + W * innovation;
 
         if (useSRformulation) {
             cholUpdate(Ps, W*Ss, -1.0);
+            Ps = trimatl(Ps); // Ensure triangular
         }
         else {
             // Update covariance estimate
             P = P - W * S * W.t();
+            // Averaging for symmetry. Small regularization for positive definiteness
+            P = (P + P.t())*0.5 + eye(nx, nx)*1e-12;
+            if (!P.is_sympd(1e-9)) {
+                std::cout << "P is not symmetric positive definite!" << endl;
+            }
         }
+    }
+
+    double getAlpha() const {
+        return alpha;
+    }
+
+    double getBeta() const {
+        return beta;
+    }
+
+    double getKappa() const {
+        return kappa;
+    }
+
+    double getLambda() const {
+        return lambda;
+    }
+
+    double getWeightMean0() const {
+        return weights_mean(0);
+    }
+
+    double getWeightCov0() const {
+        return weights_cov(0);
+    }
+
+    // All weights for covariance and mean are the same for index != 0
+    double getWeights() const {
+        return weights_mean(1);
     }
 
     mat getSigmaPoints() const {

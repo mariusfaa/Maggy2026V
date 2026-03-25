@@ -7,13 +7,10 @@
 #include "extendedKalmanFilter.h"
 #include "unscentedKalmanFilter.h"
 
-// Externs
-extern KalmanFilter KF;
-extern ExtendedKalmanFilter EKF;
-extern UnscentedKalmanFilter UKF;
+using filterPtr = std::unique_ptr<KalmanFilter>;
 
-// Prototypes
-void initObserver(size_t filterVariant = 2);
-void runObserver(const double input[NUMBER_INPUTS], const double z[NUMBER_MEASUREMENTS],
-    double stateEstimates[NUMBER_STATES], size_t filterVariant = 2);
+filterPtr createObserver(int filterVariant, size_t nx, size_t nu, size_t ny, bool useSRformulation, bool updateJacobians, bool updateQ, bool cubature);
+filterPtr initObserver(int filterVariant, double dt, bool useSRformulation=0, bool updateJacobians=1, bool updateQ=0, bool cubature=0);
+void runObserver(const double input[NUMBER_INPUTS], const double meas[NUMBER_MEASUREMENTS],
+    double stateEstimates[NUMBER_STATES], KalmanFilter &observer);
 

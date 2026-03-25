@@ -49,6 +49,14 @@ void dynamics_f(const vec &x, const vec &u, vec &dx) {
     case NUMBER_STATES_REDUCED_EXTRA:
     // maglevSystemDynamics_xred(x.memptr(), u.memptr(), dx.memptr());
     break;
+
+    // Test; coordinated turn model with wacky input on derivatives
+    case NUMBER_STATES_TEST:
+    dx(0) = x(2);
+    dx(1) = x(3);
+    dx(2) = -x(4)*x(3) + u(0);
+    dx(3) = x(4)*x(2) + u(0);
+    dx(4) = 0;
   }
 }
 
@@ -62,12 +70,19 @@ void measurements_h(const vec &x, const vec &u, vec &z) {
     case NUMBER_STATES_REDUCED_EXTRA:
     // maglevSystemMeasurements_xred(x.memptr(), u.memptr(), z.memptr());
     break;
+
+    // Test; coordinated turn model
+    case NUMBER_STATES_TEST:
+    z(0) = x(0);
+    z(1) = x(1);
+    z(2) = x(2) + x(3)*x(4);
+    break;
   }
 }
 
 // mode: 0 forward differemce, 1 backward difference, 2 central
 // jacType: 1 is process, 0 is measurement
-mat calculateJacobian(const vec &x, const vec &u, const bool &jacType, const vec &curr,  const double &dt, const int &mode) {
+mat calculateJacobian(const vec &x, const vec &u, const bool jacType, const vec &curr,  const double dt, const int mode) {
 
   double delta = 1e-12;
 
@@ -158,7 +173,7 @@ mat calculateJacobian(const vec &x, const vec &u, const bool &jacType, const vec
 
 
 // Exact discretization of system matrix
-mat discretize_A(const mat &A, const double &dt) {
+mat discretize_A(const mat &A, const double dt) {
   return expmat(A*dt);
 }
 
@@ -171,7 +186,7 @@ mat discretize_B(const mat &A, const mat &Ad, const mat &B) {
 
 
 // Using van-loan's method to discretize process covariance matrix
-van_loan_struct van_loan(const mat &A, const mat &Q, const double &dt) {
+van_loan_struct van_loan(const mat &A, const mat &Q, const double dt) {
   size_t n = A.n_rows;
 
   mat M(2*n, 2*n, arma::fill::zeros);
@@ -190,16 +205,15 @@ van_loan_struct van_loan(const mat &A, const mat &Q, const double &dt) {
   // Averaging for symmetry. Small regularization for positive definiteness
   Qd = (Qd + Qd.t())*0.5 + eye(n, n)*1e-9;
 
-  if (!Qd.is_sympd()) {
+  if (!Qd.is_sympd(1e-9)) {
     std::cout << "Qd is not symmetric positive definite!" << endl;
   }
 
   return {Qd, Ad};
 }
 
-
 // If L = chol(P, "lower") then this computes chol(P + c*x*x^T, "lower")
-void cholUpdate(mat &L, const mat &x_, const double &c_) {
+void cholUpdate(mat &L, const mat &x_, const double c_) {
   size_t n = x_.n_rows;
   size_t m = x_.n_cols;
   vec x = x_.col(m-1);

@@ -5,6 +5,7 @@
 // Prototypes
 mat get_A_fast();
 mat get_A_d();
+mat get_A_cv();
 mat get_B_fast();
 mat get_B_d();
 mat get_H_fast();

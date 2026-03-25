@@ -21,7 +21,6 @@ protected:
   derivatives_struct dxd;
 
   using Base::useSRformulation;
-  using Base::useNIS;
 
   using Base::dt;
 
@@ -32,6 +31,7 @@ protected:
   using Base::x_est;
   using Base::x_pred;
   using Base::z_pred;
+  using Base::innovation;
 
   using Base::F;
   using Base::H;
@@ -40,7 +40,6 @@ protected:
   using Base::Q;
   using Base::R;
   using Base::S;
-  using Base::Sinv;
 
   using Base::Ps;
   using Base::Qs;
@@ -51,11 +50,11 @@ protected:
   using Base::W;
 
 public:
-  ExtendedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, bool useNIS, bool updateJacobians=1, bool updateQ=1):
+  ExtendedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, bool updateJacobians=1, bool updateQ=1):
     dx(arma::zeros(numberStates)),
     updateJacobians(updateJacobians),
     updateQ(updateQ),
-    Base(numberStates, numberInputs, numberMeasurements, useSRformulation, useNIS) {
+    Base(numberStates, numberInputs, numberMeasurements, useSRformulation) {
       maglevModel_initialize();
       dxd.dx = &dx;
       dxd.x_next = &x_pred;
@@ -64,7 +63,8 @@ public:
 
    virtual void predict(vec &u) override {
     // Predict mean
-    eulerForward(x_est, u, dt, dxd);
+    // eulerForward(x_est, u, dt, dxd);
+    rk4_multi(x_est, u, dt, 10, dxd);
 
     // Calculates new F
     if (updateJacobians) {
@@ -89,6 +89,11 @@ public:
     }
     else {
       P = F * P * F.t() + Q;
+      // Averaging for symmetry. Small regularization for positive definiteness
+      P = (P + P.t())*0.5 + eye(nx, nx)*1e-9;
+      if (!P.is_sympd(1e-9)) {
+        std::cout << "P is not symmetric positive definite!" << endl;
+      }
     }
   }
 
@@ -106,7 +111,7 @@ public:
     }
 
     // Innovation
-    v = z - z_pred;
+    innovation = z - z_pred;
 
     // Innovation covariance
     if (useSRformulation) {
@@ -118,18 +123,9 @@ public:
 
         // Averaging for symmetry. Small regularization for positive definiteness
         S = (S + S.t())*0.5 + eye(nz, nz)*1e-9;
-        if (!S.is_sympd()) {
+        if (!S.is_sympd(1e-9)) {
           std::cout << "S is not symmetric positive definite!" << endl;
         }
-    }
-
-
-    // Only use to calculate NIS; use solve otherwise
-    if (useNIS) {
-      if (useSRformulation) {
-        S = Ss.t() * Ss;
-      }
-      Sinv = inv(S, inv_opts::likely_sympd);
     }
 
     // Calculate Kalman gain
@@ -143,12 +139,8 @@ public:
       W = solve(S, H*P, solve_opts::likely_sympd).t();
     }
 
-    if (useNIS) {
-      calculateNIS(v, Sinv);
-    }
-
     // Update state estimate
-    x_est = x_pred + W * v;
+    x_est = x_pred + W * innovation;
 
     // Update covariance estimate
     if (useSRformulation) {
@@ -158,6 +150,9 @@ public:
     else {
       // P = (I - W * H) * P;
       P = (I - W*H) * P * (I - W*H).t() + W*R*W.t();
+      if (!P.is_sympd(1e-9)) {
+        std::cout << "P is not symmetric positive definite!" << endl;
+      }
     }
   }
 
