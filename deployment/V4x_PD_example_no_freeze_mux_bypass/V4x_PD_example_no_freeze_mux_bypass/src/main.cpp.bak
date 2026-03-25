@@ -1,0 +1,385 @@
+#include <Arduino.h>
+
+/*******************************************************************************
+ * Maggy V4.x — Diagnostic Sketch
+ * 
+ * PURPOSE: Verify sensor response, sign conventions, and feedthrough
+ *          compensation BEFORE attempting closed-loop control.
+ * 
+ * HOW TO USE:
+ *   1. Flash this onto the Teensy.
+ *   2. Open a serial terminal at 115200 baud.
+ *   3. Follow the on-screen menu.
+ *   4. The magnet does NOT need to be balanced — hold it by hand or rest
+ *      it on a spacer above the base.
+ * 
+ * TESTS:
+ *   [1] Live sensor readout         — watch bx, by, bz while moving magnet
+ *   [2] Single-axis solenoid pulse  — verify which direction each axis pushes
+ *   [3] Sign convention check       — move magnet by hand, see if the
+ *                                      controller WOULD push it back to center
+ *   [4] Feedthrough test            — energize solenoids with no magnet,
+ *                                      check if compensated readings stay near 0
+ *   [5] Closed-loop with live gain  — tune Kp/Kd over serial without reflashing
+ *******************************************************************************/
+
+#include "definitions.h"
+#include "functions.h"
+
+// Sensor objects
+TLx493D_A1B6 Sensors[NUM_SENSORS] = {TLx493D_A1B6(Wire, TLx493D_IIC_ADDR_A0_e)};
+
+// Gains — adjustable at runtime via serial
+float Kp = 40.0;
+float Kd = 5.0;
+float ALPHA  = 0.5;
+float DALPHA = 0.3;
+float pwmLimit = 150.0;
+float zThreshold = 5.0;
+
+// State
+float magFieldX = 0, magFieldY = 0, magFieldZ = 0;
+float prevMagFieldX = 0, prevMagFieldY = 0;
+float prevRawX = 0, prevRawY = 0;
+float dMagFieldX = 0, dMagFieldY = 0;
+float currentXPos = 0, currentXNeg = 0, currentYPos = 0, currentYNeg = 0;
+
+unsigned long prevSensorTime = 0;
+int mode = 0;  // 0 = menu
+
+// ── Forward declarations ──
+void showMenu();
+void runLiveSensor();
+void runSolenoidPulse();
+void runSignCheck();
+void runFeedthroughTest();
+void runClosedLoop();
+void readSensorsOnce(unsigned long &dt);
+void printFieldValues();
+
+// ═══════════════════════════════════════════════════════════════════════
+void setup() {
+    Serial.begin(115200);
+    while (!Serial) delay(10);
+    delay(200);
+
+    Serial.println(F("=== Maggy V4 Diagnostic Tool ==="));
+    Serial.println(F("Initializing sensors..."));
+    initializeSensors();
+    delay(50);
+
+    Serial.println(F("Initializing solenoids..."));
+    initializeSolenoids();
+    delay(50);
+
+    Serial.println(F("Calibrating sensor baseline (keep magnet AWAY)..."));
+    calibrateSensors();
+    delay(50);
+
+    Serial.println(F("Calibrating feedthrough (keep magnet AWAY)..."));
+    calibrateDirectFeedthrough();
+    delay(50);
+
+    Serial.println(F("Setup complete.\n"));
+    showMenu();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+void loop() {
+    // Check for serial commands in every mode
+    if (Serial.available()) {
+        String cmd = Serial.readStringUntil('\n');
+        cmd.trim();
+
+        if (cmd == "q" || cmd == "Q") {
+            mode = 0;
+            applyControlSignals(0, 0);
+            Serial.println(F("\n--- Stopped. Solenoids off. ---\n"));
+            showMenu();
+            return;
+        }
+
+        if (mode == 0) {
+            // Menu selection
+            if      (cmd == "1") { mode = 1; Serial.println(F("\n--- LIVE SENSOR (press q to stop) ---")); }
+            else if (cmd == "2") { mode = 2; Serial.println(F("\n--- SOLENOID PULSE TEST ---")); runSolenoidPulse(); mode = 0; showMenu(); return; }
+            else if (cmd == "3") { mode = 3; Serial.println(F("\n--- SIGN CHECK (hold magnet, move it around, press q to stop) ---")); }
+            else if (cmd == "4") { mode = 4; Serial.println(F("\n--- FEEDTHROUGH TEST (remove magnet!) ---")); runFeedthroughTest(); mode = 0; showMenu(); return; }
+            else if (cmd == "5") { mode = 5; Serial.println(F("\n--- CLOSED LOOP (press q to stop) ---"));
+                                             Serial.println(F("  Send: kp=VALUE  kd=VALUE  alpha=VALUE  dalpha=VALUE  lim=VALUE  zt=VALUE")); }
+            else { showMenu(); }
+            return;
+        }
+
+        if (mode == 5) {
+            // Parse live parameter changes
+            if      (cmd.startsWith("kp="))     { Kp = cmd.substring(3).toFloat();       Serial.print(F("Kp -> ")); Serial.println(Kp); }
+            else if (cmd.startsWith("kd="))     { Kd = cmd.substring(3).toFloat();       Serial.print(F("Kd -> ")); Serial.println(Kd); }
+            else if (cmd.startsWith("alpha="))  { ALPHA = cmd.substring(6).toFloat();    Serial.print(F("ALPHA -> ")); Serial.println(ALPHA); }
+            else if (cmd.startsWith("dalpha=")) { DALPHA = cmd.substring(7).toFloat();   Serial.print(F("DALPHA -> ")); Serial.println(DALPHA); }
+            else if (cmd.startsWith("lim="))    { pwmLimit = cmd.substring(4).toFloat(); Serial.print(F("PWM limit -> ")); Serial.println(pwmLimit); }
+            else if (cmd.startsWith("zt="))     { zThreshold = cmd.substring(3).toFloat(); Serial.print(F("Z threshold -> ")); Serial.println(zThreshold); }
+        }
+    }
+
+    // ── Mode-specific continuous loops ──
+    if (mode == 1) runLiveSensor();
+    if (mode == 3) runSignCheck();
+    if (mode == 5) runClosedLoop();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+void showMenu() {
+    Serial.println(F("╔══════════════════════════════════════╗"));
+    Serial.println(F("║  Maggy V4 Diagnostic Menu            ║"));
+    Serial.println(F("╠══════════════════════════════════════╣"));
+    Serial.println(F("║  1 — Live sensor readout             ║"));
+    Serial.println(F("║  2 — Solenoid pulse test             ║"));
+    Serial.println(F("║  3 — Sign convention check           ║"));
+    Serial.println(F("║  4 — Feedthrough compensation test   ║"));
+    Serial.println(F("║  5 — Closed-loop with live tuning    ║"));
+    Serial.println(F("║                                      ║"));
+    Serial.println(F("║  q — Stop current test               ║"));
+    Serial.println(F("╚══════════════════════════════════════╝"));
+    Serial.println(F("Enter choice:"));
+}
+
+// ── Test 1: Live sensor readout ──────────────────────────────────────
+void runLiveSensor() {
+    static unsigned long lastPrint = 0;
+    unsigned long now = micros();
+
+    if (now - lastPrint < 50000) return;  // 20 Hz print rate
+    lastPrint = now;
+
+    readAllSensors();
+    // Show raw (uncompensated) values — no solenoids active
+    Serial.print(F("raw  bx="));  Serial.print(rawMagField[0][0], 3);
+    Serial.print(F("  by="));     Serial.print(rawMagField[0][1], 3);
+    Serial.print(F("  bz="));     Serial.print(rawMagField[0][2], 3);
+    // Also show detrended
+    processSensorData(0, 0, 0, 0);
+    Serial.print(F("  |  det  bx="));  Serial.print(rawMagFieldDetrended[0][0], 3);
+    Serial.print(F("  by="));          Serial.print(rawMagFieldDetrended[0][1], 3);
+    Serial.print(F("  bz="));          Serial.println(rawMagFieldDetrended[0][2], 3);
+}
+
+// ── Test 2: Solenoid pulse test ──────────────────────────────────────
+void runSolenoidPulse() {
+    Serial.println(F("Pulsing each solenoid pair for 1 second at PWM=80."));
+    Serial.println(F("Hold the magnet near center and feel which way it pushes.\n"));
+
+    const int pwm = 80;
+    const int duration = 1000;
+
+    struct { const char* label; float px; float py; } tests[] = {
+        { "+X (pwmX=+80)",  +pwm, 0    },
+        { "-X (pwmX=-80)",  -pwm, 0    },
+        { "+Y (pwmY=+80)",  0,    +pwm },
+        { "-Y (pwmY=-80)",  0,    -pwm },
+    };
+
+    for (int i = 0; i < 4; i++) {
+        Serial.print(F("  Pulsing: "));
+        Serial.print(tests[i].label);
+        Serial.println(F(" — feel the push direction"));
+
+        applyControlSignals(tests[i].px, tests[i].py);
+        delay(duration);
+        applyControlSignals(0, 0);
+        delay(500);
+
+        // Read sensor to show effect
+        readAllSensors();
+        currentXPos = getSolenoidCurrent(CURRENT_X_POS);
+        currentXNeg = getSolenoidCurrent(CURRENT_X_NEG);
+        currentYPos = getSolenoidCurrent(CURRENT_Y_POS);
+        currentYNeg = getSolenoidCurrent(CURRENT_Y_NEG);
+        processSensorData(currentXPos, currentXNeg, currentYPos, currentYNeg);
+        Serial.print(F("    After pulse — bx="));
+        Serial.print(rawMagFieldDetrended[0][0], 3);
+        Serial.print(F("  by="));
+        Serial.print(rawMagFieldDetrended[0][1], 3);
+        Serial.print(F("  bz="));
+        Serial.println(rawMagFieldDetrended[0][2], 3);
+        Serial.println();
+        delay(500);
+    }
+
+    Serial.println(F("Pulse test complete."));
+    Serial.println(F("NOTE: If +X pushes the magnet in the +X direction (away from center"));
+    Serial.println(F("when displaced in +X), the sign is WRONG and must be flipped."));
+}
+
+// ── Test 3: Sign convention check ────────────────────────────────────
+void runSignCheck() {
+    static unsigned long lastPrint = 0;
+    unsigned long now = micros();
+
+    if (now - lastPrint < 100000) return;  // 10 Hz
+    lastPrint = now;
+
+    readAllSensors();
+    currentXPos = getSolenoidCurrent(CURRENT_X_POS);
+    currentXNeg = getSolenoidCurrent(CURRENT_X_NEG);
+    currentYPos = getSolenoidCurrent(CURRENT_Y_POS);
+    currentYNeg = getSolenoidCurrent(CURRENT_Y_NEG);
+    processSensorData(currentXPos, currentXNeg, currentYPos, currentYNeg);
+
+    float bx = rawMagFieldDetrended[0][0];
+    float by = rawMagFieldDetrended[0][1];
+    float bz = rawMagFieldDetrended[0][2];
+
+    // What the controller WOULD output (no filtering for clarity)
+    float wouldPwmX = constrain(-Kp * bx, -pwmLimit, pwmLimit);
+    float wouldPwmY = constrain(-Kp * by, -pwmLimit, pwmLimit);
+
+    Serial.print(F("bx="));     Serial.print(bx, 3);
+    Serial.print(F("  by="));   Serial.print(by, 3);
+    Serial.print(F("  bz="));   Serial.print(bz, 3);
+    Serial.print(F("  →  pwmX_would="));  Serial.print(wouldPwmX, 1);
+    Serial.print(F("  pwmY_would="));     Serial.print(wouldPwmY, 1);
+
+    // Guidance
+    if (fabs(bx) > 0.3) {
+        Serial.print(F("  [magnet displaced in "));
+        Serial.print(bx > 0 ? "+X" : "-X");
+        Serial.print(F(", controller would push "));
+        Serial.print(wouldPwmX > 0 ? "+pwmX" : "-pwmX");
+        Serial.print(F("]"));
+    }
+    Serial.println();
+}
+
+// ── Test 4: Feedthrough test ─────────────────────────────────────────
+void runFeedthroughTest() {
+    Serial.println(F("Energizing solenoids and reading COMPENSATED sensor values."));
+    Serial.println(F("All values should be near zero if compensation is good.\n"));
+
+    struct { const char* label; float px; float py; } tests[] = {
+        { "pwmX=+100, pwmY=0",    100, 0   },
+        { "pwmX=-100, pwmY=0",   -100, 0   },
+        { "pwmX=0,    pwmY=+100", 0,   100 },
+        { "pwmX=0,    pwmY=-100", 0,  -100 },
+        { "pwmX=+100, pwmY=+100", 100, 100 },
+    };
+
+    for (int i = 0; i < 5; i++) {
+        Serial.print(F("  "));
+        Serial.print(tests[i].label);
+        Serial.print(F(":  "));
+
+        applyControlSignals(tests[i].px, tests[i].py);
+        delay(200);  // Let current settle
+
+        // Average 50 readings
+        float sumBx = 0, sumBy = 0, sumBz = 0;
+        const int N = 50;
+        for (int j = 0; j < N; j++) {
+            readAllSensors();
+            currentXPos = getSolenoidCurrent(CURRENT_X_POS);
+            currentXNeg = getSolenoidCurrent(CURRENT_X_NEG);
+            currentYPos = getSolenoidCurrent(CURRENT_Y_POS);
+            currentYNeg = getSolenoidCurrent(CURRENT_Y_NEG);
+            processSensorData(currentXPos, currentXNeg, currentYPos, currentYNeg);
+            sumBx += rawMagFieldDetrended[0][0];
+            sumBy += rawMagFieldDetrended[0][1];
+            sumBz += rawMagFieldDetrended[0][2];
+            delay(2);
+        }
+
+        Serial.print(F("bx="));  Serial.print(sumBx / N, 3);
+        Serial.print(F("  by=")); Serial.print(sumBy / N, 3);
+        Serial.print(F("  bz=")); Serial.print(sumBz / N, 3);
+
+        float maxResidual = max(max(fabs(sumBx/N), fabs(sumBy/N)), fabs(sumBz/N));
+        if (maxResidual > 1.0) {
+            Serial.println(F("  *** POOR — residual > 1 mT ***"));
+        } else if (maxResidual > 0.3) {
+            Serial.println(F("  * MARGINAL *"));
+        } else {
+            Serial.println(F("  OK"));
+        }
+
+        applyControlSignals(0, 0);
+        delay(100);
+    }
+
+    Serial.println(F("\nFeedthrough test complete."));
+}
+
+// ── Test 5: Closed loop with live tuning ─────────────────────────────
+void runClosedLoop() {
+    static unsigned long lastSensor  = 0;
+    static unsigned long lastControl = 0;
+    static unsigned long lastPrint   = 0;
+    static int loopCount = 0;
+
+    unsigned long now = micros();
+    const unsigned long sensorInterval  = 500;   // 2 kHz
+    const unsigned long controlInterval = 500;   // 2 kHz
+
+    // ── Sensor update ──
+    if (now - lastSensor >= sensorInterval) {
+        unsigned long dt = now - lastSensor;
+
+        currentXPos = getSolenoidCurrent(CURRENT_X_POS);
+        currentXNeg = getSolenoidCurrent(CURRENT_X_NEG);
+        currentYPos = getSolenoidCurrent(CURRENT_Y_POS);
+        currentYNeg = getSolenoidCurrent(CURRENT_Y_NEG);
+
+        readAllSensors();
+        processSensorData(currentXPos, currentXNeg, currentYPos, currentYNeg);
+
+        float rawX = rawMagFieldDetrended[PRIMARY_SENSOR_INDEX][0];
+        float rawY = rawMagFieldDetrended[PRIMARY_SENSOR_INDEX][1];
+
+        magFieldX = ALPHA * rawX + (1.0 - ALPHA) * prevMagFieldX;
+        magFieldY = ALPHA * rawY + (1.0 - ALPHA) * prevMagFieldY;
+        magFieldZ = rawMagFieldDetrended[PRIMARY_SENSOR_INDEX][2];
+
+        if (dt > 0) {
+            // Derivative from RAW signal (not double-filtered)
+            float rawDx = (rawX - prevRawX) / (float)dt * 1e6;
+            float rawDy = (rawY - prevRawY) / (float)dt * 1e6;
+            dMagFieldX = DALPHA * rawDx + (1.0 - DALPHA) * dMagFieldX;
+            dMagFieldY = DALPHA * rawDy + (1.0 - DALPHA) * dMagFieldY;
+        }
+
+        prevMagFieldX = magFieldX;
+        prevMagFieldY = magFieldY;
+        prevRawX = rawX;
+        prevRawY = rawY;
+        lastSensor = now;
+    }
+
+    // ── Control update ──
+    if (now - lastControl >= controlInterval) {
+        float pwmX = 0, pwmY = 0;
+
+        if (fabs(magFieldZ) > zThreshold) {
+            pwmX = constrain(-Kp * magFieldX - Kd * dMagFieldX, -pwmLimit, pwmLimit);
+            pwmY = constrain(-Kp * magFieldY - Kd * dMagFieldY, -pwmLimit, pwmLimit);
+        }
+
+        applyControlSignals(pwmX, pwmY);
+        lastControl = now;
+        loopCount++;
+
+        // Print at ~20 Hz
+        if (now - lastPrint >= 50000) {
+            lastPrint = now;
+            Serial.print(F("bx="));   Serial.print(magFieldX, 3);
+            Serial.print(F(" by="));  Serial.print(magFieldY, 3);
+            Serial.print(F(" bz="));  Serial.print(magFieldZ, 3);
+            Serial.print(F(" pwmX=")); Serial.print(pwmX, 1);
+            Serial.print(F(" pwmY=")); Serial.print(pwmY, 1);
+            Serial.print(F(" dX="));  Serial.print(dMagFieldX, 1);
+            Serial.print(F(" dY="));  Serial.print(dMagFieldY, 1);
+            Serial.print(F(" | Kp=")); Serial.print(Kp, 1);
+            Serial.print(F(" Kd="));  Serial.print(Kd, 1);
+            Serial.print(F(" a="));   Serial.print(ALPHA, 2);
+            Serial.print(F(" da=")); Serial.println(DALPHA, 2);
+        }
+    }
+}
