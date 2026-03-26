@@ -1,9 +1,11 @@
-function model = get_accurate_sim_model()
+function model = getFastModel()
 
 import casadi.*
 
-modelId = MaglevModel.Accurate;
+% Setup model object
+modelId = MaglevModel.Fast;
 
+fprintf('--- Setting up fast model ---\n');
 % Load params configured for this model
 params = load_params(modelId);
 params.magnet.n     = 16; % determined by trail and error, "fast buildtime vs high accuracy"
@@ -19,7 +21,7 @@ xdot = MX.sym('xdot', nx);
 f_expl = maglevSystemDynamicsReduced_casadi(x, u, params, modelId);
 
 model = AcadosModel();
-model.name        = 'maglev_sim';
+model.name        = 'maglev_fast_model';
 model.x           = x;
 model.u           = u;
 model.xdot        = xdot;

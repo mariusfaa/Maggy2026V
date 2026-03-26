@@ -7,9 +7,9 @@
 %% ==========================================================
 
 files = [
-    "res_N30_dt1000us_DISC_solmpc.mat"
-    "res_N30_dt1000us_ERK4s1_lmpc.mat"
     "res_N30_dt1000us_ERK4s1_nmpc.mat"
+    "res_N30_dt1000us_DISC_solmpc.mat"
+    "res_N30_dt1000us_DISC_lmpc.mat"
 ];
 
 T_end = 0;   % 0 = auto
@@ -22,6 +22,10 @@ err_thresh_deg = Inf;  % orientation threshold (deg) — disabled by default
 %% ==========================================================
 %% Load files
 %% ==========================================================
+
+for i = 1:numel(files)
+    files(i) = fullfile(out_folder, files(i));
+end
 
 nFiles = numel(files);
 assert(nFiles >= 2, 'Need at least 2 files to compare.');
@@ -68,6 +72,7 @@ end
 for f = 1:nFiles
     mask = data{f}.t <= T_end + 1e-12;
     data{f}.x = data{f}.x(:, mask);
+    data{f}.u = data{f}.u(:, mask);
     data{f}.t = data{f}.t(mask);
     fprintf('%s: %d points, dt=%.6f\n', names{f}, length(data{f}.t), data{f}.dt);
 end
@@ -114,7 +119,7 @@ for i = 1:3
     if isfinite(err_thresh_mm) && err_thresh_mm > 0
         ref_t = data{1}.t;
         for f = 2:nFiles
-            xi = interp1(data{f}.t, data{f}.x(i,:)', ref_t, 'pchip')';
+            xi = interp1(data{f}.t(:), data{f}.x(i,:)', ref_t(:), 'pchip')';
             bad = abs(data{1}.x(i,:) - xi)*pos_scale > err_thresh_mm;
             if any(bad)
                 scatter(ref_t(bad), xi(bad)*pos_scale, ...
@@ -146,7 +151,7 @@ for i = 1:3
     if isfinite(err_thresh_deg) && err_thresh_deg > 0
         ref_t = data{1}.t;
         for f = 2:nFiles
-            xi = interp1(data{f}.t, data{f}.x(si,:)', ref_t, 'pchip')';
+            xi = interp1(data{f}.t(:), data{f}.x(si,:)', ref_t(:), 'pchip')';
             bad = abs(data{1}.x(si,:) - xi)*ang_scale > err_thresh_deg;
             if any(bad)
                 scatter(ref_t(bad), xi(bad)*ang_scale, ...
@@ -309,3 +314,79 @@ end
 subplot(1,2,1); xlim([0 T_end]); xlabel('Time (s)'); ylabel('Cost'); legend('Location','best');
 subplot(1,2,2); xlim([0 T_end]); xlabel('Time (s)'); ylabel('Cost'); legend('Location','best');
 sgtitle('Cost Comparison','FontSize',14,'FontWeight','bold');
+
+%% ==========================================================
+%% FIGURE 7: Solenoid / actuator inputs
+%% ==========================================================
+
+figure(7); clf;
+set(gcf,'Name','Solenoid Inputs','Position',[300 50 900 700]);
+
+solenoid_names = {'Solenoid 1','Solenoid 2','Solenoid 3','Solenoid 4'};
+
+for i = 1:4
+    subplot(4,1,i); hold on; grid on; box on;
+    for f = 1:nFiles
+        plot(data{f}.t, data{f}.u(i,:), ...
+            '-','Color',colors(f,:),'LineWidth',1.2,'DisplayName',names{f});
+    end
+    xlim([0 T_end]);
+    ylabel('A');
+    title(solenoid_names{i});
+    if i == 1, legend('Location','best'); end
+    if i < 4, set(gca,'XTickLabel',[]); end
+end
+xlabel('Time (s)');
+sgtitle('Solenoid Inputs','FontSize',14,'FontWeight','bold');
+
+%% ==========================================================
+%% FIGURE 8: Cost breakdown per state/input
+%% ==========================================================
+
+% Reconstruct Q, R from getCost (must match getCost.m)
+Q_diag = [1e5, 1e5, 1e8, 1e4, 1e4, 1e2, 1e2, 1e2, 1e2, 1e2];
+R_diag = [1, 1, 1, 1];
+w_diag = [Q_diag, R_diag];
+
+% State indices after 10->12 expansion: remove yaw(6) and wz(12)
+x10_idx = [1:5, 7:11];  % indices into the 12-state vector
+
+cost_labels = {'x','y','z','roll','pitch','vx','vy','vz','\omega_x','\omega_y', ...
+               'u_1','u_2','u_3','u_4'};
+
+figure(8); clf;
+set(gcf,'Name','Cost Breakdown','Position',[350 50 1400 700]);
+
+for f = 1:nFiles
+    d = data{f};
+    xEq_f = d.xEq;
+
+    % Compute per-component cost contribution at each time step
+    x_err = d.x(x10_idx,:) - xEq_f(x10_idx);   % 10 x N
+    u_err = d.u - d.uEq;                         % 4 x N
+    y_err = [x_err; u_err];                       % 14 x N
+
+    % Weighted squared error per component
+    cost_per_comp = y_err.^2 .* w_diag(:);        % 14 x N
+
+    % Downsample to MPC rate for cleaner plot
+    n_sub_f = round(d.dt_mpc / d.dt);
+    N_mpc_f = floor(size(y_err,2) / n_sub_f);
+    t_mpc_f = (0:N_mpc_f-1) * d.dt_mpc;
+    cost_mpc = zeros(14, N_mpc_f);
+    for k = 1:N_mpc_f
+        idx = (k-1)*n_sub_f + 1;
+        cost_mpc(:,k) = cost_per_comp(:, idx);
+    end
+
+    subplot(1, nFiles, f); hold on; grid on; box on;
+    area(t_mpc_f, cost_mpc', 'EdgeColor','none');
+    xlim([0 T_end]);
+    xlabel('Time (s)'); ylabel('Cost');
+    title(names{f});
+    set(gca,'YScale','log');
+end
+
+subplot(1,nFiles,1);
+legend(cost_labels, 'Location','best','FontSize',7);
+sgtitle('Cost Breakdown by Component','FontSize',14,'FontWeight','bold');

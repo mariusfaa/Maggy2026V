@@ -14,12 +14,12 @@ ocp.solver_options.tf                    = dt_mpc * N_horizon;
 ocp.solver_options.integrator_type       = 'ERK';
 ocp.solver_options.sim_method_num_stages = 4;
 ocp.solver_options.sim_method_num_steps  = 1;
-ocp.solver_options.nlp_solver_type = 'SQP_RTI'; % 'SQP_RTI' for real-time
-ocp.solver_options.nlp_solver_max_iter = 1000;
-%ocp.solver_options.nlp_solver_warm_start_first_qp = true;
+ocp.solver_options.nlp_solver_type = 'SQP'; % 'SQP_RTI' for real-time
+% ocp.solver_options.nlp_solver_max_iter = 10;
+% ocp.solver_options.nlp_solver_warm_start_first_qp = true;
 ocp.solver_options.qp_solver = 'PARTIAL_CONDENSING_HPIPM'; % FULL_CONDENSING_DAQP, FULL_CONDENSING_QPOASES, FULL_CONDENSING_HPIPM
-%ocp.solver_options.hessian_approx = 'GAUSS_NEWTON';
-ocp.solver_options.globalization = 'MERIT_BACKTRACKING';
+% ocp.solver_options.hessian_approx = 'GAUSS_NEWTON';
+% ocp.solver_options.globalization = 'MERIT_BACKTRACKING';
 ocp.solver_options.ext_fun_compile_flags = '-O2';
 
 ocp.cost        = getCost(xEq, uEq);
@@ -30,8 +30,12 @@ save_filename = sprintf("res_N%d_dt%dus_%s%ds%d_nmpc", ...
     ocp.solver_options.integrator_type, ...
     ocp.solver_options.sim_method_num_stages, ...
     ocp.solver_options.sim_method_num_steps);
+save_filename = fullfile(out_folder, save_filename);
 
-ocp_solver = AcadosOcpSolver(ocp);
+solver_dir = fullfile('build', 'nmpc');
+ocp.code_gen_opts.code_export_directory = fullfile(solver_dir, 'c_generated_code');
+ocp.code_gen_opts.json_file = fullfile(solver_dir, [ocp.model.name '_ocp.json']);
+ocp_solver = AcadosOcpSolver(ocp, struct('output_dir', solver_dir));
 
 % Warm-start: initialize all shooting nodes to equilibrium
 for k = 0:N_horizon
@@ -130,6 +134,7 @@ for k = 1:N_mpc
         sim_time_tot(k)*1e6);
 
     if isDiverged(x)
+        diverged = true;
         fprintf('  *** DIVERGED at MPC step %d ***\n', k);
         last_idx = min(k*n_sub, N_sim);
         x_sim = x_sim(:, 1:last_idx);

@@ -22,7 +22,7 @@ Bc_sym = jacobian(f_expl, u_cas);
 
 jit_opts   = struct('jit', true, 'jit_options', struct('flags', '-O2'));
 lin_casadi = Function('lin_casadi', {x_cas, u_cas}, ...
-                      {[Ac_sym(:); Bc_sym(:); f_expl]}, jit_opts);
+                      {[Ac_sym(:); Bc_sym(:); f_expl]});%, jit_opts);
 
 % Initial linearization at equilibrium for warm-start
 raw = full(lin_casadi(xEq, uEq));
@@ -76,8 +76,12 @@ ocp.parameter_values = p0;
 
 save_filename = sprintf("res_N%d_dt%dus_DISC_solmpc", ...
     N_horizon, round(dt_mpc*1e6));
+save_filename = fullfile(out_folder, save_filename);
 
-ocp_solver = AcadosOcpSolver(ocp);
+solver_dir = fullfile('build', 'solmpc');
+ocp.code_gen_opts.code_export_directory = fullfile(solver_dir, 'c_generated_code');
+ocp.code_gen_opts.json_file = fullfile(solver_dir, [mdl.name '_ocp.json']);
+ocp_solver = AcadosOcpSolver(ocp, struct('output_dir', solver_dir));
 
 % Warm-start: initialize all shooting nodes to equilibrium
 ocp_solver.set('p', p0);
@@ -192,6 +196,7 @@ for k = 1:N_mpc
         sim_time_tot(k)*1e6);
 
     if isDiverged(x)
+        diverged = true;
         fprintf('  *** DIVERGED at MPC step %d ***\n', k);
         last_idx = min(k*n_sub, N_sim);
         x_sim = x_sim(:, 1:last_idx);

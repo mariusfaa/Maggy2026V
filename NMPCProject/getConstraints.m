@@ -26,9 +26,9 @@ constraints.ubu   =  umax * ones(nu, 1);
 
 % Bounds on states
 constraints.x0    = x0;
-constraints.idxbx = 0:4; % only bounds on positional states
-constraints.lbx   = [-max_xy_m, -max_xy_m, min_z_m, -max_ang_rad, -max_ang_rad];
-constraints.ubx   = [max_xy_m,   max_xy_m, max_z_m,  max_ang_rad,  max_ang_rad];
+% constraints.idxbx = 0:4; % only bounds on positional states
+% constraints.lbx   = [-max_xy_m, -max_xy_m, min_z_m, -max_ang_rad, -max_ang_rad];
+% constraints.ubx   = [max_xy_m,   max_xy_m, max_z_m,  max_ang_rad,  max_ang_rad];
 
 % Do we need to set these? do they affect anything
 % think they might be set implicit when x0 for the ocp is set.

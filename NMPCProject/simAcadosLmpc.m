@@ -1,35 +1,76 @@
-%% simAcadosLmpc — Linear MPC control loop with acados
+%% simAcadosLmpc — Static Linear MPC control loop with acados
+%
+% Linearizes the dynamics once at equilibrium using CasADi, discretizes
+% via matrix exponential (ZOH), then solves a fixed-coefficient QP at
+% every step using acados (DISCRETE dynamics).
+%
+% Discrete model (absolute coordinates):
+%   x[k+1] = Ad*x[k] + Bd*u[k] + c      c = (I-Ad)*xEq  (uEq=0)
 
 % simSetup;
 import casadi.*
 
+%% --- Linearize at equilibrium ---
+fprintf('\n--- Computing linearization at equilibrium ---\n');
+
+x_cas = MX.sym('x', nx);
+u_cas = MX.sym('u', nu);
+
+f_expl = maglevSystemDynamicsReduced_casadi(x_cas, u_cas, params, modelId);
+jac_fun = Function('jac_fun', {x_cas, u_cas}, ...
+                   {jacobian(f_expl, x_cas), jacobian(f_expl, u_cas)});
+
+[Ac_val, Bc_val] = jac_fun(xEq, uEq);
+Ac = full(Ac_val);
+Bc = full(Bc_val);
+
+fprintf('  Continuous-time eigenvalues (real part): %s\n', ...
+    mat2str(sort(real(eig(Ac)))', 4));
+
+% Discretize via matrix exponential (ZOH)
+M_exp = expm([Ac Bc; zeros(nu, nx+nu)] * dt_mpc);
+Ad = M_exp(1:nx, 1:nx);
+Bd = M_exp(1:nx, nx+1:end);
+
+% Offset so xEq is a fixed point: x[k+1] = Ad*x[k] + Bd*u[k] + c
+c_offset = (eye(nx) - Ad) * xEq;   % uEq = 0
+
+fprintf('  Discrete-time eigenvalues (|z|): %s\n', ...
+    mat2str(sort(abs(eig(Ad)))', 4));
+
 %% --- OCP SETUP ---
 fprintf('\n--- Setting up OCP ---\n');
 
+x_sym = MX.sym('x', nx);
+u_sym = MX.sym('u', nu);
+
+mdl = AcadosModel();
+mdl.name          = 'maglev_lmpc';
+mdl.x             = x_sym;
+mdl.u             = u_sym;
+mdl.disc_dyn_expr = Ad * x_sym + Bd * u_sym + c_offset;
+
 ocp = AcadosOcp();
-ocp.model = getSimModel();
+ocp.model = mdl;
 
 ocp.solver_options.N_horizon             = N_horizon;
 ocp.solver_options.tf                    = dt_mpc * N_horizon;
-ocp.solver_options.integrator_type       = 'ERK';
-ocp.solver_options.sim_method_num_stages = 4;
-ocp.solver_options.sim_method_num_steps  = 1;
-ocp.solver_options.nlp_solver_type       = 'SQP_RTI';
-ocp.solver_options.nlp_solver_max_iter   = 1000;
+ocp.solver_options.integrator_type       = 'DISCRETE';
+ocp.solver_options.nlp_solver_type       = 'SQP';
+ocp.solver_options.nlp_solver_max_iter   = 1;
 ocp.solver_options.qp_solver             = 'PARTIAL_CONDENSING_HPIPM';
-ocp.solver_options.globalization         = 'MERIT_BACKTRACKING';
 ocp.solver_options.ext_fun_compile_flags = '-O2';
 
 ocp.cost        = getCost(xEq, uEq);
 ocp.constraints = getConstraints(x0);
 
-save_filename = sprintf("res_N%d_dt%dus_%s%ds%d_lmpc", ...
-    N_horizon, round(dt_mpc*1e6), ...
-    ocp.solver_options.integrator_type, ...
-    ocp.solver_options.sim_method_num_stages, ...
-    ocp.solver_options.sim_method_num_steps);
+save_filename = sprintf("res_N%d_dt%dus_DISC_lmpc", N_horizon, round(dt_mpc*1e6));
+save_filename = fullfile(out_folder, save_filename);
 
-ocp_solver = AcadosOcpSolver(ocp);
+solver_dir = fullfile('build', 'lmpc');
+ocp.code_gen_opts.code_export_directory = fullfile(solver_dir, 'c_generated_code');
+ocp.code_gen_opts.json_file = fullfile(solver_dir, [mdl.name '_ocp.json']);
+ocp_solver = AcadosOcpSolver(ocp, struct('output_dir', solver_dir));
 
 % Warm-start: initialize all shooting nodes to equilibrium
 for k = 0:N_horizon
@@ -128,6 +169,7 @@ for k = 1:N_mpc
         sim_time_tot(k)*1e6);
 
     if isDiverged(x)
+        diverged = true;
         fprintf('  *** DIVERGED at MPC step %d ***\n', k);
         last_idx = min(k*n_sub, N_sim);
         x_sim = x_sim(:, 1:last_idx);
@@ -188,6 +230,8 @@ sim_data.sim_time_tot      = sim_time_tot;
 sim_data.step_time_tot     = step_time_tot;
 sim_data.cost              = ocp_cost;
 sim_data.cost_cum          = cumsum(ocp_cost);
+sim_data.Ad                = Ad;
+sim_data.Bd                = Bd;
 
 save(save_filename, '-struct', 'sim_data');
 fprintf('Results saved to: %s\n', save_filename);

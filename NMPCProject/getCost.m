@@ -12,13 +12,13 @@ nx = 10;
 nu = 4;
 
 Q = diag([...
-    1e4, 1e4, ...       % x, y (lateral — less critical)
-    1e6, ...             % z (unstable direction — highest priority)
-    1e3, 1e3, ...       % roll, pitch
-    1e2, 1e2, 1e3, ...  % vx, vy, vz (vz high for damping)
-    1e2, 1e2 ...        % wx, wy
+    1e6, 1e6, ...       % x, y (lateral — less critical)
+    1e7, ...             % z (unstable direction — highest priority)
+    1e2, 1e2, ...       % roll, pitch
+    1e0, 1e0, 1e0, ...  % vx, vy, vz (vz high for damping)
+    1e1, 1e1 ...        % wx, wy
 ]);
-R = eye(nu) * 1e0;
+R = eye(nu) * 1e2;
 
 cost = AcadosOcpCost();
 

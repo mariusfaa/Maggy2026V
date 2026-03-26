@@ -15,11 +15,11 @@ addpath(fullfile(acados_root, 'external',   'jsonlab'));
 addpath(fullfile(acados_root, 'external',   'casadi-matlab'));
 
 addpath(genpath(fullfile(project_root, 'model_matlab')));
-% addpath(genpath(fullfile(project_root, 'model_casadi')));
 addpath(genpath(fullfile(project_root, 'model_reduced_casadi')));
-% addpath(genpath(fullfile(project_root, 'model_dipole_casadi')));
 addpath(genpath(fullfile(project_root, 'system_parameters')));
 addpath(genpath(fullfile(project_root, 'utilities')));
+
+cd(project_root);
 
 %% --- Parameters ---
 modelId = MaglevModel.Accurate;
@@ -46,18 +46,26 @@ dt = 0.0001;
 t  = 0:dt:0.2;
 
 % --- Initial conditions ---
-x0_full = xEq_full + [0; 0.001; 0.001; 0; 0; 0; zeros(6,1)];
-x0 = x0_full([1:5,7:11]);
+x0_full = xEq_full + [-0.0007; 0.0005; 0.001; deg2rad(5); 0; 0; zeros(6,1)];
+% x0_full = xEq_full + [0; 0; 0.002; deg2rad(20); 0; 0; zeros(6,1)];
+x0 = x0_full([1:5,7:11]); 
 u0 = [-0.25; 0.5; -0.5; 0.75];
 
-% Setup sim object
-if ~exist("sim_solver","var")
+% Setup sim object — rebuild if variable missing or build dir was cleaned
+if ~exist("sim_solver","var") || ~exist(fullfile('build','sim'), 'dir')
     model = getSimModel();
-    sim_solver = getSimSolver(model,dt);
+    sim_solver = getSimSolver(model, dt);
 end
 
 assert(mod(dt_mpc,dt) == 0,"dt_mpc must be a multiple of dt");
 
+out_folder = fullfile(project_root, "results");
+if ~exist(out_folder, "dir"); mkdir(out_folder); end
+
+if ~exist("build", "dir"); mkdir("build"); end
+
 simAcadosNmpc;
 simAcadosLmpc;
-simSolmpc;
+simAcadosSolmpc;
+
+aCompareSimulations;
