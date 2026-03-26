@@ -1,4 +1,4 @@
-%% --- Compare arbitrary number of simulation result files ---
+%% simCompare — Compare simulation results across controllers
 
 % clear; clc;
 
@@ -7,43 +7,17 @@
 %% ==========================================================
 
 files = [
-    "sim_results/ode_acc_n80_na21.mat"
-    % "sim_results/ode_acc_n80_na7.mat"
-    % "sim_results/ode_acc_n80_na1.mat"
-    % "sim_results/ode_acc_n24_na1.mat"
-    "sim_results/ode_acc_n16_na1.mat"
-    % "sim_results/ode_acc_n12_na1.mat"
-    % "sim_results/ode_acc_n10_na1.mat"
-   "sim_results/ode_fast_n80_na1.mat"
-    % "sim_results/ode_fast_n16_na1.mat"
-    % "sim_results/ode_fast_n8_na1.mat"
-
-
-    "sim_results/acados_acc_n80_na1.mat"
-    "sim_results/acados_acc_n16_na1.mat"
-    "sim_results/acados_acc_n8_na1.mat"
-
-    "sim_results/acados_fast_n80_na1.mat"
-    "sim_results/acados_fast_n16_na1.mat"
-    "sim_results/acados_fast_n8_na1.mat"
+    "res_N30_dt1000us_DISC_solmpc.mat"
+    "res_N30_dt1000us_ERK4s1_lmpc.mat"
+    "res_N30_dt1000us_ERK4s1_nmpc.mat"
 ];
 
-files = [
-    "sim_results/ode_accurate_n80_na21.mat"
-    % "sim_results/ode_fast_n80_na1.mat"
-    % "sim_results/acados_accurate_n80_na1.mat"
-    % "sim_results/acados_accurate_n16_na1.mat"
-    "sim_results/acados_accurate_n16_na1.mat"
-    % "sim_results/acados_accurate_n8_na1.mat"
-    % "acados_fast_n80_na1.mat"
-]
-
-T_end = 0.05;   % 0 = auto
+T_end = 0;   % 0 = auto
 
 % Error threshold markers: mark points where |error| vs first file exceeds
 % these thresholds. Set to 0 or Inf to disable.
-err_thresh_mm  = 4;     % position threshold (mm)
-err_thresh_deg = Inf;   % orientation threshold (deg) — disabled by default
+err_thresh_mm  = 4;    % position threshold (mm)
+err_thresh_deg = Inf;  % orientation threshold (deg) — disabled by default
 
 %% ==========================================================
 %% Load files
@@ -58,17 +32,28 @@ names = cell(1, nFiles);
 for f = 1:nFiles
     if ~isfile(files(f)), error("File not found: %s", files(f)); end
     data{f} = load(files(f));
-    [~, n, ~] = fileparts(files(f));
-    names{f} = strrep(n, '_', ' ');
 
-    % Expand 10-state (reduced, no yaw) to 12-state for compatibility
+    % Use controller field if available, else fall back to filename
+    if isfield(data{f}, 'controller')
+        names{f} = upper(data{f}.controller);
+    else
+        [~, n, ~] = fileparts(files(f));
+        names{f} = strrep(n, '_', ' ');
+    end
+
+    if isfield(data{f}, 'diverged') && data{f}.diverged
+        fprintf('  WARNING: %s DIVERGED\n', names{f});
+        names{f} = [names{f} ' (diverged)'];
+    end
+
+    % Expand 10-state (reduced, no yaw) to 12-state for plotting
     if size(data{f}.x, 1) == 10
         N = size(data{f}.x, 2);
         data{f}.x = [data{f}.x(1:5,:); zeros(1,N); ...
                      data{f}.x(6:10,:); zeros(1,N)];
         fprintf('  %s: expanded 10-state -> 12-state (yaw/wz = 0)\n', names{f});
     end
-    if numel(data{f}.xEq) == 10
+    if isfield(data{f}, 'xEq') && numel(data{f}.xEq) == 10
         data{f}.xEq = [data{f}.xEq(1:5); 0; data{f}.xEq(6:10); 0];
     end
 end
@@ -92,11 +77,10 @@ fprintf('T_end = %.4f s\n', T_end);
 %% Normalize initial state (static offset vs first file)
 %% ==========================================================
 
-x0_ref = data{1}.x(:,1);   % reference initial state
+x0_ref = data{1}.x(:,1);
 
 for f = 2:nFiles
-    x0 = data{f}.x(:,1);
-    offset = x0_ref - x0;
+    offset = x0_ref - data{f}.x(:,1);
     data{f}.x = data{f}.x + offset;
 end
 
@@ -106,7 +90,6 @@ end
 
 pos_scale = 1e3;
 ang_scale = 180/pi;
-
 pos_unit  = 'mm';
 ang_unit  = 'deg';
 
@@ -128,13 +111,11 @@ for i = 1:3
         plot(data{f}.t, data{f}.x(i,:)*pos_scale, ...
             '-','Color',colors(f,:),'LineWidth',1.5,'DisplayName',names{f});
     end
-    % Error threshold markers (vs first file)
     if isfinite(err_thresh_mm) && err_thresh_mm > 0
         ref_t = data{1}.t;
         for f = 2:nFiles
             xi = interp1(data{f}.t, data{f}.x(i,:)', ref_t, 'pchip')';
-            err_mm = abs(data{1}.x(i,:) - xi) * pos_scale;
-            bad = err_mm > err_thresh_mm;
+            bad = abs(data{1}.x(i,:) - xi)*pos_scale > err_thresh_mm;
             if any(bad)
                 scatter(ref_t(bad), xi(bad)*pos_scale, ...
                     20, colors(f,:), 'x', 'LineWidth', 1.5, 'HandleVisibility','off');
@@ -142,9 +123,8 @@ for i = 1:3
         end
     end
     yline(xEq(i)*pos_scale,'k:','HandleVisibility','off');
-    xlabel('Time (s)');
-    ylabel(pos_unit);
-    title(state_names{i});
+    xlim([0 T_end]);
+    xlabel('Time (s)'); ylabel(pos_unit); title(state_names{i});
     legend('Location','best');
 end
 sgtitle('Position Comparison','FontSize',14,'FontWeight','bold');
@@ -163,13 +143,11 @@ for i = 1:3
         plot(data{f}.t, data{f}.x(si,:)*ang_scale, ...
             '-','Color',colors(f,:),'LineWidth',1.5,'DisplayName',names{f});
     end
-    % Error threshold markers (vs first file)
     if isfinite(err_thresh_deg) && err_thresh_deg > 0
         ref_t = data{1}.t;
         for f = 2:nFiles
             xi = interp1(data{f}.t, data{f}.x(si,:)', ref_t, 'pchip')';
-            err_deg = abs(data{1}.x(si,:) - xi) * ang_scale;
-            bad = err_deg > err_thresh_deg;
+            bad = abs(data{1}.x(si,:) - xi)*ang_scale > err_thresh_deg;
             if any(bad)
                 scatter(ref_t(bad), xi(bad)*ang_scale, ...
                     20, colors(f,:), 'x', 'LineWidth', 1.5, 'HandleVisibility','off');
@@ -177,9 +155,8 @@ for i = 1:3
         end
     end
     yline(xEq(si)*ang_scale,'k:','HandleVisibility','off');
-    xlabel('Time (s)');
-    ylabel(ang_unit);
-    title(state_names{si});
+    xlim([0 T_end]);
+    xlabel('Time (s)'); ylabel(ang_unit); title(state_names{si});
     legend('Location','best');
 end
 sgtitle('Orientation Comparison','FontSize',14,'FontWeight','bold');
@@ -200,12 +177,9 @@ for i = 1:6
         plot(data{f}.t, data{f}.x(si,:), ...
             '-','Color',colors(f,:),'LineWidth',1.5,'DisplayName',names{f});
     end
-    xlabel('Time (s)');
-    ylabel(vel_labels{i});
-    title(state_names{si});
-    if i == 1
-        legend('Location','best');
-    end
+    xlim([0 T_end]);
+    xlabel('Time (s)'); ylabel(vel_labels{i}); title(state_names{si});
+    if i == 1, legend('Location','best'); end
 end
 sgtitle('Velocity Comparison','FontSize',14,'FontWeight','bold');
 
@@ -216,10 +190,7 @@ sgtitle('Velocity Comparison','FontSize',14,'FontWeight','bold');
 figure(4); clf;
 set(gcf,'Name','Error','Position',[150 200 1200 600]);
 
-% Interpolate all onto first file's time grid, compute errors
 ref = data{1};
-nErr = nFiles - 1;
-err_colors = colors(2:end,:);
 
 subplot(2,2,1); hold on; grid on; box on;
 subplot(2,2,2); hold on; grid on; box on;
@@ -228,43 +199,113 @@ subplot(2,2,4); hold on; grid on; box on;
 
 for f = 2:nFiles
     x_interp = interp1(data{f}.t, data{f}.x', ref.t, 'pchip')';
-    err = ref.x - x_interp;
+    err   = ref.x - x_interp;
     label = sprintf('%s - %s', names{1}, names{f});
 
     subplot(2,2,1);
     plot(ref.t, max(abs(err(1:3,:)),[],1)*pos_scale, ...
         '-','Color',colors(f,:),'LineWidth',1.5,'DisplayName',label);
-
     subplot(2,2,2);
     plot(ref.t, max(abs(err(4:6,:)),[],1)*ang_scale, ...
         '-','Color',colors(f,:),'LineWidth',1.5,'DisplayName',label);
-
     subplot(2,2,3);
     plot(ref.t, max(abs(err(7:9,:)),[],1), ...
         '-','Color',colors(f,:),'LineWidth',1.5,'DisplayName',label);
-
     subplot(2,2,4);
     plot(ref.t, max(abs(err(10:12,:)),[],1), ...
         '-','Color',colors(f,:),'LineWidth',1.5,'DisplayName',label);
 
-    % Print summary
     fprintf('\n=== Error: %s ===\n', label);
     fprintf('Position  max: %.4e m  (%.4e %s)\n', ...
-        max(abs(err(1:3,:)),[],'all'), ...
-        max(abs(err(1:3,:)),[],'all')*pos_scale, pos_unit);
+        max(abs(err(1:3,:)),[],'all'), max(abs(err(1:3,:)),[],'all')*pos_scale, pos_unit);
     fprintf('Angle     max: %.4e rad (%.4e %s)\n', ...
-        max(abs(err(4:6,:)),[],'all'), ...
-        max(abs(err(4:6,:)),[],'all')*ang_scale, ang_unit);
-    fprintf('Lin vel   max: %.4e m/s\n', ...
-        max(abs(err(7:9,:)),[],'all'));
-    fprintf('Ang vel   max: %.4e rad/s\n', ...
-        max(abs(err(10:12,:)),[],'all'));
+        max(abs(err(4:6,:)),[],'all'), max(abs(err(4:6,:)),[],'all')*ang_scale, ang_unit);
+    fprintf('Lin vel   max: %.4e m/s\n',  max(abs(err(7:9,:)),  [],'all'));
+    fprintf('Ang vel   max: %.4e rad/s\n', max(abs(err(10:12,:)),[],'all'));
 end
 
-subplot(2,2,1); ylabel(pos_unit); title('Position error'); legend('Location','best');
-subplot(2,2,2); ylabel(ang_unit); title('Orientation error'); legend('Location','best');
-subplot(2,2,3); xlabel('Time (s)'); ylabel('m/s'); title('Linear velocity error'); legend('Location','best');
-subplot(2,2,4); xlabel('Time (s)'); ylabel('rad/s'); title('Angular velocity error'); legend('Location','best');
+subplot(2,2,1); xlim([0 T_end]); ylabel(pos_unit);  title('Position error');          legend('Location','best');
+subplot(2,2,2); xlim([0 T_end]); ylabel(ang_unit);  title('Orientation error');       legend('Location','best');
+subplot(2,2,3); xlim([0 T_end]); xlabel('Time (s)'); ylabel('m/s');    title('Linear velocity error');  legend('Location','best');
+subplot(2,2,4); xlim([0 T_end]); xlabel('Time (s)'); ylabel('rad/s');  title('Angular velocity error'); legend('Location','best');
+sgtitle(sprintf('Error (relative to %s)', names{1}), 'FontSize',14,'FontWeight','bold');
 
-sgtitle(sprintf('Error (relative to %s)', names{1}), ...
-    'FontSize',14,'FontWeight','bold');
+%% ==========================================================
+%% FIGURE 5: Timing comparison
+%% ==========================================================
+
+figure(5); clf;
+set(gcf,'Name','Timing Comparison','Position',[200 150 1200 600]);
+
+subplot(2,2,1); hold on; grid on; box on; title('Step time (ocp+sim)');
+subplot(2,2,2); hold on; grid on; box on; title('OCP solve time');
+subplot(2,2,3); hold on; grid on; box on; title('QP solve time');
+subplot(2,2,4); hold on; grid on; box on; title('Plant sim time');
+
+fprintf('\n=== Timing summary (acados internal, microseconds) ===\n');
+fprintf('%-12s  %8s  %8s  %8s  |  %8s  %8s  %8s  |  %8s\n', ...
+    'Controller','mean','median','max','ocp_mean','qp_mean','sim_mean','step_mean');
+
+for f = 1:nFiles
+    d = data{f};
+    if ~isfield(d, 'step_time_tot'), continue; end
+
+    t_mpc = (0:numel(d.step_time_tot)-1) * d.dt_mpc;
+
+    subplot(2,2,1);
+    plot(t_mpc, d.step_time_tot*1e6, '-','Color',colors(f,:),'LineWidth',1,'DisplayName',names{f});
+    yline(mean(d.step_time_tot)*1e6, '--','Color',colors(f,:),'LineWidth',1,'HandleVisibility','off');
+
+    subplot(2,2,2);
+    plot(t_mpc, d.ocp_time_tot*1e6, '-','Color',colors(f,:),'LineWidth',1,'DisplayName',names{f});
+
+    subplot(2,2,3);
+    plot(t_mpc, d.ocp_time_qp*1e6, '-','Color',colors(f,:),'LineWidth',1,'DisplayName',names{f});
+
+    subplot(2,2,4);
+    plot(t_mpc, d.sim_time_tot*1e6, '-','Color',colors(f,:),'LineWidth',1,'DisplayName',names{f});
+
+    fprintf('%-12s  %8.1f  %8.1f  %8.1f  |  %8.1f  %8.1f  %8.1f  |  %8.1f\n', ...
+        names{f}, ...
+        mean(d.ocp_time_tot)*1e6, median(d.ocp_time_tot)*1e6, max(d.ocp_time_tot)*1e6, ...
+        mean(d.ocp_time_tot)*1e6, mean(d.ocp_time_qp)*1e6,    mean(d.sim_time_tot)*1e6, ...
+        mean(d.step_time_tot)*1e6);
+end
+
+subplot(2,2,1); xlim([0 T_end]); xlabel('Time (s)'); ylabel('\mus'); legend('Location','best');
+subplot(2,2,2); xlim([0 T_end]); xlabel('Time (s)'); ylabel('\mus'); legend('Location','best');
+subplot(2,2,3); xlim([0 T_end]); xlabel('Time (s)'); ylabel('\mus'); legend('Location','best');
+subplot(2,2,4); xlim([0 T_end]); xlabel('Time (s)'); ylabel('\mus'); legend('Location','best');
+sgtitle('Timing Comparison','FontSize',14,'FontWeight','bold');
+
+%% ==========================================================
+%% FIGURE 6: Cost comparison
+%% ==========================================================
+
+figure(6); clf;
+set(gcf,'Name','Cost Comparison','Position',[250 100 1000 450]);
+
+subplot(1,2,1); hold on; grid on; box on; title('Stage cost per MPC step');
+subplot(1,2,2); hold on; grid on; box on; title('Cumulative cost');
+
+fprintf('\n=== Cost summary ===\n');
+
+for f = 1:nFiles
+    d = data{f};
+    if ~isfield(d, 'cost'), continue; end
+
+    t_mpc = (1:numel(d.cost)) * d.dt_mpc;
+
+    subplot(1,2,1);
+    plot(t_mpc, d.cost, '-','Color',colors(f,:),'LineWidth',1.5,'DisplayName',names{f});
+
+    subplot(1,2,2);
+    plot(t_mpc, d.cost_cum, '-','Color',colors(f,:),'LineWidth',1.5,'DisplayName',names{f});
+
+    fprintf('%-12s  final cost: %.4g   cumulative: %.4g\n', ...
+        names{f}, d.cost(end), d.cost_cum(end));
+end
+
+subplot(1,2,1); xlim([0 T_end]); xlabel('Time (s)'); ylabel('Cost'); legend('Location','best');
+subplot(1,2,2); xlim([0 T_end]); xlabel('Time (s)'); ylabel('Cost'); legend('Location','best');
+sgtitle('Cost Comparison','FontSize',14,'FontWeight','bold');

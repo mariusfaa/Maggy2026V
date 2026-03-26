@@ -43,7 +43,7 @@ dt_mpc = 0.001;
 
 % --- Simulation time ---
 dt = 0.0001;
-t  = 0:dt:0.05;
+t  = 0:dt:0.2;
 
 % --- Initial conditions ---
 x0_full = xEq_full + [0; 0.001; 0.001; 0; 0; 0; zeros(6,1)];
@@ -57,3 +57,7 @@ if ~exist("sim_solver","var")
 end
 
 assert(mod(dt_mpc,dt) == 0,"dt_mpc must be a multiple of dt");
+
+simAcadosNmpc;
+simAcadosLmpc;
+simSolmpc;
