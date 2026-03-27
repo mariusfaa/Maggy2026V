@@ -5,10 +5,12 @@
 #define NUMBER_STATES 12         // all states
 #define NUMBER_STATES_REDUCED 10 // states minus rotation around z axis
 #define NUMBER_STATES_REDUCED_EXTRA 8 // states minus rotation around z axis and rotation velocities
-#define NUMBER_STATES_TEST 3 // only for testing observer on coordinated turn model
-#define NUMBER_OBSERVER_STATES NUMBER_STATES_REDUCED
+#define NUMBER_STATES_TEST 5 // only for testing observer on coordinated turn model
+#define NUMBER_OBSERVER_STATES NUMBER_STATES_TEST
 #define NUMBER_INPUTS 4          // input from solenoids
 #define NUMBER_MEASUREMENTS 3    // magnetic field measurements in xyz directions
+
+extern bool testing;
 
 using namespace arma;
 

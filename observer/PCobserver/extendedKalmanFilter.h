@@ -20,6 +20,9 @@ protected:
   vec dx; // Continuous derivatives
   derivatives_struct dxd;
 
+  // 0: euler. Otherwise RK4 with n iterations
+  int RK4Iterations;
+
   using Base::useSRformulation;
 
   using Base::dt;
@@ -50,8 +53,9 @@ protected:
   using Base::W;
 
 public:
-  ExtendedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, bool updateJacobians=1, bool updateQ=1):
+  ExtendedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, int RK4Iterations, bool updateJacobians=1, bool updateQ=1):
     dx(arma::zeros(numberStates)),
+    RK4Iterations(RK4Iterations),
     updateJacobians(updateJacobians),
     updateQ(updateQ),
     Base(numberStates, numberInputs, numberMeasurements, useSRformulation) {
@@ -63,8 +67,11 @@ public:
 
    virtual void predict(vec &u) override {
     // Predict mean
-    // eulerForward(x_est, u, dt, dxd);
-    rk4_multi(x_est, u, dt, 10, dxd);
+    if (!RK4Iterations) {
+      eulerForward(x_est, u, dt, dxd);
+    } else {
+      rk4_multi(x_est, u, dt, RK4Iterations, dxd);
+    }
 
     // Calculates new F
     if (updateJacobians) {

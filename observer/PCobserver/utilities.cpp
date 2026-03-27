@@ -8,6 +8,7 @@
 
 using namespace arma;
 
+bool testing = NUMBER_OBSERVER_STATES == NUMBER_STATES_TEST;
 
 // Set states that are observed
 void increaseStateSpace(const vec &x, double x_pad[NUMBER_STATES]) {
@@ -50,13 +51,14 @@ void dynamics_f(const vec &x, const vec &u, vec &dx) {
     // maglevSystemDynamics_xred(x.memptr(), u.memptr(), dx.memptr());
     break;
 
-    // Test; coordinated turn model with wacky input on derivatives
+    // Test model for filter verification
     case NUMBER_STATES_TEST:
-    dx(0) = x(2);
-    dx(1) = x(3);
-    dx(2) = -x(4)*x(3) + u(0);
-    dx(3) = x(4)*x(2) + u(0);
-    dx(4) = 0;
+    dx(0) = x(3)*cos(x(2));
+    dx(1) = x(3)*sin(x(2));
+    dx(2) = x(4);
+    dx(3) = u(0);
+    dx(4) = u(1);
+    break;
   }
 }
 
@@ -71,11 +73,16 @@ void measurements_h(const vec &x, const vec &u, vec &z) {
     // maglevSystemMeasurements_xred(x.memptr(), u.memptr(), z.memptr());
     break;
 
-    // Test; coordinated turn model
+    // Test model for filter verification
     case NUMBER_STATES_TEST:
-    z(0) = x(0);
-    z(1) = x(1);
-    z(2) = x(2) + x(3)*x(4);
+    // Three range sensors in a triangle around origin
+    double posx0, posx1, posx2, posy0, posy1, posy2;
+    posx0 = posy0 = posy1 = -1.0;
+    posx1 = posy2 = 1.0;
+    posx2 = 0.0;
+    z(0) = sqrt(pow(x(0)-posx0, 2) + pow(x(1)-posy0, 2));
+    z(1) = sqrt(pow(x(0)-posx1, 2) + pow(x(1)-posy1, 2));
+    z(2) = sqrt(pow(x(0)-posx2, 2) + pow(x(1)-posy2, 2));
     break;
   }
 }

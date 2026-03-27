@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
     // Default arguments
     int filterVariant = 1;
     bool useSRformulation = 0;
+    int RK4Iterations = 0;
     bool updateJacobians = 1;
     bool updateQ = 0;
     bool cubature = 0;
@@ -31,11 +32,14 @@ int main(int argc, char* argv[]) {
         if (argc > 2) {
             useSRformulation = *argv[2] - '0';
             if (argc > 3) {
-                updateJacobians = *argv[3] - '0';
+                RK4Iterations = *argv[3] - '0';
                 if (argc > 4) {
-                    updateQ = *argv[4] - '0';
+                    updateJacobians = *argv[4] - '0';
                     if (argc > 5) {
-                        cubature = *argv[5] - '0';
+                        updateQ = *argv[5] - '0';
+                        if (argc > 6) {
+                            cubature = *argv[6] - '0';
+                        }
                     }
                 }
             }
@@ -54,19 +58,27 @@ int main(int argc, char* argv[]) {
     // Writing header and flushing to file immediately
     file << "t,"
         // True states
-        << "x,y,z,alpha,beta,"
-        << "x_dot,y_dot,z_dot,alpha_dot,beta_dot,"
-        // Estimated states
-        << "x_est,y_est,z_est,alpha_est,beta_est,"
-        << "x_dot_est,y_dot_est,z_dot_est,alpha_dot_est,beta_dot_est,"
-        // State estimation errors
-        << "err_x,err_y,err_z,err_alpha,err_beta,"
-        << "err_x_dot,err_y_dot,err_z_dot,err_alpha_dot,err_beta_dot,"
-        // Confidence bounds (standard deviations)
-        << "x_std,y_std,z_std,alpha_std,beta_std,"
-        << "x_dot_std,y_dot_std,z_dot_std,alpha_dot_std,beta_dot_std,"
-        // NIS and NEES
-        << "nis,nees,"
+        << "x,y,z,alpha,beta,";
+    if (!testing) {
+        file << "x_dot,y_dot,z_dot,alpha_dot,beta_dot,";
+    }
+    // Estimated states
+    file << "x_est,y_est,z_est,alpha_est,beta_est,";
+    if (!testing) {
+        file << "x_dot_est,y_dot_est,z_dot_est,alpha_dot_est,beta_dot_est,";
+    }
+    // State estimation errors
+    file << "err_x,err_y,err_z,err_alpha,err_beta,";
+    if (!testing) {
+        file << "err_x_dot,err_y_dot,err_z_dot,err_alpha_dot,err_beta_dot,";
+    }
+    // Confidence bounds (standard deviations)
+    file << "x_std,y_std,z_std,alpha_std,beta_std,";
+    if (!testing) {
+        file << "x_dot_std,y_dot_std,z_dot_std,alpha_dot_std,beta_dot_std,";
+    }
+    // NIS and NEES
+    file << "nis,nees,"
         // Numerical diagnostics
         << "cond_P,det_P,"
         << "cond_S,det_S,"
@@ -87,20 +99,30 @@ int main(int argc, char* argv[]) {
     // Initial conditions
     double zEq = 0.030119178665731;
     vec xLp(NUMBER_OBSERVER_STATES, arma::fill::zeros);
-    xLp(2) = zEq;
+    if (!testing) {
+        xLp(2) = zEq;
+    }
     vec x0 = xLp;
 
 
     // Perturbation
-    x0(0) += 0.0001;
-    x0(1) += -0.0001;
-    x0(2) += 0.001;
+    if (!testing) {
+        x0(0) += 0.0001;
+        x0(1) += -0.0001;
+        x0(2) += 0.001;
+    } else {
+        x0(0) += 1.0;
+        x0(1) += 0.0;
+        x0(2) += 3.14/2.0;
+        x0(3) += 2.0*3.14/5.0;
+        x0(4) += 2.0*3.14/5.0;
+    }
 
     // Control gain
     mat K = get_K();
 
     // Observer
-    filterPtr observer = initObserver(filterVariant, dt, useSRformulation, updateJacobians, updateQ, cubature);
+    filterPtr observer = initObserver(filterVariant, dt, xLp, useSRformulation, RK4Iterations, updateJacobians, updateQ, cubature);
 
     // Time vector
     double t_start = 0.0;
@@ -142,9 +164,11 @@ int main(int argc, char* argv[]) {
         z.col(k) = zk;
 
         // Simulating how the maggy sensor reads field in mT with inverted z
-        zk(0) *= 1e+3;
-        zk(1) *= 1e+3;
-        zk(2) *= -1e+3;
+        if (!testing) {
+            zk(0) *= 1e+3;
+            zk(1) *= 1e+3;
+            zk(2) *= -1e+3;
+        }
 
         // Adding random noise to measurements
         zk(0) += dis_x(gen);
@@ -152,9 +176,8 @@ int main(int argc, char* argv[]) {
         zk(2) += dis_z(gen);
 
         // Estimate
-        vec u_obs = u_prev; //zeros(4,1);
         vec xk_est(NUMBER_OBSERVER_STATES, arma::fill::zeros);
-        runObserver(u_obs.memptr(), zk.memptr(), xk_est.memptr(), *observer);
+        runObserver(u_prev.memptr(), zk.memptr(), xk_est.memptr(), *observer);
         x_est.col(k) = xk_est;
 
         // Compute control input using estimated state
@@ -164,7 +187,11 @@ int main(int argc, char* argv[]) {
         control_state = x.col(k);
 
         // x_est.col(k) = true_state;
-        u.col(k) = -K * (control_state - xLp);
+        if (!testing) {
+            u.col(k) = -K * (control_state - xLp);
+        } else {
+            u.col(k) = zeros(NUMBER_INPUTS, 1);
+        }
 
 
         // Various debug information saved to file each step in loop

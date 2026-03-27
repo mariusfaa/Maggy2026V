@@ -24,6 +24,9 @@ private:
 protected:
     using Base::dxd;
 
+    // 0: euler. Otherwise RK4 with n iterations
+    using Base::RK4Iterations;
+
     using Base::useSRformulation;
 
     using Base::dt;
@@ -72,8 +75,7 @@ protected:
     double central_cov_sgn;
 
 public:
-    UnscentedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, bool cubature=0):
-    Base(numberStates, numberInputs, numberMeasurements, useSRformulation),
+    UnscentedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, int RK4Iterations, bool cubature=0):
     cubature(cubature),
     ns(2*nx+static_cast<size_t>(!cubature)),
     sigma_points(arma::zeros(nx, ns)),
@@ -82,14 +84,14 @@ public:
     weights_mean(arma::zeros(ns)),
     weights_cov(arma::zeros(ns)),
     weights_cov_sr(arma::zeros(ns)),
-    Pxz(arma::zeros(nx, nz))
-    {
-    if (cubature) {
-        weights_cov = weights_mean = ones(ns)/(2*ns);
-        eta = sqrt(nx);
-    } else {
-        setParameters();
-    }
+    Pxz(arma::zeros(nx, nz)),
+    Base(numberStates, numberInputs, numberMeasurements, useSRformulation, RK4Iterations) {
+        if (cubature) {
+            weights_cov = weights_mean = ones(ns)/(2*ns);
+            eta = sqrt(nx);
+        } else {
+            setParameters();
+        }
     }
 
     virtual void init(const FilterParams &params) override {
@@ -152,8 +154,11 @@ public:
 
         // Predict transformed state of sigma points
         for (size_t i = 0; i < ns; ++i) {
-            eulerForward(sigma_points.col(i), u, dt, dxd);
-            // rk4_multi(sigma_points.col(i), u, dt, 10, dxd);
+            if (!RK4Iterations) {
+                eulerForward(sigma_points.col(i), u, dt, dxd);
+            } else {
+            rk4_multi(sigma_points.col(i), u, dt, RK4Iterations, dxd);
+            }
             sigma_points_pred.col(i) = *(dxd.x_next);
 
         }
@@ -197,6 +202,17 @@ public:
     void update(vec &z) override {
         // Assuming feedthrough is compensated for
         vec u = zeros(nu);
+
+        // Calculate sigma points based on predicted density
+        if (cubature) {
+            if (!useSRformulation) {
+                Ps = chol(P, "lower");
+            }
+            for (size_t i = 0; i < nx; ++i) {
+                sigma_points_pred.col(i) = x_pred + eta*Ps.col(i);
+                sigma_points_pred.col(i + nx) = x_pred - eta*Ps.col(i);
+            }
+        }
 
         // Predicted measurement for each predicted sigma point
         for (size_t i = 0; i < ns; ++i) {
