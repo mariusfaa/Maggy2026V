@@ -82,15 +82,15 @@ echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
 
 # This is for enabling ccache, uncomment if you want
-# # Fixes matlab cmake issue, see https://github.com/acados/acados/pull/1807
-# export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6:/usr/lib/x86_64-linux-gnu/libcurl.so.4
-# export ACADOS_USE_CMAKE=1
-# export CMAKE_CXX_COMPILER_LAUNCHER=ccache
-# export PATH="/usr/lib/ccache:$PATH"
+# Fixes matlab cmake issue, see https://github.com/acados/acados/pull/1807
+#export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6:/usr/lib/x86_64-linux-gnu/libcurl.so.4
+export ACADOS_USE_CMAKE=1
+export CMAKE_CXX_COMPILER_LAUNCHER=ccache
+export PATH="/usr/lib/ccache:$PATH"
 
 
-# # Fast builds with cmake
-# CMAKE_BUILD_PARALLEL_LEVEL=14
+# Fast builds with cmake
+CMAKE_BUILD_PARALLEL_LEVEL=14
 
-# export CC=/usr/lib/ccache/gcc-13
-# export CXX=/usr/lib/ccache/g++-13
+export CC=/usr/lib/ccache/gcc-13
+export CXX=/usr/lib/ccache/g++-13

@@ -11,13 +11,13 @@ clear; clc;
 
 results_dir = 'results';
 
-N_list     = [10, 20, 30];
-dt_list_us = 1000:1000:5000;          % microseconds
+N_list     = [10, 20, 30, 40, 50];
+dt_list_us = 1000:1000:3000;          % microseconds
 dt_list_s  = dt_list_us * 1e-6;       % seconds
 
 controllers = struct( ...
     'name',    {'NMPC',              'LMPC',             'SOL-MPC'}, ...
-    'pattern', {'ERK4s1_nmpc',       'DISC_lmpc',        'DISC_solmpc'});
+    'pattern', {'nmpc',              'lmpc',             'solmpc'});
 
 nN  = numel(N_list);
 nDt = numel(dt_list_us);
@@ -39,8 +39,7 @@ step_mean_us= nan(nC, nN, nDt);   % mean total step time (us)
 for ic = 1:nC
     for iN = 1:nN
         for iDt = 1:nDt
-            fname = sprintf('res_N%d_dt%dus_%s.mat', ...
-                N_list(iN), dt_list_us(iDt), controllers(ic).pattern);
+            fname = getFilename(controllers(ic).pattern, N_list(iN), dt_list_s(iDt));
             fpath = fullfile(results_dir, fname);
 
             if ~isfile(fpath)

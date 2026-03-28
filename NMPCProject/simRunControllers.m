@@ -46,7 +46,7 @@ dt = 0.0001;
 t  = 0:dt:0.2;
 
 % --- Initial conditions ---
-x0_full = xEq_full + [-0.0007; 0.0005; 0.001; deg2rad(5); 0; 0; zeros(6,1)];
+x0_full = xEq_full + [-0.0005; 0.00025; 0.0007; deg2rad(5); 0; 0; zeros(6,1)];
 % x0_full = xEq_full + [0; 0; 0.002; deg2rad(20); 0; 0; zeros(6,1)];
 x0 = x0_full([1:5,7:11]); 
 u0 = [-0.25; 0.5; -0.5; 0.75];
@@ -64,8 +64,13 @@ if ~exist(out_folder, "dir"); mkdir(out_folder); end
 
 if ~exist("build", "dir"); mkdir("build"); end
 
-simAcadosNmpc;
-simAcadosLmpc;
-simAcadosSolmpc;
+% simAcadosNmpc;
+% simAcadosLmpc;
+% simAcadosSolmpc;
 
+types = {'nmpc','solmpc','lmpc'};
+types = {'lmpc'};
+N = 10:10:50;
+dt = 0.001;
+files = getFiles(types,flip(N(2:end)),dt);
 aCompareSimulations;

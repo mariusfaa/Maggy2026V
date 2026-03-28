@@ -6,11 +6,7 @@
 %% Settings
 %% ==========================================================
 
-files = [
-    "res_N30_dt1000us_ERK4s1_nmpc.mat"
-    "res_N30_dt1000us_DISC_solmpc.mat"
-    "res_N30_dt1000us_DISC_lmpc.mat"
-];
+assert(exist("files", "var"));
 
 T_end = 0;   % 0 = auto
 
@@ -38,12 +34,12 @@ for f = 1:nFiles
     data{f} = load(files(f));
 
     % Use controller field if available, else fall back to filename
-    if isfield(data{f}, 'controller')
-        names{f} = upper(data{f}.controller);
-    else
+    % if isfield(data{f}, 'controller')
+    %     names{f} = upper(data{f}.controller);
+    % else
         [~, n, ~] = fileparts(files(f));
         names{f} = strrep(n, '_', ' ');
-    end
+    % end
 
     if isfield(data{f}, 'diverged') && data{f}.diverged
         fprintf('  WARNING: %s DIVERGED\n', names{f});

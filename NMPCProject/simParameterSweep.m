@@ -57,8 +57,8 @@ if ~exist(out_folder, 'dir'); mkdir(out_folder); end
 if ~exist('build', 'dir'); mkdir('build'); end
 
 %% --- Sweep parameters ---
-N_horizon_list = [10, 20, 30];
-dt_mpc_list    = 0.001:0.001:0.005;
+N_horizon_list = [10, 20, 30, 40, 50];
+dt_mpc_list    = 0.001:0.001:0.003;
 
 n_runs = numel(N_horizon_list) * numel(dt_mpc_list);
 run = 0;

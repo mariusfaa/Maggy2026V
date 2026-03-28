@@ -13,24 +13,21 @@ ocp.solver_options.N_horizon             = N_horizon;
 ocp.solver_options.tf                    = dt_mpc * N_horizon;
 ocp.solver_options.integrator_type       = 'ERK';
 ocp.solver_options.sim_method_num_stages = 4;
-ocp.solver_options.sim_method_num_steps  = 1;
-ocp.solver_options.nlp_solver_type = 'SQP'; % 'SQP_RTI' for real-time
-% ocp.solver_options.nlp_solver_max_iter = 10;
-% ocp.solver_options.nlp_solver_warm_start_first_qp = true;
-ocp.solver_options.qp_solver = 'PARTIAL_CONDENSING_HPIPM'; % FULL_CONDENSING_DAQP, FULL_CONDENSING_QPOASES, FULL_CONDENSING_HPIPM
-% ocp.solver_options.hessian_approx = 'GAUSS_NEWTON';
-% ocp.solver_options.globalization = 'MERIT_BACKTRACKING';
+if dt_mpc > 0.002
+    ocp.solver_options.sim_method_num_steps  = 3;
+    ocp.solver_options.regularize_method = 'NO_REGULARIZE';% need this to find a solution?
+else
+    ocp.solver_options.sim_method_num_steps  = 1;
+end
+ocp.solver_options.nlp_solver_type = 'SQP_RTI';
+ocp.solver_options.globalization = 'MERIT_BACKTRACKING';
 ocp.solver_options.ext_fun_compile_flags = '-O2';
+
 
 ocp.cost        = getCost(xEq, uEq);
 ocp.constraints = getConstraints(x0);
 
-save_filename = sprintf("res_N%d_dt%dus_%s%ds%d_nmpc", ...
-    N_horizon, round(dt_mpc*1e6), ...
-    ocp.solver_options.integrator_type, ...
-    ocp.solver_options.sim_method_num_stages, ...
-    ocp.solver_options.sim_method_num_steps);
-save_filename = fullfile(out_folder, save_filename);
+save_filename = fullfile(out_folder, getFilename('nmpc', N_horizon, dt_mpc));
 
 solver_dir = fullfile('build', 'nmpc');
 ocp.code_gen_opts.code_export_directory = fullfile(solver_dir, 'c_generated_code');
@@ -194,8 +191,9 @@ sim_data.ocp_residuals     = ocp_residuals;
 sim_data.ocp_status        = ocp_status;
 sim_data.sim_time_tot      = sim_time_tot;
 sim_data.step_time_tot     = step_time_tot;
-sim_data.cost              = ocp_cost;
-sim_data.cost_cum          = cumsum(ocp_cost);
+sim_data.ocp_cost          = ocp_cost;
+sim_data.cost              = computeCost(x_sim - xEq, u_sim - uEq);
+sim_data.cost_cum          = cumsum(sim_data.cost);
 
 save(save_filename, '-struct', 'sim_data');
 fprintf('Results saved to: %s\n', save_filename);

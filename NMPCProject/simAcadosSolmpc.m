@@ -74,9 +74,7 @@ ocp.constraints = getConstraints(x0);
 
 ocp.parameter_values = p0;
 
-save_filename = sprintf("res_N%d_dt%dus_DISC_solmpc", ...
-    N_horizon, round(dt_mpc*1e6));
-save_filename = fullfile(out_folder, save_filename);
+save_filename = fullfile(out_folder, getFilename('solmpc', N_horizon, dt_mpc));
 
 solver_dir = fullfile('build', 'solmpc');
 ocp.code_gen_opts.code_export_directory = fullfile(solver_dir, 'c_generated_code');
@@ -256,8 +254,9 @@ sim_data.ocp_residuals     = ocp_residuals;
 sim_data.ocp_status        = ocp_status;
 sim_data.sim_time_tot      = sim_time_tot;
 sim_data.step_time_tot     = step_time_tot;
-sim_data.cost              = ocp_cost;
-sim_data.cost_cum          = cumsum(ocp_cost);
+sim_data.ocp_cost          = ocp_cost;
+sim_data.cost              = computeCost(x_sim - xEq, u_sim - uEq);
+sim_data.cost_cum          = cumsum(sim_data.cost);
 sim_data.jac_time          = jac_time;   % SolMPC-specific: casadi eval + expm
 sim_data.Ad_eq             = reshape(p0(1:nx*nx),             nx, nx);
 sim_data.Bd_eq             = reshape(p0(nx*nx+1:nx*nx+nx*nu), nx, nu);
