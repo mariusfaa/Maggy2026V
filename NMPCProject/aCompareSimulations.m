@@ -15,6 +15,10 @@ T_end = 0;   % 0 = auto
 err_thresh_mm  = 4;    % position threshold (mm)
 err_thresh_deg = Inf;  % orientation threshold (deg) — disabled by default
 
+% Figure export format. Used when 'prefix' variable is set in the workspace.
+% Supported: 'pdf' (vector), 'png' (raster 300 dpi), 'eps' (vector)
+fig_export_ext = 'png';
+
 %% ==========================================================
 %% Load files
 %% ==========================================================
@@ -386,3 +390,35 @@ end
 subplot(1,nFiles,1);
 legend(cost_labels, 'Location','best','FontSize',7);
 sgtitle('Cost Breakdown by Component','FontSize',14,'FontWeight','bold');
+
+%% ==========================================================
+%% Export figures (runs only when 'prefix' variable is set)
+%% ==========================================================
+if exist('prefix', 'var') && ~isempty(prefix)
+    fig_infos = {'pos', 'orient', 'vel', 'error', 'timing', 'cost', 'inputs', 'cost_breakdown'};
+
+    % Resolve output directory: figures/ next to this script, or pwd
+    script_dir = fileparts(mfilename('fullpath'));
+    if isempty(script_dir), script_dir = pwd; end
+    fig_dir = fullfile(script_dir, 'figures');
+    if ~exist(fig_dir, 'dir'), mkdir(fig_dir); end
+
+    % Choose exportgraphics ContentType
+    vector_exts = {'pdf', 'eps', 'svg'};
+    if ismember(fig_export_ext, vector_exts)
+        content_type = 'vector';
+    else
+        content_type = 'image';
+    end
+
+    for fnum = 1:numel(fig_infos)
+        fh = figure(fnum);
+        out_path = fullfile(fig_dir, sprintf('%s_%s.%s', prefix, fig_infos{fnum}, fig_export_ext));
+        if strcmp(content_type, 'image')
+            exportgraphics(fh, out_path, 'ContentType', content_type, 'Resolution', 300);
+        else
+            exportgraphics(fh, out_path, 'ContentType', content_type);
+        end
+        fprintf('Saved figure %d -> %s\n', fnum, out_path);
+    end
+end

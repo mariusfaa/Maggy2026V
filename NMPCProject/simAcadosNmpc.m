@@ -24,7 +24,7 @@ ocp.solver_options.globalization = 'MERIT_BACKTRACKING';
 ocp.solver_options.ext_fun_compile_flags = '-O2';
 
 
-ocp.cost        = getCost(xEq, uEq);
+ocp.cost        = getCost(xEq, uEq,dt_mpc);
 ocp.constraints = getConstraints(x0);
 
 save_filename = fullfile(out_folder, getFilename('nmpc', N_horizon, dt_mpc));

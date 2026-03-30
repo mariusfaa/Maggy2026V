@@ -5,7 +5,7 @@ import casadi.*
 % Setup model object
 modelId = MaglevModel.Accurate;
 
-fprintf('--- Setting up sim model ---\n');
+%fprintf('--- Setting up sim model ---\n');
 % Load params configured for this model
 params = load_params(modelId);
 params.magnet.n     = 16; % determined by trail and error, "fast buildtime vs high accuracy"

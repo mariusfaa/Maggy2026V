@@ -11,8 +11,8 @@ clear; clc;
 
 results_dir = 'results';
 
-N_list     = [10, 20, 30, 40, 50];
-dt_list_us = 1000:1000:3000;          % microseconds
+N_list     = [10, 20];%, 30, 40, 50];
+dt_list_us = 1000*(1:5);          % microseconds
 dt_list_s  = dt_list_us * 1e-6;       % seconds
 
 controllers = struct( ...

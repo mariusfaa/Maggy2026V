@@ -69,7 +69,7 @@ ocp.solver_options.nlp_solver_max_iter   = 1;
 ocp.solver_options.qp_solver             = 'PARTIAL_CONDENSING_HPIPM';
 ocp.solver_options.ext_fun_compile_flags = '-O2';
 
-ocp.cost        = getCost(xEq, uEq);
+ocp.cost        = getCost(xEq, uEq,dt_mpc);
 ocp.constraints = getConstraints(x0);
 
 ocp.parameter_values = p0;

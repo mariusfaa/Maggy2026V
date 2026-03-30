@@ -64,13 +64,19 @@ if ~exist(out_folder, "dir"); mkdir(out_folder); end
 
 if ~exist("build", "dir"); mkdir("build"); end
 
-% simAcadosNmpc;
-% simAcadosLmpc;
-% simAcadosSolmpc;
+simAcadosNmpc;
+simAcadosLmpc;
+simAcadosSolmpc;
 
-types = {'nmpc','solmpc','lmpc'};
-types = {'lmpc'};
-N = 10:10:50;
-dt = 0.001;
-files = getFiles(types,flip(N(2:end)),dt);
+% files = {
+%     '../results_newcost/lmpc_1ms_N20.mat'
+%     '../results_appr/lmpc_1ms_N20.mat'
+% };
+% files = string(files);
+% 
+
+
+files = getFiles(types,N,dt)
+clear prefix;
 aCompareSimulations;
+return;
