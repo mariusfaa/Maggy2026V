@@ -65,6 +65,10 @@ protected:
     mat sigma_points_pred; // Predicted state of sigma points
     mat sigma_points_meas; // Predicted measurement of sigma points
 
+    // Weighed difference between predicted mean and sigma points. Only used in SR formulation
+    mat x_pred_errors;
+    mat z_pred_errors;
+
     vec weights_mean;
     vec weights_cov;
 
@@ -82,13 +86,16 @@ public:
     sigma_points_pred(arma::zeros(nx, ns)),
     sigma_points_meas(arma::zeros(nz, ns)),
     weights_mean(arma::zeros(ns)),
+    x_pred_errors(arma::zeros(nx, 2*nx)),
+    z_pred_errors(arma::zeros(nz, 2*nx)),
     weights_cov(arma::zeros(ns)),
     weights_cov_sr(arma::zeros(ns)),
     Pxz(arma::zeros(nx, nz)),
     Base(numberStates, numberInputs, numberMeasurements, useSRformulation, RK4Iterations) {
         if (cubature) {
-            weights_cov = weights_mean = ones(ns)/(2*ns);
-            eta = sqrt(nx);
+            weights_cov = weights_mean = ones(ns)/ns;
+            weights_cov_sr = arma::sqrt(weights_cov);
+            eta = sqrt(ns/2.0);
         } else {
             setParameters();
         }
@@ -172,17 +179,23 @@ public:
 
         // Calculate covariance of predicted sigma points
         if (useSRformulation) {
-            mat _X(nx, ns-1 + nx, arma::fill::zeros);
-            for (size_t i = 1; i < ns; ++i) {
-                _X.col(i-1) = weights_cov_sr(i) * (sigma_points_pred.col(i) - x_pred);
+            x_pred_errors = zeros(nx, 2*nx);
+            if (cubature) {
+                for (size_t i = 0; i < ns; ++i) {
+                    x_pred_errors.col(i) = weights_cov_sr(i) * (sigma_points_pred.col(i) - x_pred);
+                }
             }
-            _X.cols(ns-1, ns-1+nx-1) = Qs;
-            mat _Q;
-            mat _R;
-            qr_econ(_Q, _R, _X.t());
-            Ps = _R.t();
-            cholUpdate(Ps, weights_cov_sr(0)*(sigma_points_pred.col(0) - x_pred), central_cov_sgn);
-            Ps = trimatl(Ps); // Ensure triangular
+            else {
+                for (size_t i = 1; i < ns; ++i) {
+                    x_pred_errors.col(i-1) = weights_cov_sr(i) * (sigma_points_pred.col(i) - x_pred);
+                }
+                mat _X = join_horiz(x_pred_errors, Qs).t();
+                mat _Q;
+                mat _R;
+                qr_econ(_Q, _R, _X);
+                Ps = _R.t();
+                cholUpdate(Ps, weights_cov_sr(0)*(sigma_points_pred.col(0) - x_pred), central_cov_sgn);
+            }
         }
         else {
             P = Q;
@@ -228,18 +241,24 @@ public:
 
         // Calculate covariance of predicted measurements
         if (useSRformulation) {
-            mat _X(nz, ns-1 + nz, arma::fill::zeros);
-            for (size_t i = 1; i < ns; ++i) {
-                _X.col(i-1) = weights_cov_sr(i) * (sigma_points_meas.col(i) - z_pred);
+            z_pred_errors = zeros(nz, 2*nx);
+            if (cubature) {
+                for (size_t i = 0; i < ns; ++i) {
+                    z_pred_errors.col(i) = weights_cov_sr(i) * (sigma_points_meas.col(i) - z_pred);
+                }
             }
-            _X.cols(ns-1, ns-1+nz-1) = Rs;
-            mat _Q;
-            mat _R;
-            qr_econ(_Q, _R, _X.t());
-            Ss = _R.t();
-            vec _e = sigma_points_meas.col(0) - z_pred;
-            cholUpdate(Ss, weights_cov_sr(0)*(sigma_points_meas.col(0) - z_pred), central_cov_sgn);
-            Ss = trimatl(Ss); // Ensure triangular
+            else {
+                for (size_t i = 1; i < ns; ++i) {
+                    z_pred_errors.col(i-1) = weights_cov_sr(i) * (sigma_points_meas.col(i) - z_pred);
+                }
+                mat _X = join_horiz(z_pred_errors, Rs).t();
+                mat _Q;
+                mat _R;
+                qr_econ(_Q, _R, _X);
+                Ss = _R.t();
+                vec _e = sigma_points_meas.col(0) - z_pred;
+                cholUpdate(Ss, weights_cov_sr(0)*(sigma_points_meas.col(0) - z_pred), central_cov_sgn);
+            }
         }
         else {
             S = R;
@@ -256,16 +275,21 @@ public:
 
         // Calculate cross-covariance
         Pxz = arma::zeros(nx, nz);
-        for (size_t i = 0; i < ns; ++i) {
-            vec _e = sigma_points_pred.col(i) - x_pred;
-            vec _ee = sigma_points_meas.col(i) - z_pred;
-            Pxz += weights_cov(i) * _e * _ee.t();
+        if (useSRformulation) {
+            Pxz += weights_cov(0)*(sigma_points_pred.col(0) - x_pred)*(sigma_points_meas.col(0) - z_pred).t();
+            Pxz += x_pred_errors * z_pred_errors.t();
+        }
+        else {
+            for (size_t i = 0; i < ns; ++i) {
+                vec _e = sigma_points_pred.col(i) - x_pred;
+                vec _ee = sigma_points_meas.col(i) - z_pred;
+                Pxz += weights_cov(i) * _e * _ee.t();
+            }
         }
 
         if (useSRformulation) {
             // W = solve(Ss.t()*Ss, Pxz.t(), solve_opts::likely_sympd).t();
-            std::cout << Ss << endl;
-            W = solve(trimatl(Ss), solve(trimatu(Ss.t()), Pxz.t())).t();
+            W = solve(trimatu(Ss.t()), solve(trimatl(Ss), Pxz.t())).t();
         }
         else {
             // Calculate Kalman gain
@@ -280,8 +304,16 @@ public:
         x_est = x_pred + W * innovation;
 
         if (useSRformulation) {
-            cholUpdate(Ps, W*Ss, -1.0);
-            Ps = trimatl(Ps); // Ensure triangular
+            if (!cubature) {
+                cholUpdate(Ps, W*Ss, -1.0);
+            }
+            else {
+                mat _Q;
+                mat _R;
+                mat _X = join_horiz(x_pred_errors - W*z_pred_errors, W*Rs).t();
+                qr_econ(_Q, _R, _X);
+                Ps = _R.t();
+            }
         }
         else {
             // Update covariance estimate
