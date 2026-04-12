@@ -34,8 +34,12 @@ font_leg   = 8;
 %% Build numeric Jacobian function
 %% ================================================================
 
-params = load_params(MaglevModel.Fast);
-[zEq, ~, ~, ~] = computeSystemEquilibria(params, MaglevModel.Fast);
+% params = load_params(MaglevModel.Fast);
+parameters_maggy_V4;
+modelId = MaglevModel.Accurate;
+params.magnet.n = 16;
+params.magnet.n_axial = 5;
+[zEq, ~, ~, ~] = computeSystemEquilibria(params, MaglevModel.Accurate);
 
 nx = 10;
 nu = 4;
@@ -44,7 +48,7 @@ xEq_12 = [0; 0; zEq(1); zeros(9,1)];
 uEq = zeros(nu, 1);
 xEq = xEq_12([1:5, 7:11]);
 
-f_12 = @(x12, u) maglevSystemDynamics(x12, u, params, MaglevModel.Fast);
+f_12 = @(x12, u) maglevSystemDynamics(x12, u, params, MaglevModel.Accurate);
 keep = [1:5, 7:11];
 
     function [A, B] = computeJacobian(x10, u, f12, keep, delta)

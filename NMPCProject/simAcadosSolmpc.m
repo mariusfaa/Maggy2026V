@@ -1,4 +1,4 @@
-%% simSolmpc — Successive Online Linearization MPC
+%% simSolmpc — Successive Online Linearization NMPC
 %
 % At each MPC step, linearizes the dynamics at (x, u), discretizes via
 % matrix exponential, and passes (Ad, Bd, c) as parameters to the OCP.
@@ -10,32 +10,82 @@
 % simSetup;
 import casadi.*
 
-%% --- Build CasADi Jacobian function ---
-fprintf('\n--- Building Jacobian function ---\n');
+%% --- Build dynamics evaluation function ---
+fprintf('\n--- Building dynamics function ---\n');
 
-x_cas = MX.sym('x', nx);
-u_cas = MX.sym('u', nu);
+x_cas  = ctrl_model.x;
+u_cas  = ctrl_model.u;
+f_expl = ctrl_model.f_expl_expr;
 
-f_expl = maglevSystemDynamicsReduced_casadi(x_cas, u_cas, params, modelId);
+% Symbolic Jacobians via CasADi AD
 Ac_sym = jacobian(f_expl, x_cas);
 Bc_sym = jacobian(f_expl, u_cas);
 
-jit_opts   = struct('jit', true, 'jit_options', struct('flags', '-O2'));
+% Legacy CasADi-only linearization (returns Ac(:), Bc(:), f0 — still needs MATLAB expm)
 lin_casadi = Function('lin_casadi', {x_cas, u_cas}, ...
-                      {[Ac_sym(:); Bc_sym(:); f_expl]});%, jit_opts);
+                      {[Ac_sym(:); Bc_sym(:); f_expl]});
 
-% Initial linearization at equilibrium for warm-start
-raw = full(lin_casadi(xEq, uEq));
-Ac  = reshape(raw(1          : nx*nx),        nx, nx);
-Bc  = reshape(raw(nx*nx+1    : nx*nx+nx*nu),  nx, nu);
-f0  = raw(nx*nx+nx*nu+1 : end);
-b   = f0 - Ac*xEq - Bc*uEq;
-M   = expm([[Ac, Bc, b]; zeros(nu+1, nx+nu+1)] * dt_mpc);
-Ad  = M(1:nx, 1:nx);
-Bd  = M(1:nx, nx+1:nx+nu);
-c   = M(1:nx, end);
-p0  = [Ad(:); Bd(:); c(:)];
+% For hybrid FD mode: batched evaluation (1 CasADi call for all perturbations)
+f_fun = Function('f_fun', {x_cas, u_cas}, {f_expl});
+n_fd  = 1 + 5*2 + nu*2;  % nominal + 5 state pairs + 4 input pairs = 19
+f_batch = f_fun.map(n_fd);
 
+%% --- Build compiled discretization function (CasADi expm) ---
+%  Single compiled CasADi Function: (x, u) → [Ad(:); Bd(:); c]
+%  Performs Jacobian + affine offset + augmented matrix exponential in one
+%  compiled C call, eliminating all MATLAB interpreter overhead.
+fprintf('  Building compiled discretize function ...\n');
+
+% Affine offset: f(x,u) ≈ Ac*x + Bc*u + b  →  b = f(x,u) - Ac*x - Bc*u
+b_sym = f_expl - Ac_sym * x_cas - Bc_sym * u_cas;
+
+% Augmented matrix for exact ZOH discretization:
+%   expm([Ac Bc b; 0 0 0] * dt) → [Ad Bd c; 0 I 0; 0 0 1]
+n_aug = nx + nu + 1;
+M_aug = [Ac_sym, Bc_sym, b_sym; MX.zeros(nu+1, n_aug)] * dt_mpc;
+
+% CasADi native matrix exponential — compiles to C code
+E = expm(M_aug);
+
+Ad_sym = E(1:nx, 1:nx);
+Bd_sym = E(1:nx, nx+1:nx+nu);
+c_sym  = E(1:nx, n_aug);
+
+discretize_fn = Function('discretize', {x_cas, u_cas}, ...
+    {vertcat(Ad_sym(:), Bd_sym(:), c_sym)});
+
+% Linearization method:
+%   'compiled' — full CasADi discretize (Jacobian + expm, compiled C)  [DEFAULT]
+%   'casadi'   — CasADi Jacobians + MATLAB expm
+%   'fd'       — hybrid finite-difference Jacobians + MATLAB expm
+lin_method = 'compiled';
+fd_delta   = 1e-7;
+
+% Sparsity structure of f_expl (used by 'fd' mode):
+%   Rows 1-5:  kinematic (dx/dt = v)  → Ac(1:5,:) = [0 I], Bc(1:5,:) = 0
+%   Rows 6-10: forces/torques depend on positions (cols 1-5) and inputs only
+%              No velocity dependence (cols 6-10 are structurally zero)
+%   → Only need FD for Ac(6:10,1:5) and Bc(6:10,:): 9 perturbations total
+
+%% --- Initial linearization at equilibrium (warm-start) ---
+p0 = full(discretize_fn(xEq, uEq));
+
+% Validate CasADi expm against MATLAB expm at equilibrium
+raw_ref = full(lin_casadi(xEq, uEq));
+Ac_ref  = reshape(raw_ref(1:nx*nx), nx, nx);
+Bc_ref  = reshape(raw_ref(nx*nx+1:nx*nx+nx*nu), nx, nu);
+f0_ref  = raw_ref(nx*nx+nx*nu+1:end);
+b_ref   = f0_ref - Ac_ref*xEq - Bc_ref*uEq;
+M_ref   = expm([[Ac_ref, Bc_ref, b_ref]; zeros(nu+1, nx+nu+1)] * dt_mpc);
+p0_ref  = [reshape(M_ref(1:nx,1:nx),[],1); reshape(M_ref(1:nx,nx+1:nx+nu),[],1); M_ref(1:nx,end)];
+expm_err = max(abs(p0 - p0_ref));
+fprintf('  CasADi vs MATLAB expm validation error: %.2e\n', expm_err);
+assert(expm_err < 1e-8, 'CasADi expm disagrees with MATLAB expm');
+
+% Extract Ad for eigenvalue display
+Ad = reshape(p0(1:nx*nx), nx, nx);
+
+fprintf('  Linearization method: %s\n', lin_method);
 fprintf('  Discrete eigenvalues at eq (|z|): %s\n', ...
     mat2str(sort(abs(eig(Ad)))', 4));
 
@@ -112,7 +162,7 @@ ocp_residuals     = zeros(4, N_mpc);  % [res_stat; res_eq; res_ineq; res_comp]
 ocp_status        = zeros(1, N_mpc);
 ocp_cost          = zeros(1, N_mpc);
 
-jac_time      = zeros(1, N_mpc);  % MATLAB-side: casadi eval + expm (no acados equivalent)
+jac_time      = zeros(1, N_mpc);  % linearize + discretize time
 sim_time_tot  = zeros(1, N_mpc);
 step_time_tot = zeros(1, N_mpc);
 
@@ -127,18 +177,67 @@ fprintf('  Plant steps: %d, MPC calls: %d\n', N_sim, N_mpc);
 diverged = false;
 
 for k = 1:N_mpc
-    % --- Relinearize at (x, u) ---
+    % --- Relinearize + discretize at (x, u) ---
     tic_jac = tic;
-    raw = full(lin_casadi(x, u));
-    Ac  = reshape(raw(1          : nx*nx),        nx, nx);
-    Bc  = reshape(raw(nx*nx+1    : nx*nx+nx*nu),  nx, nu);
-    f0  = raw(nx*nx+nx*nu+1 : end);
-    b   = f0 - Ac*x - Bc*u;
-    M   = expm([[Ac, Bc, b]; zeros(nu+1, nx+nu+1)] * dt_mpc);
-    Ad  = M(1:nx, 1:nx);
-    Bd  = M(1:nx, nx+1:nx+nu);
-    c   = M(1:nx, end);
-    ocp_solver.set('p', [Ad(:); Bd(:); c(:)]);
+
+    if strcmp(lin_method, 'compiled')
+        % Full pipeline in compiled CasADi C: Jacobian + expm → (Ad, Bd, c)
+        p_new = full(discretize_fn(x, u));
+        ocp_solver.set('p', p_new);
+
+    elseif strcmp(lin_method, 'casadi')
+        % CasADi Jacobians + MATLAB expm (for comparison / validation)
+        raw = full(lin_casadi(x, u));
+        Ac  = reshape(raw(1          : nx*nx),        nx, nx);
+        Bc  = reshape(raw(nx*nx+1    : nx*nx+nx*nu),  nx, nu);
+        f0  = raw(nx*nx+nx*nu+1 : end);
+        b   = f0 - Ac*x - Bc*u;
+        M   = expm([[Ac, Bc, b]; zeros(nu+1, nx+nu+1)] * dt_mpc);
+        Ad = M(1:nx, 1:nx); Bd = M(1:nx, nx+1:nx+nu); c = M(1:nx, end);
+        ocp_solver.set('p', [Ad(:); Bd(:); c(:)]);
+
+    else  % 'fd'
+        % Hybrid FD exploiting sparsity — single batched CasADi call
+        %   Rows 1-5:  kinematic → Ac(1:5,:) = [0 I], Bc(1:5,:) = 0
+        %   Rows 6-10: only depend on positions (cols 1-5) and inputs
+        %   → 9 perturbation directions, 19 evals batched into 1 call
+        X_batch = repmat(x, 1, n_fd);
+        U_batch = repmat(u, 1, n_fd);
+        col = 2;
+        for i = 1:5
+            X_batch(i, col)   = x(i) + fd_delta;
+            X_batch(i, col+1) = x(i) - fd_delta;
+            col = col + 2;
+        end
+        for i = 1:nu
+            U_batch(i, col)   = u(i) + fd_delta;
+            U_batch(i, col+1) = u(i) - fd_delta;
+            col = col + 2;
+        end
+
+        F_all = full(f_batch(X_batch, U_batch));
+        f0 = F_all(:, 1);
+        inv2d = 1 / (2*fd_delta);
+
+        Ac = zeros(nx, nx);
+        Ac(1:5, 6:10) = eye(5);
+        col = 2;
+        for i = 1:5
+            Ac(6:10, i) = (F_all(6:10, col) - F_all(6:10, col+1)) * inv2d;
+            col = col + 2;
+        end
+        Bc = zeros(nx, nu);
+        for i = 1:nu
+            Bc(6:10, i) = (F_all(6:10, col) - F_all(6:10, col+1)) * inv2d;
+            col = col + 2;
+        end
+
+        b = f0 - Ac*x - Bc*u;
+        M = expm([[Ac, Bc, b]; zeros(nu+1, nx+nu+1)] * dt_mpc);
+        Ad = M(1:nx, 1:nx); Bd = M(1:nx, nx+1:nx+nu); c = M(1:nx, end);
+        ocp_solver.set('p', [Ad(:); Bd(:); c(:)]);
+    end
+
     jac_time(k) = toc(tic_jac);
 
     % --- MPC solve ---
@@ -257,7 +356,8 @@ sim_data.step_time_tot     = step_time_tot;
 sim_data.ocp_cost          = ocp_cost;
 sim_data.cost              = computeCost(x_sim - xEq, u_sim - uEq);
 sim_data.cost_cum          = cumsum(sim_data.cost);
-sim_data.jac_time          = jac_time;   % SolMPC-specific: casadi eval + expm
+sim_data.jac_time          = jac_time;   % linearize + discretize (compiled CasADi C when lin_method='compiled')
+sim_data.lin_method        = lin_method;
 sim_data.Ad_eq             = reshape(p0(1:nx*nx),             nx, nx);
 sim_data.Bd_eq             = reshape(p0(nx*nx+1:nx*nx+nx*nu), nx, nu);
 

@@ -13,10 +13,12 @@ import casadi.*
 %% --- Linearize at equilibrium ---
 fprintf('\n--- Computing linearization at equilibrium ---\n');
 
-x_cas = MX.sym('x', nx);
-u_cas = MX.sym('u', nu);
+% we use the plant model because this is more accurate to what we would do
+% for offline precomputation of the equilibrium anyways
+x_cas  = plant_model.x;
+u_cas  = plant_model.u;
+f_expl = plant_model.f_expl_expr;
 
-f_expl = maglevSystemDynamicsReduced_casadi(x_cas, u_cas, params, modelId);
 jac_fun = Function('jac_fun', {x_cas, u_cas}, ...
                    {jacobian(f_expl, x_cas), jacobian(f_expl, u_cas)});
 

@@ -3,7 +3,7 @@ function [Ad, Bd] = getLinsys(x, u, dt_mpc)
     nx = 10;
     nu = 4;
 
-    model = getSimModel();
+    model = getSimModel(32);
     x_cas = model.x;      % use the model's own symbolic variables
     u_cas = model.u;
     f_expl = model.f_expl_expr;

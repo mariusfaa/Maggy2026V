@@ -19,7 +19,7 @@ Q = diag([...
     1e0, 1e0, 1e0, ...  % vx, vy, vz (vz high for damping)
     1e1, 1e1 ...        % wx, wy
 ]);
-R = eye(nu) * 1e2;
+R = eye(nu) * 1e0;
 
 cost = AcadosOcpCost();
 
@@ -40,9 +40,9 @@ cost.W_e = 10 * Q;  % terminal cost approx
 
 % terminal cost from DARE, a solution P to
 % A'(P-PB((R+B'PB)exp-1*B'P)A+Q-P=0
-% [Ad, Bd] = getLinsys(xEq, uEq, dt_mpc);
-% [~, P, ~] = dlqr(Ad, Bd, Q, R);
-% cost.W_e = P;
+[Ad, Bd] = getLinsys(xEq, uEq, dt_mpc);
+[~, P, ~] = dlqr(Ad, Bd, Q, R);
+cost.W_e = P;
 
 cost.yref   = [xEq; uEq];
 cost.yref_0 = [xEq; uEq];

@@ -1,15 +1,20 @@
-function model = getSimModel()
+function model = getSimModel(n, n_axial,modelId)
+
+if nargin < 1 || isempty(n),       n       = 16; end
+if nargin < 2 || isempty(n_axial), n_axial = 1;  end
+if nargin < 3 || isempty(modelId), modelId = MaglevModel.Accurate;  end
 
 import casadi.*
 
-% Setup model object
-modelId = MaglevModel.Accurate;
-
 %fprintf('--- Setting up sim model ---\n');
-% Load params configured for this model
-params = load_params(modelId);
-params.magnet.n     = 16; % determined by trail and error, "fast buildtime vs high accuracy"
-params.magnet.n_axial = 1;
+% Load params (Accurate model needs no corrections)
+parameters_maggy_V4;
+params.magnet.n       = n;
+params.magnet.n_axial = n_axial;
+
+if modelId == MaglevModel.Fast
+    params.solenoids.r = params.solenoids.r * computeSolenoidRadiusCorrectionFactor(params,modelId);
+end
 
 nx = 10;
 nu = 4;
@@ -21,7 +26,7 @@ xdot = MX.sym('xdot', nx);
 f_expl = maglevSystemDynamicsReduced_casadi(x, u, params, modelId);
 
 model = AcadosModel();
-model.name        = 'maglev_sim_model';
+model.name        = sprintf('maglev_sim_model_%d_%d',n, n_axial);
 model.x           = x;
 model.u           = u;
 model.xdot        = xdot;

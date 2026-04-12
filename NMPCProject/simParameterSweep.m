@@ -24,7 +24,7 @@ cd(project_root);
 
 %% --- Parameters ---
 modelId = MaglevModel.Accurate;
-params = load_params(modelId);
+parameters_maggy_V4;  % Accurate model needs no corrections
 
 nx = 10;
 nu = 4;
@@ -84,6 +84,9 @@ for i_N = 1:numel(N_horizon_list)
 
         t = 0:dt:0.5;
         simAcadosSolmpc;
+
+        t = 0:dt:0.5;
+        simAcadosLqr;
     end
 end
 

@@ -7,21 +7,26 @@ import casadi.*
 fprintf('\n--- Setting up OCP ---\n');
 
 ocp = AcadosOcp();
-ocp.model = getSimModel();
+ocp.model = ctrl_model;
 
 ocp.solver_options.N_horizon             = N_horizon;
 ocp.solver_options.tf                    = dt_mpc * N_horizon;
-ocp.solver_options.integrator_type       = 'ERK';
-ocp.solver_options.sim_method_num_stages = 4;
-if dt_mpc > 0.002
-    ocp.solver_options.sim_method_num_steps  = 3;
-    ocp.solver_options.regularize_method = 'NO_REGULARIZE';% need this to find a solution?
-else
-    ocp.solver_options.sim_method_num_steps  = 1;
-end
 ocp.solver_options.nlp_solver_type = 'SQP_RTI';
 ocp.solver_options.globalization = 'MERIT_BACKTRACKING';
 ocp.solver_options.ext_fun_compile_flags = '-O2';
+ocp.solver_options.integrator_type       = 'IRK';
+ocp.solver_options.sim_method_num_stages = 4;
+ocp.solver_options.sim_method_num_steps  = 1;
+ocp.solver_options.nlp_solver_type       = 'SQP_RTI';
+ocp.solver_options.nlp_solver_tol_stat   = 1e-4;
+ocp.solver_options.nlp_solver_tol_eq     = 1e-4;
+ocp.solver_options.nlp_solver_tol_ineq   = 1e-4;
+ocp.solver_options.nlp_solver_tol_comp   = 1e-4;
+ocp.solver_options.qp_solver             = 'PARTIAL_CONDENSING_HPIPM';
+ocp.solver_options.qp_solver_iter_max    = 200;
+ocp.solver_options.qp_solver_warm_start  = 1;
+ocp.solver_options.hessian_approx        = 'GAUSS_NEWTON';
+ocp.solver_options.regularize_method     = 'CONVEXIFY';
 
 
 ocp.cost        = getCost(xEq, uEq,dt_mpc);

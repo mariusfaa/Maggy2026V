@@ -23,7 +23,7 @@ cd(project_root);
 
 %% --- Parameters ---
 modelId = MaglevModel.Accurate;
-params = load_params(modelId);
+parameters_maggy_V4;
 
 nx = 10;
 nu = 4;
@@ -38,8 +38,10 @@ xEq = [0; 0; zEq(1); zeros(7,1)];
 uEq = zeros(nu, 1);
 
 % --- MPC parameters ---
-N_horizon = 30;
-dt_mpc = 0.001;
+% define what you want to simulate here
+types = {'nmpc','solmpc','lmpc'};
+N_horizon = 30; % can be array
+dt_mpc = 0.001; % can be array
 
 % --- Simulation time ---
 dt = 0.0001;
@@ -47,36 +49,68 @@ t  = 0:dt:0.2;
 
 % --- Initial conditions ---
 x0_full = xEq_full + [-0.0005; 0.00025; 0.0007; deg2rad(5); 0; 0; zeros(6,1)];
-% x0_full = xEq_full + [0; 0; 0.002; deg2rad(20); 0; 0; zeros(6,1)];
 x0 = x0_full([1:5,7:11]); 
 u0 = [-0.25; 0.5; -0.5; 0.75];
 
 % Setup sim object — rebuild if variable missing or build dir was cleaned
-if ~exist("sim_solver","var") || ~exist(fullfile('build','sim'), 'dir')
+if ~exist("sim_solver","var")
     model = getSimModel();
     sim_solver = getSimSolver(model, dt);
 end
 
-assert(mod(dt_mpc,dt) == 0,"dt_mpc must be a multiple of dt");
+if ~exist("results", "dir"); mkdir("results"); end
+% --- Run all combinations of N_horizon, dt_mpc, and types ---
 
-out_folder = fullfile(project_root, "results");
-if ~exist(out_folder, "dir"); mkdir(out_folder); end
+% Step 1: build struct array of all run configurations
+runs = {};
+k = 1;
 
-if ~exist("build", "dir"); mkdir("build"); end
+for i = 1:length(types)
+    for j = 1:length(N_horizon)
+        for l = 1:length(dt_mpc)
+            
+            runs{k}.type    = types{i};
+            runs{k}.N_hor   = N_horizon(j);
+            runs{k}.dt_mpc  = dt_mpc(l);
+            runs{k}.x0      = x0;
+            runs{k}.u0      = u0;
 
-simAcadosNmpc;
-simAcadosLmpc;
-simAcadosSolmpc;
+            % create unique filename
+            runs{k}.outfile = sprintf("results/%s_N%d_dt%.4g.mat", ...
+                types{i}, N_horizon(j), dt_mpc(l));
 
-% files = {
-%     '../results_newcost/lmpc_1ms_N20.mat'
-%     '../results_appr/lmpc_1ms_N20.mat'
-% };
-% files = string(files);
-% 
+            k = k + 1;
+        end
+    end
+end
 
+% Step 2: iterate over runs and execute
+for k = 1:length(runs)
+    run = runs{k};
 
-files = getFiles(types,N,dt)
+    % check if .mat file already exists
+
+    fprintf("Running %s | N=%d | dt=%.4g\n", ...
+        run.type, run.N_hor, run.dt_mpc);
+
+    switch run.type
+        case 'nmpc'
+            simAcadosNmpc(run);
+
+        case 'lmpc'
+            simAcadosLmpc(run);
+
+        case 'solmpc'
+            simAcadosSolmpc(run);
+
+        otherwise
+            error("Unknown type: %s", run.type);
+    end
+end
+
+% Step 3: compare results
+files = getFiles(types, N_horizon, dt_mpc);
 clear prefix;
 aCompareSimulations;
+
 return;

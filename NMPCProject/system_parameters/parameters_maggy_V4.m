@@ -28,13 +28,36 @@ params.magnet.l     = 0.0040;
 params.magnet.J     = -1.1;
 params.magnet.m     = 0.060; % (weight on kitchen scale, golden magnet)
 params.magnet.I     = [6.1686e-06, 6.1686e-06, 1.1274e-05];
-params.magnet.n     = 100;
+params.magnet.n     = 16; % Radial discretization points on levitating disk (higher is more accurate, but also more computationally expensive)
+params.magnet.n_axial = 1; % keep odd for best accuracy
 
-% Sensors (7, 2, 3)
-params.sensors.x  = [-0.0003, -0.0326856, 0.0130152];
-params.sensors.y  = [0, 0.0137257, 0.0324254];
-params.sensors.z  = [0, 0, 0];%-0.2e-3;
+% Sensors - only one sensor 
+params.sensors.x  = [-0.0003];
+params.sensors.y  = [0];
+params.sensors.z  = [0];
 
 % Physical constants
 params.physical.g   = 9.81;                                                % Gravitational acceleration [m/s^2]
 params.physical.mu0 = 4*pi*1e-7;                                           % Permeability of free space (air) [N/A^2]
+
+% LUT options for CasADi model
+params.lut_opts.enabled = false;
+params.lut_opts.method       = 'linear';        % 'bspline' or 'linear'
+
+% Solenoid 2D LUT bounds (derived from geometry + margin)
+% rho_max must cover the max distance from ANY solenoid to ANY point in the
+% workspace. Worst case: solenoid at one edge, eval point at opposite corner.
+perm3d_xy_val = max(abs([params.permanent.x, params.permanent.y])) + max(params.permanent.r) + params.magnet.r + 0.005;
+sol_xy_max = max(abs([params.solenoids.x, params.solenoids.y]));
+params.lut_opts.sol2d_max_rho = sqrt(2) * perm3d_xy_val + sol_xy_max;  % diagonal + solenoid offset
+params.lut_opts.sol2d_max_z   = 0.06;                           % solenoid LUT z range [m]
+params.lut_opts.sol2d_N_rho   = 100;                            % solenoid LUT rho grid points
+params.lut_opts.sol2d_N_z     = 100;                            % solenoid LUT z grid points
+
+% Permanent magnet 3D LUT bounds (derived from geometry + margin)
+perm_xy_extent = max(abs([params.permanent.x, params.permanent.y])) + max(params.permanent.r);
+params.lut_opts.perm3d_max_xy     = perm_xy_extent + params.magnet.r + 0.005;  % xy bound with margin for magnet surface
+perm_z_lo = max(params.solenoids.z + params.solenoids.l/2) + 1e-3;        % just above solenoid tops
+params.lut_opts.perm3d_max_z      = [perm_z_lo, 0.06];              % perm LUT z range [m]
+params.lut_opts.perm3d_N_xy   = 31;                             % perm LUT xy grid points
+params.lut_opts.perm3d_N_z    = 100;                            % perm LUT z grid points

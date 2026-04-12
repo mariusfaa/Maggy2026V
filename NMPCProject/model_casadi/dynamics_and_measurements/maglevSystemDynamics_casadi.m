@@ -44,6 +44,4 @@ function dx = maglevSystemDynamics_casadi(x, u, params, modelId)
         - [0; 0; g; 0; 0; 0];
 
     dx = mtimes(A, x) + mtimes(B, f);
-    dx(6) = 0;
-    dx(12) = 0;
 end
