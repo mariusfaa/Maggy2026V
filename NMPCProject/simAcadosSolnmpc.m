@@ -1,4 +1,4 @@
-%% simSolmpc — Successive Online Linearization NMPC
+%% simSolnmpc — Successive Online Linearization NMPC
 %
 % At each MPC step, linearizes the dynamics at (x, u), discretizes via
 % Tustin (bilinear) transform, and passes (Ad, Bd, c) as parameters to
@@ -105,7 +105,7 @@ p_Bd = reshape(p_sym(nx*nx+1       : nx*nx+nx*nu), nx, nu);
 p_c  =         p_sym(nx*nx+nx*nu+1 : end);
 
 mdl = AcadosModel();
-mdl.name          = 'maglev_solmpc';
+mdl.name          = 'maglev_solnmpc';
 mdl.x             = x_sym;
 mdl.u             = u_sym;
 mdl.p             = p_sym;
@@ -127,9 +127,9 @@ ocp.constraints = getConstraints(x0);
 
 ocp.parameter_values = p0;
 
-save_filename = fullfile(out_folder, getFilename('solmpc', N_horizon, dt_mpc));
+save_filename = fullfile(out_folder, getFilename('solnmpc', N_horizon, dt_mpc));
 
-solver_dir = fullfile('build', 'solmpc');
+solver_dir = fullfile('build', 'solnmpc');
 ocp.code_gen_opts.code_export_directory = fullfile(solver_dir, 'c_generated_code');
 ocp.code_gen_opts.json_file = fullfile(solver_dir, [mdl.name '_ocp.json']);
 ocp_solver = AcadosOcpSolver(ocp, struct('output_dir', solver_dir));
@@ -335,7 +335,7 @@ end
 
 %% --- SAVE ---
 sim_data             = struct();
-sim_data.controller  = 'solmpc';
+sim_data.controller  = 'solnmpc';
 sim_data.t           = t;
 sim_data.x           = x_sim;
 sim_data.u           = u_sim;

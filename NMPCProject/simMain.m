@@ -31,20 +31,21 @@ import casadi.*
 %  ================================================================
 
 % Controllers to run (any subset of these)
-controllers = {'lqr', 'lmpc', 'solmpc', 'nmpc'};
+controllers = {'lqr', 'lmpc', 'solnmpc', 'nmpc'};
+out_folder = fullfile(project_root, 'results');
+N_horizon_list = [11, 15:5:40];
+dt_mpc_list    = [0.001,0.002,0.003];
 
 % Sweep parameters (lists — all combinations are run)
+% Configuration for sc1, where dare terminal cost on
 N_horizon_list = [11, 15:5:40];
 dt_mpc_list    = [0.001,0.0015,0.002];
 
-% N_horizon_list = [11, 20, 30];
-% N_horizon_list = [15:10:35, 40];
-% N_horizon_list = [20];
-% dt_mpc_list    = [0.001,0.0015,0.002];
-% dt_mpc_list    = [0.001]; N_horizon_list = [20];dt_mpc_list = [0.001];
-
-%controllers = {'lmpc', 'solmpc', 'nmpc'};
-% controllers = {'solmpc'};
+% Configuration for dare vs 10Q
+controllers = {'lmpc', 'solnmpc', 'nmpc'};
+N_horizon_list = [10,20,30];
+dt_mpc_list    = [0.001];
+out_folder = fullfile(project_root, 'results_nodare');
 
 % Simulation settings
 T_sim   = 0.5;       % simulation duration (s)
@@ -56,7 +57,7 @@ dx0 = [-0.0005; 0.00025; 0.0007; deg2rad(5); 0; 0; zeros(6,1)];
 % Models (AcadosModel objects)
 %   plant_model — used by acados sim_solver (the "real" plant)
 %   ctrl_model  — used internally by all controllers
-%                  (NMPC: OCP model, LMPC/SolMPC/LQR: Jacobian source)
+%                  (NMPC: OCP model, LMPC/SolNMPC/LQR: Jacobian source)
 plant_model = getSimModel(32);    % accurate plant
 ctrl_model  = getSimModel(16,1);    % controller internal model
 
@@ -86,7 +87,6 @@ x0 = x0_full([1:5, 7:11]);
 % Build plant sim solver (shared across all runs)
 sim_solver = getSimSolver(plant_model, dt_plant);
 
-out_folder = fullfile(project_root, 'results');
 if ~exist(out_folder, 'dir'); mkdir(out_folder); end
 if ~exist('build', 'dir'); mkdir('build'); end
 
@@ -135,7 +135,7 @@ for i_N = 1:n_N
             switch ctrl
                 case 'lqr',    simAcadosLqr;
                 case 'lmpc',   simAcadosLmpc;
-                case 'solmpc', simAcadosSolmpc;
+                case 'solnmpc', simAcadosSolnmpc;
                 case 'nmpc',   simAcadosNmpc;
                 otherwise
                     error('Unknown controller: %s', ctrl);

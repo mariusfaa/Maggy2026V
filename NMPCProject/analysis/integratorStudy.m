@@ -103,7 +103,7 @@ else
     U_samples = u_max * (2*rand(nu, N_samples) - 1);
 
     % Timesteps to test
-    dt_list = [0.0001, 0.001, 0.002, 0.003];
+    dt_list = [0.0001, 0.001, 0.0015, 0.002];
 
     fprintf('=== Integrator single-step study ===\n');
     fprintf('  %d sample points, %d timesteps\n', N_samples, numel(dt_list));
@@ -281,9 +281,10 @@ else
             results.data(k, idt).time_median = median(t_valid);
             results.data(k, idt).time_max    = max(t_valid);
 
-            % Store raw errors for distribution plots
-            results.data(k, idt).pos_err_all = pos_err_norm;
-            results.data(k, idt).ang_err_all = ang_err_norm;
+            % Store raw errors and timings for distribution plots
+            results.data(k, idt).pos_err_all  = pos_err_norm;
+            results.data(k, idt).ang_err_all  = ang_err_norm;
+            results.data(k, idt).time_step_all = t_valid;  % raw per-sample step times (s)
 
             fprintf('pos_rmse=%.3e mm  pos_max=%.3e mm  t=%.0f us\n', ...
                 results.data(k, idt).pos_rmse, results.data(k, idt).pos_max, ...
@@ -328,12 +329,11 @@ end
 %% ================================================================
 fprintf('\n=== Generating figures ===\n');
 
-fig_dir = fullfile(project_root, 'Master_thesis_2025', 'figures');
+fig_dir = fullfile(project_root, 'figures', 'integrator');
 if ~exist(fig_dir, 'dir'), mkdir(fig_dir); end
 
 W_FULL = 17;   % cm
 H_STD  = 7;
-H_TALL = 10;
 
 FONT_NAME  = 'Times New Roman';
 FONT_AX    = 9;
@@ -344,253 +344,133 @@ FONT_TITLE = 10;
 C_ERK = [0.00 0.45 0.74];   % blue
 C_IRK = [0.85 0.33 0.10];   % orange
 
-erk_stages_list = [1, 2, 3, 4];
-erk_steps_list  = [1, 2, 4, 8];
-irk_stages_list = [1, 2, 3, 4];
-irk_steps_list  = [1, 2, 4];
-
-%% --- Figure 1: Accuracy vs computation time (one subplot per dt) ---
-fig1 = mkfig(W_FULL, H_TALL);
-
-for idt = 1:n_dt
-    subplot(2, 2, idt); hold on; grid on; box on;
-
-    for k = 1:n_configs
-        d = results.data(k, idt);
-        cfg = configs(k);
-        if d.failed, continue; end
-
-        if strcmp(cfg.type, 'ERK'), clr = C_ERK; marker = 'o';
-        else,                       clr = C_IRK; marker = 's'; end
-        sz = 20 + cfg.stages * 15;
-
-        scatter(d.time_mean*1e6, d.pos_rmse, sz, clr, marker, 'filled', ...
-            'MarkerFaceAlpha', 0.7, 'HandleVisibility', 'off');
-        text(d.time_mean*1e6 * 1.08, d.pos_rmse, ...
-            sprintf('(%d,%d)', cfg.stages, cfg.steps), ...
-            'FontSize', 5, 'FontName', FONT_NAME, 'Color', clr * 0.7);
-    end
-
-    set(gca, 'XScale', 'log', 'YScale', 'log');
-    xlabel('Time/step (\mus)', 'FontSize', FONT_LAB);
-    ylabel('Pos RMSE (mm)', 'FontSize', FONT_LAB);
-    title(sprintf('dt = %.0f \\mus', dt_list(idt)*1e6), 'FontSize', FONT_TITLE, 'FontWeight', 'bold');
-    if idt == 1
-        scatter(NaN, NaN, 50, C_ERK, 'o', 'filled', 'DisplayName', 'ERK');
-        scatter(NaN, NaN, 50, C_IRK, 's', 'filled', 'DisplayName', 'IRK');
-        legend('Location', 'best', 'FontSize', FONT_LEG);
-    end
-    style_ax(gca, FONT_NAME, FONT_AX, FONT_LAB);
-end
-
-savefig_thesis(fig1, 'int_accuracy_vs_time', fig_dir);
-
-%% --- Figure 2: Error heatmaps at dt=1ms ---
+% Reference timestep for boxplots
 idt_mpc = find(dt_list == 0.001, 1);
 if isempty(idt_mpc), idt_mpc = n_dt; end
 
-fig2 = mkfig(W_FULL, H_STD);
-
-erk_map = NaN(numel(erk_stages_list), numel(erk_steps_list));
-irk_map = NaN(numel(irk_stages_list), numel(irk_steps_list));
-
+% Build list of all non-failed configs at the reference dt, sorted by type then label
+sel_idx   = [];
+sel_label = {};
+sel_type  = {};
 for k = 1:n_configs
-    cfg = configs(k);
     d = results.data(k, idt_mpc);
     if d.failed, continue; end
-    if strcmp(cfg.type, 'ERK')
-        si = find(erk_stages_list == cfg.stages);
-        ni = find(erk_steps_list  == cfg.steps);
-        erk_map(si, ni) = log10(max(d.pos_rmse, 1e-15));
+    sel_idx(end+1)     = k; %#ok<AGROW>
+    sel_label{end+1}   = configs(k).label; %#ok<AGROW>
+    sel_type{end+1}    = configs(k).type;  %#ok<AGROW>
+end
+n_sel = numel(sel_idx);
+
+% Assign colors per bar: blue for ERK, orange for IRK
+sel_colors = zeros(n_sel, 3);
+for j = 1:n_sel
+    if strcmp(sel_type{j}, 'ERK')
+        sel_colors(j,:) = C_ERK;
     else
-        si = find(irk_stages_list == cfg.stages);
-        ni = find(irk_steps_list  == cfg.steps);
-        irk_map(si, ni) = log10(max(d.pos_rmse, 1e-15));
+        sel_colors(j,:) = C_IRK;
     end
 end
 
-all_vals = [erk_map(:); irk_map(:)];
-all_vals = all_vals(isfinite(all_vals));
-if numel(all_vals) >= 2 && (max(all_vals) - min(all_vals)) > 0.01
-    clim_range = [min(all_vals)-0.5, max(all_vals)+0.5];
-elseif ~isempty(all_vals)
-    clim_range = [mean(all_vals)-2, mean(all_vals)+2];
-else
-    clim_range = [-6, 0];
-end
+%% --- Figure 1: Position RMSE boxplot per configuration ---
+fig1 = mkfig(W_FULL, H_STD + 2);
 
-for ip = 1:2
-    subplot(1, 2, ip);
-    if ip == 1
-        map = erk_map; stages_l = erk_stages_list; steps_l = erk_steps_list; lbl = 'ERK';
-    else
-        map = irk_map; stages_l = irk_stages_list; steps_l = irk_steps_list; lbl = 'IRK';
-    end
-    h = imagesc(1:numel(steps_l), 1:numel(stages_l), map);
-    set(h, 'AlphaData', ~isnan(map));
-    set(gca, 'Color', [0.85 0.85 0.85], 'YDir', 'normal');
-    clim(clim_range);
-    colormap(gca, flipud(parula));
-    xticks(1:numel(steps_l));
-    xticklabels(arrayfun(@num2str, steps_l, 'UniformOutput', false));
-    yticks(1:numel(stages_l));
-    yticklabels(arrayfun(@num2str, stages_l, 'UniformOutput', false));
-    xlabel('Steps', 'FontSize', FONT_LAB);
-    ylabel('Stages', 'FontSize', FONT_LAB);
-    title(sprintf('%s: log_{10} Pos RMSE (mm) at dt=%.0f\\mus', lbl, dt_list(idt_mpc)*1e6), ...
-        'FontSize', FONT_TITLE);
-    for si = 1:numel(stages_l)
-        for ni = 1:numel(steps_l)
-            if isfinite(map(si, ni))
-                text(ni, si, sprintf('%.2f', map(si, ni)), ...
-                    'HorizontalAlignment', 'center', 'FontSize', 7, 'FontName', FONT_NAME);
-            else
-                text(ni, si, 'X', 'HorizontalAlignment', 'center', ...
-                    'FontSize', 10, 'FontWeight', 'bold', 'Color', 'r');
-            end
-        end
-    end
-    if ip == 2
-        cb = colorbar;
-        cb.Label.String = 'log_{10} RMSE (mm)';
-        cb.Label.FontSize = FONT_AX;
-    end
-    style_ax(gca, FONT_NAME, FONT_AX, FONT_LAB);
-end
-
-savefig_thesis(fig2, 'int_error_heatmap', fig_dir);
-
-%% --- Figure 3: Timing heatmap at dt=1ms ---
-fig3 = mkfig(W_FULL, H_STD);
-
-erk_time = NaN(numel(erk_stages_list), numel(erk_steps_list));
-irk_time = NaN(numel(irk_stages_list), numel(irk_steps_list));
-
-for k = 1:n_configs
-    cfg = configs(k);
-    d = results.data(k, idt_mpc);
-    if d.failed, continue; end
-    if strcmp(cfg.type, 'ERK')
-        si = find(erk_stages_list == cfg.stages);
-        ni = find(erk_steps_list  == cfg.steps);
-        erk_time(si, ni) = d.time_mean * 1e6;
-    else
-        si = find(irk_stages_list == cfg.stages);
-        ni = find(irk_steps_list  == cfg.steps);
-        irk_time(si, ni) = d.time_mean * 1e6;
-    end
-end
-
-all_times = [erk_time(:); irk_time(:)];
-all_times = all_times(isfinite(all_times));
-if isempty(all_times)
-    clim_time = [0, 100];
-elseif (max(all_times) - min(all_times)) < 1
-    clim_time = [mean(all_times)*0.8, mean(all_times)*1.2];
-else
-    clim_time = [0, max(all_times) * 1.1];
-end
-
-for ip = 1:2
-    subplot(1, 2, ip);
-    if ip == 1
-        map = erk_time; stages_l = erk_stages_list; steps_l = erk_steps_list; lbl = 'ERK';
-    else
-        map = irk_time; stages_l = irk_stages_list; steps_l = irk_steps_list; lbl = 'IRK';
-    end
-    h = imagesc(1:numel(steps_l), 1:numel(stages_l), map);
-    set(h, 'AlphaData', ~isnan(map));
-    set(gca, 'Color', [0.85 0.85 0.85], 'YDir', 'normal');
-    clim(clim_time);
-    xticks(1:numel(steps_l));
-    xticklabels(arrayfun(@num2str, steps_l, 'UniformOutput', false));
-    yticks(1:numel(stages_l));
-    yticklabels(arrayfun(@num2str, stages_l, 'UniformOutput', false));
-    xlabel('Steps', 'FontSize', FONT_LAB);
-    ylabel('Stages', 'FontSize', FONT_LAB);
-    title(sprintf('%s: Mean step time (\\mus)', lbl), 'FontSize', FONT_TITLE);
-    for si = 1:numel(stages_l)
-        for ni = 1:numel(steps_l)
-            if isfinite(map(si, ni))
-                text(ni, si, sprintf('%.0f', map(si, ni)), ...
-                    'HorizontalAlignment', 'center', 'FontSize', 7, 'FontName', FONT_NAME);
-            end
-        end
-    end
-    if ip == 2
-        cb = colorbar;
-        cb.Label.String = '\mus';
-        cb.Label.FontSize = FONT_AX;
-    end
-    style_ax(gca, FONT_NAME, FONT_AX, FONT_LAB);
-end
-
-savefig_thesis(fig3, 'int_timing_heatmap', fig_dir);
-
-%% --- Figure 4: Error distribution boxplot at dt=1ms (selected configs) ---
-fig4 = mkfig(W_FULL, H_STD);
-
-sel_cfgs = {'ERK(1,1)', 'ERK(2,1)', 'ERK(4,1)', 'ERK(4,4)', 'IRK(1,1)', 'IRK(2,1)', 'IRK(4,1)'};
-n_sel = numel(sel_cfgs);
-
-box_data = [];
+box_data   = [];
 box_groups = [];
 for j = 1:n_sel
-    idx = find(strcmp({configs.label}, sel_cfgs{j}));
-    if isempty(idx), continue; end
-    d = results.data(idx, idt_mpc);
-    if d.failed, continue; end
-    box_data = [box_data, d.pos_err_all];
-    box_groups = [box_groups, j * ones(1, numel(d.pos_err_all))];
+    d = results.data(sel_idx(j), idt_mpc);
+    box_data   = [box_data, d.pos_err_all]; %#ok<AGROW>
+    box_groups = [box_groups, j * ones(1, numel(d.pos_err_all))]; %#ok<AGROW>
 end
 
 if ~isempty(box_data)
-    boxplot(box_data, box_groups, 'Labels', sel_cfgs(1:max(box_groups)), ...
-        'Whisker', 1.5, 'Symbol', '.', 'Colors', 'k');
+    bp = boxplot(box_data, box_groups, ...
+        'Labels', sel_label, 'Whisker', 1.5, 'Symbol', '.', 'Colors', 'k');
+    % Color each box by ERK/IRK
+    h_boxes = findobj(gca, 'Tag', 'Box');
+    for j = 1:numel(h_boxes)
+        % boxplot draws boxes in reverse order
+        idx_rev = n_sel - j + 1;
+        patch(get(h_boxes(j), 'XData'), get(h_boxes(j), 'YData'), ...
+            sel_colors(idx_rev, :), 'FaceAlpha', 0.4, 'EdgeColor', sel_colors(idx_rev, :));
+    end
+    set(gca, 'YScale', 'log');
     ylabel('Single-step position error (mm)', 'FontSize', FONT_LAB);
-    title(sprintf('Error distribution across %d samples at dt = %.0f \\mus', ...
+    xlabel('Integrator configuration', 'FontSize', FONT_LAB);
+    title(sprintf('Position error distribution (%d samples, dt = %.0f \\mus)', ...
         N_samples, dt_list(idt_mpc)*1e6), 'FontSize', FONT_TITLE, 'FontWeight', 'bold');
     grid on; box on;
-    set(gca, 'YScale', 'log');
+    % Legend for ERK / IRK
+    hold on;
+    h_erk = patch(NaN, NaN, C_ERK, 'FaceAlpha', 0.4, 'EdgeColor', C_ERK, 'DisplayName', 'ERK');
+    h_irk = patch(NaN, NaN, C_IRK, 'FaceAlpha', 0.4, 'EdgeColor', C_IRK, 'DisplayName', 'IRK');
+    legend([h_erk, h_irk], 'Location', 'best', 'FontSize', FONT_LEG);
+    set(gca, 'XTickLabelRotation', 45);
     style_ax(gca, FONT_NAME, FONT_AX, FONT_LAB);
 end
 
-savefig_thesis(fig4, 'int_error_distribution', fig_dir);
+savefig_thesis(fig1, 'int_error_boxplot', fig_dir);
 
-%% --- Figure 5: Position RMSE vs dt for selected integrators ---
-fig5 = mkfig(W_FULL, H_STD);
-ax = axes; hold on; grid on; box on;
+%% --- Figure 2: Step time boxplot per configuration ---
+fig2 = mkfig(W_FULL, H_STD + 2);
 
-sel_cfgs2   = {'ERK(1,1)', 'ERK(2,1)', 'ERK(4,1)', 'ERK(4,4)', 'IRK(2,1)', 'IRK(4,1)'};
-sel_colors  = {[0.8 0.2 0.2], [0.8 0.6 0.0], C_ERK, [0.0 0.7 0.5], [0.7 0.3 0.7], C_IRK};
-sel_markers = {'o', 's', 'd', '^', 'v', 'p'};
+% Check if raw timing data is available
+has_raw_timing = isfield(results.data, 'time_step_all');
 
-for j = 1:numel(sel_cfgs2)
-    idx = find(strcmp({configs.label}, sel_cfgs2{j}));
-    if isempty(idx), continue; end
+box_data_t   = [];
+box_groups_t = [];
+use_mean_fallback = false;
 
-    rmse_vals = NaN(1, n_dt);
-    for idt = 1:n_dt
-        d = results.data(idx, idt);
-        if ~d.failed, rmse_vals(idt) = d.pos_rmse; end
-    end
-
-    ok = isfinite(rmse_vals);
-    if any(ok)
-        plot(dt_list(ok)*1e6, rmse_vals(ok), ['-' sel_markers{j}], ...
-            'Color', sel_colors{j}, 'LineWidth', 1.2, 'MarkerSize', 6, ...
-            'MarkerFaceColor', sel_colors{j}, 'DisplayName', sel_cfgs2{j});
+if has_raw_timing
+    for j = 1:n_sel
+        d = results.data(sel_idx(j), idt_mpc);
+        if ~isempty(d.time_step_all)
+            t_us = d.time_step_all * 1e6;  % convert to microseconds
+            box_data_t   = [box_data_t, t_us]; %#ok<AGROW>
+            box_groups_t = [box_groups_t, j * ones(1, numel(t_us))]; %#ok<AGROW>
+        end
     end
 end
 
-set(ax, 'XScale', 'log', 'YScale', 'log');
-xlabel('Timestep (\mus)', 'FontSize', FONT_LAB);
-ylabel('Position RMSE (mm)', 'FontSize', FONT_LAB);
-title('Single-step integrator error vs. timestep', 'FontSize', FONT_TITLE, 'FontWeight', 'bold');
-legend('Location', 'northwest', 'FontSize', FONT_LEG);
-style_ax(ax, FONT_NAME, FONT_AX, FONT_LAB);
+if isempty(box_data_t)
+    % Fallback: use mean timing as a bar chart
+    use_mean_fallback = true;
+    fprintf('  (No raw timing data — using mean values as bar chart)\n');
+    mean_times = zeros(1, n_sel);
+    for j = 1:n_sel
+        d = results.data(sel_idx(j), idt_mpc);
+        mean_times(j) = d.time_mean * 1e6;
+    end
+    b = bar(1:n_sel, mean_times, 0.6);
+    b.FaceColor = 'flat';
+    for j = 1:n_sel
+        b.CData(j,:) = sel_colors(j,:);
+    end
+    set(gca, 'XTick', 1:n_sel, 'XTickLabel', sel_label);
+else
+    bp = boxplot(box_data_t, box_groups_t, ...
+        'Labels', sel_label, 'Whisker', 1.5, 'Symbol', '.', 'Colors', 'k');
+    % Color each box by ERK/IRK
+    h_boxes = findobj(gca, 'Tag', 'Box');
+    for j = 1:numel(h_boxes)
+        idx_rev = n_sel - j + 1;
+        patch(get(h_boxes(j), 'XData'), get(h_boxes(j), 'YData'), ...
+            sel_colors(idx_rev, :), 'FaceAlpha', 0.4, 'EdgeColor', sel_colors(idx_rev, :));
+    end
+end
 
-savefig_thesis(fig5, 'int_rmse_vs_dt', fig_dir);
+ylabel('Step time (\\mus)', 'FontSize', FONT_LAB);
+xlabel('Integrator configuration', 'FontSize', FONT_LAB);
+title(sprintf('Computation time per step (%d samples, dt = %.0f \\mus)', ...
+    N_samples, dt_list(idt_mpc)*1e6), 'FontSize', FONT_TITLE, 'FontWeight', 'bold');
+grid on; box on;
+hold on;
+h_erk = patch(NaN, NaN, C_ERK, 'FaceAlpha', 0.4, 'EdgeColor', C_ERK, 'DisplayName', 'ERK');
+h_irk = patch(NaN, NaN, C_IRK, 'FaceAlpha', 0.4, 'EdgeColor', C_IRK, 'DisplayName', 'IRK');
+legend([h_erk, h_irk], 'Location', 'best', 'FontSize', FONT_LEG);
+set(gca, 'XTickLabelRotation', 45);
+style_ax(gca, FONT_NAME, FONT_AX, FONT_LAB);
+
+savefig_thesis(fig2, 'int_timing_boxplot', fig_dir);
 
 fprintf('\n=== Integrator study complete ===\n');
 fprintf('Figures saved to: %s\n', fig_dir);

@@ -37,37 +37,38 @@ plot_min_horizon           = false;   % Fig 7: minimum N for convergence per con
 %  ================================================================
 
 % --- Fig 1: Controller comparison (fixed N, dt_mpc) ---
-fig1.controllers = {'lqr', 'lmpc', 'solmpc', 'nmpc'};
+fig1.controllers = {'lqr', 'lmpc', 'solnmpc', 'nmpc'};
 fig1.N           = 20;
 fig1.dt_mpc      = 0.001;
 
 % --- Fig 2: Horizon sweep trajectories (per controller) ---
-fig2.controllers = {'lmpc', 'solmpc', 'nmpc'};
+fig2.controllers = {'lmpc', 'solnmpc', 'nmpc'};
 fig2.N_list      = [11, 20, 30];
 fig2.dt_mpc      = 0.001;
 
 % --- Fig 3: Final cost vs N ---
-fig3.controllers = {'lmpc', 'solmpc', 'nmpc'};
+fig3.controllers = {'lmpc', 'solnmpc', 'nmpc'};
 fig3.N_list      = [11, 15:5:40];
 fig3.dt_mpc      = 0.001;
 
 % --- Fig 4: Compute time vs N ---
-fig4.controllers = {'lqr', 'lmpc', 'solmpc', 'nmpc'};
+fig4.controllers = {'lqr', 'lmpc', 'solnmpc', 'nmpc'};
+% fig4.controllers = {'lqr', 'lmpc', 'solnmpc'};
 fig4.N_list      = [11, 15:5:40];
 fig4.dt_mpc      = 0.001;
 
 % --- Fig 5: Timing breakdown (fixed N) ---
-fig5.controllers = {'lqr', 'lmpc', 'solmpc', 'nmpc'};
+fig5.controllers = {'lqr', 'lmpc', 'solnmpc', 'nmpc'};
 fig5.N           = 20;
 fig5.dt_mpc      = 0.001;
 
 % --- Fig 6: Convergence (fixed N) ---
-fig6.controllers = {'lqr', 'lmpc', 'solmpc', 'nmpc'};
+fig6.controllers = {'lqr', 'lmpc', 'solnmpc', 'nmpc'};
 fig6.N           = 20;
 fig6.dt_mpc      = 0.001;
 
 % --- Fig 7: Minimum horizon for convergence ---
-fig7.controllers = {'lmpc', 'solmpc', 'nmpc'};
+fig7.controllers = {'lmpc', 'solnmpc', 'nmpc'};
 fig7.N_list      = [11, 15:5:40];
 fig7.dt_mpc      = 0.001;
 
@@ -78,7 +79,7 @@ umax = 1.0;
 %  EXPORT OPTIONS
 %  ================================================================
 
-save_pdf  = false;                          % set false to disable export
+save_pdf  = true;                          % set false to disable export
 out_dir   = fullfile(project_root, 'figures/sc1');  % change to e.g. 'plots/scene_1'
 if save_pdf && ~exist(out_dir,'dir'), mkdir(out_dir); end
 
@@ -98,10 +99,10 @@ nx = 10; nu = 4;
 %  ================================================================
 
 ctrl_colors = containers.Map();
-ctrl_colors('lqr')    = [1 0.08 0.6];
-ctrl_colors('lmpc')   = [0.0 0.8 0.2];
-ctrl_colors('solmpc') = [1 0.4 0];
-ctrl_colors('nmpc')   = [0 0 1];
+ctrl_colors('lqr')    = [0.5  0.5  0.5 ];   % gray (baseline)
+ctrl_colors('lmpc')   = [0.0  0.45 0.74];   % blue
+ctrl_colors('solnmpc') = [0.85 0.33 0.1 ];   % orange
+ctrl_colors('nmpc')   = [0.47 0.67 0.19];   % green
 
 state_names = {'x','y','z','\phi','\theta', ...
                '\dot{x}','\dot{y}','\dot{z}','\dot{\phi}','\dot{\theta}'};
@@ -470,6 +471,49 @@ if plot_min_horizon
     sgtitle(sprintf('Horizon Convergence Study — \\Deltat_{mpc}=%.0f\\mus', ...
         fig7.dt_mpc*1e6), 'FontSize',13);
     saveFig(gcf, out_dir, 'min_horizon', save_pdf);
+end
+
+%% ================================================================
+%% FIG 8: SQP / QP Iterations vs N_horizon
+%% ================================================================
+
+if plot_sqp_iter_vs_N
+    figure('Name','SQP Iter vs N','Units','normalized','Position',[0.15 0.2 0.55 0.45]);
+    hold on; grid on; box on;
+
+    for ic = 1:numel(fig8.controllers)
+        cname = fig8.controllers{ic};
+        N_vals = []; sqp_med = []; qp_med = [];
+        for N = fig8.N_list
+            f = fullfile(res_dir, getFilename(cname, N, fig8.dt_mpc));
+            if ~isfile(f), continue; end
+            d = load(f);
+            if d.diverged, continue; end
+            if ~isfield(d, 'ocp_sqp_iter'), continue; end
+            N_vals(end+1)  = N; %#ok<AGROW>
+            sqp_med(end+1) = median(d.ocp_sqp_iter); %#ok<AGROW>
+            if isfield(d, 'ocp_qp_iter')
+                qp_med(end+1) = median(d.ocp_qp_iter); %#ok<AGROW>
+            else
+                qp_med(end+1) = NaN; %#ok<AGROW>
+            end
+        end
+        if isempty(N_vals), continue; end
+        col = ctrl_colors(cname);
+        plot(N_vals, sqp_med, '-o', 'Color',col, 'LineWidth',1.4, ...
+            'MarkerFaceColor',col, 'MarkerSize',5, ...
+            'DisplayName',sprintf('%s (SQP)',upper(cname)));
+        if any(isfinite(qp_med))
+            plot(N_vals, qp_med, '--s', 'Color',col, 'LineWidth',1.0, ...
+                'MarkerFaceColor','none', 'MarkerSize',5, ...
+                'DisplayName',sprintf('%s (QP)',upper(cname)));
+        end
+    end
+
+    xlabel('N_{horizon}'); ylabel('Median iterations per MPC step');
+    legend('Location','best');
+    title(sprintf('Solver Iterations vs Horizon — \\Deltat_{mpc}=%.0f\\mus', fig8.dt_mpc*1e6));
+    saveFig(gcf, out_dir, 'sqp_iter_vs_N', save_pdf);
 end
 
 %% ================================================================
