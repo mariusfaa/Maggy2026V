@@ -58,7 +58,7 @@ dx0 = [-0.0005; 0.00025; 0.0007; deg2rad(5); 0; 0; zeros(6,1)];
 %   ctrl_model  — used internally by all controllers
 %                  (NMPC: OCP model, LMPC/SolMPC/LQR: Jacobian source)
 plant_model = getSimModel(32);    % accurate plant
-ctrl_model  = getSimModel(8,1);    % controller internal model (try e.g. getFastModel())
+ctrl_model  = getSimModel(16,1);    % controller internal model
 
 % Skip existing results? (set false to overwrite)
 skip_existing = false;

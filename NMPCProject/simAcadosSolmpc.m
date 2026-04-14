@@ -1,8 +1,8 @@
 %% simSolmpc — Successive Online Linearization NMPC
 %
 % At each MPC step, linearizes the dynamics at (x, u), discretizes via
-% matrix exponential, and passes (Ad, Bd, c) as parameters to the OCP.
-% No per-node relinearization — single linearization per MPC step.
+% Tustin (bilinear) transform, and passes (Ad, Bd, c) as parameters to
+% the OCP.  No per-node relinearization — single linearization per MPC step.
 %
 % Discrete model (linearized at x_cur):
 %   x[k+1] = Ad*x[k] + Bd*u[k] + c
@@ -30,34 +30,34 @@ f_fun = Function('f_fun', {x_cas, u_cas}, {f_expl});
 n_fd  = 1 + 5*2 + nu*2;  % nominal + 5 state pairs + 4 input pairs = 19
 f_batch = f_fun.map(n_fd);
 
-%% --- Build compiled discretization function (CasADi expm) ---
+%% --- Build compiled discretization function (Tustin / bilinear) ---
 %  Single compiled CasADi Function: (x, u) → [Ad(:); Bd(:); c]
-%  Performs Jacobian + affine offset + augmented matrix exponential in one
+%  Performs Jacobian + affine offset + Tustin discretization in one
 %  compiled C call, eliminating all MATLAB interpreter overhead.
-fprintf('  Building compiled discretize function ...\n');
+%
+%  Tustin (bilinear transform, order-2, A-stable):
+%    Ad = (I - Ac*dt/2) \ (I + Ac*dt/2)
+%    Bd = (I - Ac*dt/2) \ (Bc*dt)
+%    c  = (I - Ac*dt/2) \ (b*dt)
+fprintf('  Building compiled discretize function (Tustin) ...\n');
 
 % Affine offset: f(x,u) ≈ Ac*x + Bc*u + b  →  b = f(x,u) - Ac*x - Bc*u
 b_sym = f_expl - Ac_sym * x_cas - Bc_sym * u_cas;
 
-% Augmented matrix for exact ZOH discretization:
-%   expm([Ac Bc b; 0 0 0] * dt) → [Ad Bd c; 0 I 0; 0 0 1]
-n_aug = nx + nu + 1;
-M_aug = [Ac_sym, Bc_sym, b_sym; MX.zeros(nu+1, n_aug)] * dt_mpc;
-
-% CasADi native matrix exponential — compiles to C code
-E = expm(M_aug);
-
-Ad_sym = E(1:nx, 1:nx);
-Bd_sym = E(1:nx, nx+1:nx+nu);
-c_sym  = E(1:nx, n_aug);
+% Tustin discretization
+I_nx   = MX.eye(nx);
+Lhs    = I_nx - Ac_sym * (dt_mpc / 2);   % (I - Ac*dt/2)
+Ad_sym = solve(Lhs, I_nx + Ac_sym * (dt_mpc / 2));
+Bd_sym = solve(Lhs, Bc_sym * dt_mpc);
+c_sym  = solve(Lhs, b_sym  * dt_mpc);
 
 discretize_fn = Function('discretize', {x_cas, u_cas}, ...
     {vertcat(Ad_sym(:), Bd_sym(:), c_sym)});
 
 % Linearization method:
-%   'compiled' — full CasADi discretize (Jacobian + expm, compiled C)  [DEFAULT]
-%   'casadi'   — CasADi Jacobians + MATLAB expm
-%   'fd'       — hybrid finite-difference Jacobians + MATLAB expm
+%   'compiled' — full CasADi discretize (Jacobian + Tustin, compiled C)  [DEFAULT]
+%   'casadi'   — CasADi Jacobians + MATLAB Tustin
+%   'fd'       — hybrid finite-difference Jacobians + MATLAB Tustin
 lin_method = 'compiled';
 fd_delta   = 1e-7;
 
@@ -70,17 +70,20 @@ fd_delta   = 1e-7;
 %% --- Initial linearization at equilibrium (warm-start) ---
 p0 = full(discretize_fn(xEq, uEq));
 
-% Validate CasADi expm against MATLAB expm at equilibrium
+% Validate compiled Tustin against MATLAB Tustin at equilibrium
 raw_ref = full(lin_casadi(xEq, uEq));
 Ac_ref  = reshape(raw_ref(1:nx*nx), nx, nx);
 Bc_ref  = reshape(raw_ref(nx*nx+1:nx*nx+nx*nu), nx, nu);
 f0_ref  = raw_ref(nx*nx+nx*nu+1:end);
 b_ref   = f0_ref - Ac_ref*xEq - Bc_ref*uEq;
-M_ref   = expm([[Ac_ref, Bc_ref, b_ref]; zeros(nu+1, nx+nu+1)] * dt_mpc);
-p0_ref  = [reshape(M_ref(1:nx,1:nx),[],1); reshape(M_ref(1:nx,nx+1:nx+nu),[],1); M_ref(1:nx,end)];
-expm_err = max(abs(p0 - p0_ref));
-fprintf('  CasADi vs MATLAB expm validation error: %.2e\n', expm_err);
-assert(expm_err < 1e-8, 'CasADi expm disagrees with MATLAB expm');
+Lhs_ref = eye(nx) - Ac_ref * (dt_mpc / 2);
+Ad_ref  = Lhs_ref \ (eye(nx) + Ac_ref * (dt_mpc / 2));
+Bd_ref  = Lhs_ref \ (Bc_ref * dt_mpc);
+c_ref   = Lhs_ref \ (b_ref  * dt_mpc);
+p0_ref  = [Ad_ref(:); Bd_ref(:); c_ref];
+tustin_err = max(abs(p0 - p0_ref));
+fprintf('  CasADi vs MATLAB Tustin validation error: %.2e\n', tustin_err);
+assert(tustin_err < 1e-8, 'Compiled Tustin disagrees with MATLAB Tustin');
 
 % Extract Ad for eigenvalue display
 Ad = reshape(p0(1:nx*nx), nx, nx);
@@ -192,8 +195,10 @@ for k = 1:N_mpc
         Bc  = reshape(raw(nx*nx+1    : nx*nx+nx*nu),  nx, nu);
         f0  = raw(nx*nx+nx*nu+1 : end);
         b   = f0 - Ac*x - Bc*u;
-        M   = expm([[Ac, Bc, b]; zeros(nu+1, nx+nu+1)] * dt_mpc);
-        Ad = M(1:nx, 1:nx); Bd = M(1:nx, nx+1:nx+nu); c = M(1:nx, end);
+        L   = eye(nx) - Ac * (dt_mpc / 2);
+        Ad = L \ (eye(nx) + Ac * (dt_mpc / 2));
+        Bd = L \ (Bc * dt_mpc);
+        c  = L \ (b  * dt_mpc);
         ocp_solver.set('p', [Ad(:); Bd(:); c(:)]);
 
     else  % 'fd'
@@ -233,8 +238,10 @@ for k = 1:N_mpc
         end
 
         b = f0 - Ac*x - Bc*u;
-        M = expm([[Ac, Bc, b]; zeros(nu+1, nx+nu+1)] * dt_mpc);
-        Ad = M(1:nx, 1:nx); Bd = M(1:nx, nx+1:nx+nu); c = M(1:nx, end);
+        L = eye(nx) - Ac * (dt_mpc / 2);
+        Ad = L \ (eye(nx) + Ac * (dt_mpc / 2));
+        Bd = L \ (Bc * dt_mpc);
+        c  = L \ (b  * dt_mpc);
         ocp_solver.set('p', [Ad(:); Bd(:); c(:)]);
     end
 
