@@ -1,0 +1,18 @@
+TeensyNMPC_IO_data.o: \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\TeensyNMPC_IO_data.c \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\TeensyNMPC_IO.h \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\rtwtypes.h \
+ C:/PROGRA~1/MATLAB/R2025b/simulink/include/rtw_continuous.h \
+ C:/Users/mariujf/MagLevTbx-main/Controller/hardware/TeensyNMPC_IO_ert_rtw/rtwtypes.h \
+ C:/PROGRA~1/MATLAB/R2025b/simulink/include/rtw_solver.h \
+ C:/PROGRA~1/MATLAB/R2025b/simulink/include/rtw_continuous.h \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\TeensyNMPC_IO_types.h \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\rt_nonfinite.h
+C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\TeensyNMPC_IO.h:
+C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\rtwtypes.h:
+C:/PROGRA~1/MATLAB/R2025b/simulink/include/rtw_continuous.h:
+C:/Users/mariujf/MagLevTbx-main/Controller/hardware/TeensyNMPC_IO_ert_rtw/rtwtypes.h:
+C:/PROGRA~1/MATLAB/R2025b/simulink/include/rtw_solver.h:
+C:/PROGRA~1/MATLAB/R2025b/simulink/include/rtw_continuous.h:
+C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\TeensyNMPC_IO_types.h:
+C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\rt_nonfinite.h:

@@ -1,0 +1,20 @@
+CurrDrvSensCombo_Test.o: \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\CurrDrvSensCombo_Test_ert_rtw\CurrDrvSensCombo_Test.c \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\CurrDrvSensCombo_Test_ert_rtw\CurrDrvSensCombo_Test.h \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\CurrDrvSensCombo_Test_ert_rtw\rtwtypes.h \
+ C:/PROGRA~1/MATLAB/R2025b/simulink/include/rtw_continuous.h \
+ C:/Users/mariujf/MagLevTbx-main/Controller/hardware/CurrDrvSensCombo_Test_ert_rtw/rtwtypes.h \
+ C:/PROGRA~1/MATLAB/R2025b/simulink/include/rtw_solver.h \
+ C:/PROGRA~1/MATLAB/R2025b/simulink/include/rtw_continuous.h \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\CurrDrvSensCombo_Test_ert_rtw\rt_nonfinite.h \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\CurrDrvSensCombo_Test_ert_rtw\CurrDrvSensCombo_Test_types.h \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\CurrDrvSensCombo_Test_ert_rtw\CurrDrvSensCombo_Test_private.h
+C:\Users\mariujf\MagLevTbx-main\Controller\hardware\CurrDrvSensCombo_Test_ert_rtw\CurrDrvSensCombo_Test.h:
+C:\Users\mariujf\MagLevTbx-main\Controller\hardware\CurrDrvSensCombo_Test_ert_rtw\rtwtypes.h:
+C:/PROGRA~1/MATLAB/R2025b/simulink/include/rtw_continuous.h:
+C:/Users/mariujf/MagLevTbx-main/Controller/hardware/CurrDrvSensCombo_Test_ert_rtw/rtwtypes.h:
+C:/PROGRA~1/MATLAB/R2025b/simulink/include/rtw_solver.h:
+C:/PROGRA~1/MATLAB/R2025b/simulink/include/rtw_continuous.h:
+C:\Users\mariujf\MagLevTbx-main\Controller\hardware\CurrDrvSensCombo_Test_ert_rtw\rt_nonfinite.h:
+C:\Users\mariujf\MagLevTbx-main\Controller\hardware\CurrDrvSensCombo_Test_ert_rtw\CurrDrvSensCombo_Test_types.h:
+C:\Users\mariujf\MagLevTbx-main\Controller\hardware\CurrDrvSensCombo_Test_ert_rtw\CurrDrvSensCombo_Test_private.h:

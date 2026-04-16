@@ -1,0 +1,26 @@
+TLx493D_A2BW.o: \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\TLx493D_A2BW.c \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\CommunicationInterface.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\Logger.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_types.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_enums.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\pal.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_common_defines.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_common.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_gen_2_common_defines.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_gen_2_common.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\TLx493D_A2BW_defines.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\TLx493D_A2BW_enums.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\TLx493D_A2BW.h
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\CommunicationInterface.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\Logger.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_types.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_enums.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\pal.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_common_defines.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_common.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_gen_2_common_defines.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_gen_2_common.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\TLx493D_A2BW_defines.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\TLx493D_A2BW_enums.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\TLx493D_A2BW.h:

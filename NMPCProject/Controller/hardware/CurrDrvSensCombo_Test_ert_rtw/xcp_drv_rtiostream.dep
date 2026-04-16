@@ -1,0 +1,40 @@
+xcp_drv_rtiostream.o: \
+ C:\PROGRA~1\MATLAB\R2025b\toolbox\coder\xcp\src\target\server\platform\default\xcp_drv_rtiostream.c \
+ C:/PROGRA~1/MATLAB/R2025b/toolbox/coder/rtiostream/src/rtiostream.h \
+ C:/PROGRA~1/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/common/xcp_common.h \
+ C:/Users/mariujf/MagLevTbx-main/Controller/hardware/CurrDrvSensCombo_Test_ert_rtw/rtwtypes.h \
+ C:/PROGRA~1/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/platform/include/xcp_platform.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2025b/toolbox/target/supportpackages/arduinotarget/include/xcp_platform_custom.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/Arduino.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/WProgram.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr/pgmspace.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr/interrupt.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr_functions.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/wiring.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/binary.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/core_id.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/core_pins.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/imxrt.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/pins_arduino.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/HardwareSerial.h \
+ C:/PROGRA~1/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/include/xcp.h \
+ C:\PROGRA~1\MATLAB\R2025b\toolbox\coder\xcp\src\target\server\platform\default\xcp_drv.h
+C:/PROGRA~1/MATLAB/R2025b/toolbox/coder/rtiostream/src/rtiostream.h:
+C:/PROGRA~1/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/common/xcp_common.h:
+C:/Users/mariujf/MagLevTbx-main/Controller/hardware/CurrDrvSensCombo_Test_ert_rtw/rtwtypes.h:
+C:/PROGRA~1/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/platform/include/xcp_platform.h:
+C:/ProgramData/MATLAB/SupportPackages/R2025b/toolbox/target/supportpackages/arduinotarget/include/xcp_platform_custom.h:
+C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/Arduino.h:
+C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/WProgram.h:
+C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr/pgmspace.h:
+C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr/interrupt.h:
+C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr_functions.h:
+C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/wiring.h:
+C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/binary.h:
+C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/core_id.h:
+C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/core_pins.h:
+C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/imxrt.h:
+C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/pins_arduino.h:
+C:/ProgramData/MATLAB/SupportPackages/R2025b/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/HardwareSerial.h:
+C:/PROGRA~1/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/include/xcp.h:
+C:\PROGRA~1\MATLAB\R2025b\toolbox\coder\xcp\src\target\server\platform\default\xcp_drv.h:
