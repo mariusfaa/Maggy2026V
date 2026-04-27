@@ -79,7 +79,7 @@ protected:
     double central_cov_sgn;
 
 public:
-    UnscentedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, int RK4Iterations, bool cubature=0):
+    UnscentedKalmanFilter(size_t numberStates, size_t numberBiasStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, int RK4Iterations, bool cubature=0):
     cubature(cubature),
     ns(2*nx+static_cast<size_t>(!cubature)),
     sigma_points(arma::zeros(nx, ns)),
@@ -91,7 +91,7 @@ public:
     weights_cov(arma::zeros(ns)),
     weights_cov_sr(arma::zeros(ns)),
     Pxz(arma::zeros(nx, nz)),
-    Base(numberStates, numberInputs, numberMeasurements, useSRformulation, RK4Iterations) {
+    Base(numberStates, numberBiasStates, numberInputs, numberMeasurements, useSRformulation, RK4Iterations) {
         if (cubature) {
             weights_cov = weights_mean = ones(ns)/ns;
             weights_cov_sr = arma::sqrt(weights_cov);
@@ -164,7 +164,7 @@ public:
             if (!RK4Iterations) {
                 eulerForward(sigma_points.col(i), u, dt, dxd);
             } else {
-            rk4_multi(sigma_points.col(i), u, dt, RK4Iterations, dxd);
+            rk4_multi(sigma_points.col(i), u, dt, RK4Iterations, nx, dxd);
             }
             sigma_points_pred.col(i) = *(dxd.x_next);
 
@@ -207,14 +207,12 @@ public:
             // Averaging for symmetry. Small regularization for positive definiteness
             P = (P + P.t())*0.5 + eye(nx, nx)*1e-12;
             if (!P.is_sympd(1e-9)) {
-                std::cout << "P is not symmetric positive definite!" << endl;
+                // std::cout << "P is not symmetric positive definite!" << endl;
             }
         }
     }
 
-    void update(vec &z) override {
-        // Assuming feedthrough is compensated for
-        vec u = zeros(nu);
+    void update(vec &z, vec &u) override {
 
         // Calculate sigma points based on predicted density
         if (cubature) {
@@ -269,7 +267,7 @@ public:
             // Averaging for symmetry. Small regularization for positive definiteness
             S = (S + S.t())*0.5 + eye(nz, nz)*1e-12;
             if (!S.is_sympd(1e-9)) {
-                std::cout << "S is not symmetric positive definite!" << endl;
+                // std::cout << "S is not symmetric positive definite!" << endl;
             }
         }
 
@@ -321,7 +319,7 @@ public:
             // Averaging for symmetry. Small regularization for positive definiteness
             P = (P + P.t())*0.5 + eye(nx, nx)*1e-12;
             if (!P.is_sympd(1e-9)) {
-                std::cout << "P is not symmetric positive definite!" << endl;
+                // std::cout << "P is not symmetric positive definite!" << endl;
             }
         }
     }

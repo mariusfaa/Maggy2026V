@@ -8,7 +8,7 @@
 
 using namespace arma;
 
-bool testing = NUMBER_OBSERVER_STATES == NUMBER_STATES_TEST;
+bool testing = 0;
 
 // Set states that are observed
 void increaseStateSpace(const vec &x, double x_pad[NUMBER_STATES]) {
@@ -48,7 +48,7 @@ void dynamics_f(const vec &x, const vec &u, vec &dx) {
     break;
 
     case NUMBER_STATES_REDUCED_EXTRA:
-    // maglevSystemDynamics_xred(x.memptr(), u.memptr(), dx.memptr());
+    maglevSystemDynamics_xred(x.memptr(), u.memptr(), dx.memptr());
     break;
 
     // Test model for filter verification
@@ -70,7 +70,7 @@ void measurements_h(const vec &x, const vec &u, vec &z) {
     break;
 
     case NUMBER_STATES_REDUCED_EXTRA:
-    // maglevSystemMeasurements_xred(x.memptr(), u.memptr(), z.memptr());
+    maglevSystemMeasurements_xred(x.memptr(), u.memptr(), z.memptr());
     break;
 
     // Test model for filter verification
@@ -87,9 +87,9 @@ void measurements_h(const vec &x, const vec &u, vec &z) {
   }
 }
 
-// mode: 0 forward differemce, 1 backward difference, 2 central
-// jacType: 1 is process, 0 is measurement
-mat calculateJacobian(const vec &x, const vec &u, const bool jacType, const vec &curr,  const double dt, const int mode) {
+// mode: 0 forward difference, 1 backward difference, 2 central
+// jacType: 0 is process, 1 is measurement
+mat calculateJacobian(const vec &x, const vec &u, const int jacType, const vec &curr,  const double dt, const int mode) {
 
   double delta = 1e-12;
 
@@ -114,8 +114,8 @@ mat calculateJacobian(const vec &x, const vec &u, const bool jacType, const vec 
     // Container for f(x - delta)
     vec fd = zeros(n);
 
-    // True is process jacobian
-    if (jacType) {
+    // Process jacobian
+    if (jacType == 0) {
       if (dt == 0) { // continuous jacobian Ac
 
         if (mode == 0 || mode == 2) {
@@ -143,7 +143,7 @@ mat calculateJacobian(const vec &x, const vec &u, const bool jacType, const vec 
       }
     }
     // Jacobian H
-    else if (n == NUMBER_MEASUREMENTS) {
+    else if (jacType == 1) {
       double dh[NUMBER_MEASUREMENTS] = {};
 
       if (mode == 0 || mode == 2) {

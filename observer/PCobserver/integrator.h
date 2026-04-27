@@ -18,10 +18,8 @@ void eulerForward(const vec &x, const vec &u, const double dt, struct_type &s) {
 }
 
 
-template<typename struct_type>
-void rk4(const vec &x, const vec &u, const double dt, struct_type &s) {
-
-  size_t n = NUMBER_OBSERVER_STATES;
+template<typename derivative_struct_type>
+void rk4(const vec &x, const vec &u, const double dt, size_t n, derivative_struct_type &s) {
 
   // Storage for RK4 stages
   vec k1(n, arma::fill::zeros);
@@ -64,11 +62,9 @@ void rk4(const vec &x, const vec &u, const double dt, struct_type &s) {
 }
 
 // Does multiple rk4 step to better simulate continuous dynamics
-template<typename struct_type>
-void rk4_multi(const vec &x0, const vec &u, const double dt, size_t num_substeps, struct_type &s)
+template<typename derivative_struct_type>
+void rk4_multi(const vec &x0, const vec &u, const double dt, size_t num_substeps, size_t n, derivative_struct_type &s)
 {
-    size_t n = NUMBER_OBSERVER_STATES;
-
     vec x_curr = x0;
     vec x_next(n, arma::fill::zeros);
 
@@ -77,10 +73,10 @@ void rk4_multi(const vec &x0, const vec &u, const double dt, size_t num_substeps
     // Temporary struct for inner RK4 calls
     vec dx(n, arma::fill::zeros);
     vec x_tmp(n, arma::fill::zeros);
-    struct_type inner = {&dx, &x_tmp};
+    derivative_struct_type inner = {&dx, &x_tmp};
 
     for (int i = 0; i < num_substeps; ++i) {
-        rk4(x_curr, u, h, inner);
+        rk4(x_curr, u, h, n, inner);
         x_curr = *inner.x_next;
     }
 

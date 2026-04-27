@@ -53,12 +53,12 @@ protected:
   using Base::W;
 
 public:
-  ExtendedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, int RK4Iterations, bool updateJacobians=1, bool updateQ=1):
+  ExtendedKalmanFilter(size_t numberStates, size_t numberBiasStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, int RK4Iterations, bool updateJacobians=1, bool updateQ=1):
     dx(arma::zeros(numberStates)),
     RK4Iterations(RK4Iterations),
     updateJacobians(updateJacobians),
     updateQ(updateQ),
-    Base(numberStates, numberInputs, numberMeasurements, useSRformulation) {
+    Base(numberStates, numberBiasStates, numberInputs, numberMeasurements, useSRformulation) {
       maglevModel_initialize();
       dxd.dx = &dx;
       dxd.x_next = &x_pred;
@@ -70,12 +70,12 @@ public:
     if (!RK4Iterations) {
       eulerForward(x_est, u, dt, dxd);
     } else {
-      rk4_multi(x_est, u, dt, RK4Iterations, dxd);
+      rk4_multi(x_est, u, dt, RK4Iterations, nx, dxd);
     }
 
     // Calculates new F
     if (updateJacobians) {
-      mat Ac = calculateJacobian(x_est, u, 1, x_pred, 0, 2);
+      mat Ac = calculateJacobian(x_est, u, 0, x_pred, 0, 2);
       if (updateQ) {
         van_loan_struct vls = van_loan(Ac, Q, dt);
         F = vls.Ad;
@@ -86,7 +86,7 @@ public:
       } else {
         F = discretize_A(Ac, dt);
       }
-      // F = calculateJacobian(x_est, u, 1, x_pred, dt, 2);
+      // F = calculateJacobian(x_est, u, 0, x_pred, dt, 2);
     }
 
     // Predict covariance
@@ -99,22 +99,19 @@ public:
       // Averaging for symmetry. Small regularization for positive definiteness
       P = (P + P.t())*0.5 + eye(nx, nx)*1e-9;
       if (!P.is_sympd(1e-9)) {
-        std::cout << "P is not symmetric positive definite!" << endl;
+        // std::cout << "P is not symmetric positive definite!" << endl;
       }
     }
   }
 
-  virtual void update(vec &z) override {
-
-    // Assuming feedthrough is compensated for
-    vec u = zeros(nu);
+  virtual void update(vec &z, vec &u) override {
 
     // z_pred = h(x)
     measurements_h(x_est, u, z_pred);
 
     // Calculates new H
     if (updateJacobians) {
-      H = calculateJacobian(x_pred, u, 0, z_pred, 0, 2);
+      H = calculateJacobian(x_pred, u, 1, z_pred, 0, 2);
     }
 
     // Innovation
@@ -131,7 +128,7 @@ public:
         // Averaging for symmetry. Small regularization for positive definiteness
         S = (S + S.t())*0.5 + eye(nz, nz)*1e-9;
         if (!S.is_sympd(1e-9)) {
-          std::cout << "S is not symmetric positive definite!" << endl;
+          // std::cout << "S is not symmetric positive definite!" << endl;
         }
     }
 
@@ -158,7 +155,7 @@ public:
       // P = (I - W * H) * P;
       P = (I - W*H) * P * (I - W*H).t() + W*R*W.t();
       if (!P.is_sympd(1e-9)) {
-        std::cout << "P is not symmetric positive definite!" << endl;
+        // std::cout << "P is not symmetric positive definite!" << endl;
       }
     }
   }

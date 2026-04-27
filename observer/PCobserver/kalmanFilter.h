@@ -3,6 +3,7 @@
 
 #include <armadillo>
 #include <cstddef>
+#include <cstdlib>
 #include "utilities.h"
 
 using namespace arma;
@@ -15,6 +16,7 @@ protected:
     double dt; // Discretization time
 
     size_t nx; // Number of states
+    size_t nb; // Number of bias states
     size_t nu; // Number of inputs
     size_t nz; // Number of measurements
 
@@ -26,6 +28,7 @@ protected:
     mat F; // State transition matrix
     mat B; // Input matrix
     mat H; // Measurement matrix
+    mat D; // Feedthrough matrix
 
     mat P; // Prediction/estimate covariance
     mat Q; // Process covariance
@@ -46,8 +49,9 @@ public:
     ~KalmanFilter() = default;
 
     // Constructor
-    KalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation):
-        nx(numberStates),
+    KalmanFilter(size_t numberStates, size_t numberBiasStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation):
+        nb(numberBiasStates),
+        nx(numberStates+numberBiasStates),
         nu(numberInputs),
         nz(numberMeasurements),
 
@@ -57,6 +61,7 @@ public:
         innovation(arma::zeros(nz)),
 
         F(arma::zeros(nx, nx)),
+        D(arma::zeros(nz, nu)),
         B(arma::zeros(nx, nu)),
         H(arma::zeros(nz, nx)),
 
@@ -82,6 +87,7 @@ public:
         B = params.Bd;     // Input matrix
         Q = params.Qd;     // Process noise covariance
         H = params.H;      // Measurement matrix
+        D = params.D;
         R = params.R;      // Measurement noise covariance
         dt = params.dt;    // Discretization time
 
@@ -93,6 +99,7 @@ public:
     virtual void predict(vec &u) {
         // Predict mean
         x_pred = F * x_est + B * u;
+        x_pred(5) -= dt*9.80665; // Gravity is considered constant input
 
         // Predict covariance
         if (useSRformulation) {
@@ -103,14 +110,14 @@ public:
             P = F * P * F.t() + Q;
             P = (P + P.t())*0.5 + eye(nx, nx)*1e-9;
             if (!P.is_sympd(1e-9)) {
-                std::cout << "P is not symmetric positive definite!" << endl;
+                // std::cout << "P is not symmetric positive definite!" << endl;
             }
         }
     }
 
-    virtual void update(vec &z) {
+    virtual void update(vec &z, vec &u) {
         // Predicted measurement
-        z_pred = H * x_pred;
+        z_pred = H * x_pred + D * u;
 
         // Innovation
         innovation = z - z_pred;
@@ -138,6 +145,8 @@ public:
 
         // Update state estimate
         x_est = x_pred + W * innovation;
+        // x_est(0) -= 0.00025;
+        // x_est(2) += 0.0175;
 
         // Update covariance estimate
         if (useSRformulation) {
@@ -148,7 +157,7 @@ public:
             // P = (I - W * H) * P;
             P = (I - W*H) * P * (I - W*H).t() + W*R*W.t();
             if (!P.is_sympd(1e-9)) {
-                std::cout << "P is not symmetric positive definite!" << endl;
+                // std::cout << "P is not symmetric positive definite!" << endl;
             }
         }
     }
@@ -176,7 +185,7 @@ public:
             } else if(Ss.is_trimatl()) {
                 return Ps*Ps.t();
             } else {
-                std::cout << "Covariance square root is not triangular!" << endl;
+                // std::cout << "Covariance square root is not triangular!" << endl;
                 return eye(nx, nx);
             }
         } else {
@@ -197,7 +206,7 @@ public:
             } else if(Ss.is_trimatl()) {
                 return Ss*Ss.t();
             } else {
-                std::cout << "Innovation covariance square root is not triangular!" << endl;
+                // std::cout << "Innovation covariance square root is not triangular!" << endl;
                 return eye(nz, nz);
             }
         } else {
