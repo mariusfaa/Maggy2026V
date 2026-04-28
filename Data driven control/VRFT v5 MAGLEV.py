@@ -1,17 +1,19 @@
-# VRFT v5; implemented spectral power component and improved integration with simulator.
-# Run script to optimise PID parameters. The script deploys kp, ki and kd to PID_params.csv, 
-# and generates a 200s 1.2mOhm reference signal.
-# The script also generates an open_loop_params.csv file.
+# Run script to deploy parameters to a LQR-like controller. 
 import numpy as np
 from scipy.signal import lfilter
 from numpy.linalg import lstsq
 from scipy import signal
+from scipy.linalg import block_diag
 
 import scipy as sp
 import sympy as sm
 import pandas as pd
-import matplotlib.pyplot as plt
 
+from pathlib import Path 
+
+VRFTuning = Path(__file__).resolve()
+
+project_root = VRFTuning.parent.parent
 
 #%%
 # ----------------------------
@@ -26,19 +28,18 @@ q = 2   # System order
 
 Ts = 0.01      # Discretisation interval
 
- 
-
 # Specify a frequency weighting function on the form:
 # omega/(omega+s)
 omega=100 # Cutoff frequency in the frequency weighting function
 
+simulator = "NMPC" # Options are NMPC and LQR. LQR requires running "sim_notlive_lqr_wrapper.m".
 
 #%%
 # ----------------------------
 # Functions related to VRFT.
 # -----------------------------
 # Convert the reference transfer function to discrete time:
-def M_cont_to_disc(tau,t,q,Ts):
+def M_cont_to_desc(tau,t,q,Ts):
     den_coeff=np.polynomial.polynomial.polypow([1,0.2*t],q)
     den_coeff=list(reversed(den_coeff)) # Polypow takes coefficients in ascending order, scipy.signal related functions takes them in descending order.
     num_coeff=[1] # Initialise numerator. time delays are added in discrete time.
@@ -54,7 +55,7 @@ def M_cont_to_disc(tau,t,q,Ts):
     return M_DT_num, M_DT_den
 
 # Convert the frequency weighting function to discrete time:
-def W_cont_to_disc(omega,Ts):
+def W_cont_to_desc(omega,Ts):
     W_CT = signal.TransferFunction([omega], [1, omega])
     W_DT = W_CT.to_discrete(Ts, method='bilinear')
     return W_DT.num, W_DT.den
@@ -110,39 +111,38 @@ def GetFilterCoeff(num,den,lp_num,lp_den,Phi_inv_num,Phi_inv_den):
 
 #%%
 # -----------------------------
-# Data collection is preformed below. The simulator is ran in open-loop with a continually exciting input
+# Collect data
 # -----------------------------
+if simulator == "LQR":
+    Data = pd.read_csv("model_output.csv")
+    x, y, z = Data["x"], Data["y"], Data["z"]
+    a, b, g = Data["alpha"], Data["beta"], Data["gamma"]
+    xdot, ydot, zdot = Data["xdot"], Data["ydot"], Data["zdot"]
+    adot, bdot, gdot = Data["alphadot"], Data["betadot"], Data["gammadot"]
 
-Data = pd.read_csv("model_output.csv")
-x, y, z = Data["x"], Data["y"], Data["z"]
-a, b, g = Data["alpha"], Data["beta"], Data["gamma"]
-xdot, ydot, zdot = Data["xdot"], Data["ydot"], Data["zdot"]
-adot, bdot, gdot = Data["alphadot"], Data["betadot"], Data["gammadot"]
-
-u1, u2, u3, u4 = Data["u1"], Data["u2"], Data["u3"], Data["u4"]
-#%%
-
-f, pxx = sp.signal.welch(u1)
-G = [] # Initialise phi^-1/2
-for i in pxx:
-    G.append(1/np.sqrt(i))
-plt.plot(f,G)
-plt.show()
-
-
-
-
+    u1, u2, u3, u4 = Data["u1"], Data["u2"], Data["u3"], Data["u4"]
+elif simulator == "NMPC":
+    from scipy import io
+    output_location = project_root / "NMPCProject" / "nmpc_results.mat"
+    data = io.loadmat(output_location)
+    t_sim = data["t"]
+    x, y, z = data["x"][0,1:], data["x"][1,1:], data["x"][2,1:]
+    a, b, g = data["x"][3,1:], data["x"][4,1:], data["x"][5,1:]
+    xdot, ydot, zdot = data["x"][6,1:], data["x"][7,1:], data["x"][8,1:]
+    adot, bdot, gdot = data["x"][9,1:], data["x"][10,1:], data["x"][11,1:]
+    
+    u1, u2, u3, u4 = data["u"][0,:], data["u"][1,:], data["u"][2,:], data["u"][3,:]
+else:
+    raise Exception("Specify valid simulator type (NMPC or LQR)")
+    
 #%%
 # -----------------------------
 # Construct virtual reference and error
 # -----------------------------
-# r_v = M^-1(z) y
-# First invert M (apply filter defined by denominator/ numerator swapped)
-# That is, r_v = lfilter(M_den, M_num, y)
 
-M_num, M_den = M_cont_to_disc(tau,t,q,Ts) # Use same reference model and frequency weighting for all solonoids for now.
+M_num, M_den = M_cont_to_desc(tau,t,q,Ts) # Use same reference model and frequency weighting for all solonoids for now.
 
-W_num, W_den=W_cont_to_disc(omega,Ts)
+W_num, W_den=W_cont_to_desc(omega,Ts)
 
 Phi_u1_num, Phi_u1_den = construct_phi(u1)
 Phi_u2_num, Phi_u2_den = construct_phi(u2)
@@ -231,31 +231,19 @@ phi_4 = np.column_stack([e_y4,e_z4,e_a4,ydot4_l,zdot4_l,adot4_l])
 
 #%%
 # -----------------------------
-# Calculate PID params and deploy
+# Calculate LQR-like params and deploy
 # -----------------------------
 
-# Solve VRFT optimisation problem with an OLS approach.
-theta_1, _, _, _ = lstsq(phi_1, u1_l, rcond=None)
-theta_2, _, _, _ = lstsq(phi_2, u2_l, rcond=None)
-theta_3, _, _, _ = lstsq(phi_3, u3_l, rcond=None)
-theta_4, _, _, _ = lstsq(phi_4, u4_l, rcond=None)
+b_lstsq = np.concatenate([u1_l, u2_l, u3_l, u4_l])
+a_lstsq = block_diag(phi_1,phi_2,phi_3,phi_4)
 
-theta = np.concatenate([theta_1,theta_2,theta_3,theta_4])
+theta, _, _, _ = lstsq(a_lstsq,b_lstsq,rcond=None)
+
+print("Tuned coupled controller parameters (θ):",theta)
 
 params = pd.DataFrame(theta.reshape(1,24),columns=["a0","a1","a2","a3","a4","a5",
                                                   "b0","b1","b2","b3","b4","b5",
                                                   "c0","c1","c2","c3","c4","c5",
                                                   "d0","d1","d2","d3","d4","d5",])
+
 params.to_csv("params.csv")
-
-
-
-
-print("Tuned controller parameters (θ):",np.array([[theta_1],[theta_2],[theta_3],[theta_4]]))
-
-
-#%% 
-# -----------------------------
-# Testing. Commented out by default.
-# -----------------------------
-
