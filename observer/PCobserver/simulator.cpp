@@ -21,7 +21,7 @@ using namespace arma;
 using namespace std::chrono;
 using filterPtr = std::unique_ptr<KalmanFilter>;
 
-const double dt = 0.001; // 1kHz
+const double dt = 0.01; // 100 Hz
 
 int main(int argc, char* argv[]) {
 
@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
     bool updateJacobians = 1;
     bool updateQ = 0;
     bool cubature = 0;
+    bool normalized = 0;
 
     // Process arguments
     if (argc > 1) {
@@ -46,6 +47,9 @@ int main(int argc, char* argv[]) {
                         updateQ = *argv[5] - '0';
                         if (argc > 6) {
                             cubature = *argv[6] - '0';
+                            if (argc > 7) {
+                                normalized = *argv[7] - '0';
+                            }
                         }
                     }
                 }
@@ -135,11 +139,12 @@ int main(int argc, char* argv[]) {
     // Process noise. Discretizing with van loan by using integral of states system matrix
     arma::arma_rng::set_seed_random();
     mat NSD_sim(5, 5, arma::fill::zeros); // Spectral density
-    NSD_sim(0, 0) = 1e-10;
-    NSD_sim(1, 1) = 1e-10;
-    NSD_sim(2, 2) = 1e-10;
-    NSD_sim(3, 3) = 1e-10;
-    NSD_sim(4, 4) = 1e-10;
+    NSD_sim.load("NSD_sim.txt");
+    // NSD_sim(0, 0) = 1.6e-8;
+    // NSD_sim(1, 1) = 1.6e-8;
+    // NSD_sim(2, 2) = 1.6e-8;
+    // NSD_sim(3, 3) = 1e-8;
+    // NSD_sim(4, 4) = 1e-8;
     mat Q_sim(NUMBER_SIMULATOR_STATES, NUMBER_SIMULATOR_STATES, arma::fill::zeros);
     Q_sim.submat(5, 5, NUMBER_SIMULATOR_STATES-1, NUMBER_SIMULATOR_STATES-1) = NSD_sim;
     van_loan_struct vls = van_loan(get_A_integrator(), Q_sim, dt);
@@ -163,14 +168,15 @@ int main(int argc, char* argv[]) {
     vec x0 = xLp_true;
 
     // Control gain
-    mat K = get_K();
+    mat K(NUMBER_INPUTS, NUMBER_SIMULATOR_STATES);
+    K.load("feedbackGain.txt");
 
     // Observer
-    filterPtr observer = initObserver(filterVariant, dt, xLp.memptr(), useSRformulation, RK4Iterations, updateJacobians, updateQ, cubature);
+    filterPtr observer = initObserver(filterVariant, dt, xLp.memptr(), useSRformulation, RK4Iterations, updateJacobians, updateQ, cubature, normalized);
 
     // Time vector
     double t_start = 0.0;
-    double t_end = 2.0;
+    double t_end = 1.0;
     int N = static_cast<int>((t_end - t_start) / dt) + 1;
 
     vec t = regspace(t_start, dt, t_end);

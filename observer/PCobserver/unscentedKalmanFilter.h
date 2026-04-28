@@ -20,6 +20,7 @@ class UnscentedKalmanFilter: public ExtendedKalmanFilter {
 
 private:
     bool cubature;
+    bool normalized;
 
 protected:
     using Base::dxd;
@@ -78,9 +79,14 @@ protected:
     // Sign of central covariance weight
     double central_cov_sgn;
 
+    // Normalization and denormalization factors
+    mat normFacts;
+    mat deNormFacts;
+
 public:
-    UnscentedKalmanFilter(size_t numberStates, size_t numberBiasStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, int RK4Iterations, bool cubature=0):
+    UnscentedKalmanFilter(size_t numberStates, size_t numberBiasStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, int RK4Iterations, bool cubature=0, bool normalized=0):
     cubature(cubature),
+    normalized(normalized),
     ns(2*nx+static_cast<size_t>(!cubature)),
     sigma_points(arma::zeros(nx, ns)),
     sigma_points_pred(arma::zeros(nx, ns)),
@@ -90,6 +96,8 @@ public:
     z_pred_errors(arma::zeros(nz, 2*nx)),
     weights_cov(arma::zeros(ns)),
     weights_cov_sr(arma::zeros(ns)),
+    normFacts(arma::zeros(nx, nx)),
+    deNormFacts(arma::zeros(nx, nx)),
     Pxz(arma::zeros(nx, nz)),
     Base(numberStates, numberBiasStates, numberInputs, numberMeasurements, useSRformulation, RK4Iterations) {
         if (cubature) {
@@ -141,6 +149,14 @@ public:
     void predict(vec &u) override {
 
         if (!useSRformulation) {
+            if (normalized) {
+                // Compute normalization factors (inverse sqrt of diagonal)
+                normFacts = diagmat(1.0 / arma::sqrt(P.diag()));
+                // Scale state vector and covariance
+                x_est = normFacts * x_est;
+                P = normFacts * P * normFacts.t();
+
+            }
             Ps = chol(P, "lower");
         }
 
@@ -174,7 +190,6 @@ public:
         x_pred = arma::zeros(nx);
         for (size_t i = 0; i < ns; ++i) {
             x_pred += weights_mean(i) * sigma_points_pred.col(i);
-
         }
 
         // Calculate covariance of predicted sigma points
@@ -214,6 +229,11 @@ public:
 
     void update(vec &z, vec &u) override {
 
+        if (normalized) {
+            // Inverse scaling factors
+            deNormFacts = diagmat(1.0 / normFacts.diag());
+        }
+
         // Calculate sigma points based on predicted density
         if (cubature) {
             if (!useSRformulation) {
@@ -227,7 +247,12 @@ public:
 
         // Predicted measurement for each predicted sigma point
         for (size_t i = 0; i < ns; ++i) {
-            measurements_h(sigma_points_pred.col(i), u, z_pred);
+            if (normalized) {
+                // Predicted measurement of sigma points has to be non-normalized
+                measurements_h(deNormFacts*sigma_points_pred.col(i), u, z_pred);
+            } else {
+                measurements_h(sigma_points_pred.col(i), u, z_pred);
+            }
             sigma_points_meas.col(i) = z_pred;
         }
 
@@ -322,6 +347,12 @@ public:
                 // std::cout << "P is not symmetric positive definite!" << endl;
             }
         }
+
+        // De-normalize for actual use
+        if (normalized) {
+            x_est = deNormFacts * x_est;
+            P = deNormFacts * P * deNormFacts.t();
+        }
     }
 
     double getAlpha() const {
@@ -367,6 +398,10 @@ public:
 
     mat getCrossCovariance() const {
         return Pxz;
+    }
+
+    mat getNormalizationFactor() const {
+        return normFacts;
     }
 };
 

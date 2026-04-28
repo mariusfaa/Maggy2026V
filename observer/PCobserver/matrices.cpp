@@ -148,6 +148,9 @@ mat get_P0_xred() {
 
 // State transition covariance
 mat get_Q() {
+  mat Q;
+  Q.load("Q.txt");
+  return Q;
  return {
   {0,0,0,0,0,0,0,0,0,0},
   {0,0,0,0,0,0,0,0,0,0},
@@ -164,7 +167,7 @@ mat get_Q() {
 
 mat get_Q_xred() {
   mat Q;
-  Q.load("Q.txt");
+  Q.load("Qxred.txt");
   return Q;
   mat _A_ = {
     {1e-4, 0, 0, 0, 0, 0},

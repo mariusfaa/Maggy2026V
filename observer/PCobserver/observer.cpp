@@ -11,7 +11,7 @@
 using namespace arma;
 using filterPtr = std::unique_ptr<KalmanFilter>;
 
-filterPtr createObserver(int filterVariant, size_t nx, size_t nb, size_t nu, size_t nz, bool useSRformulation, int RK4Iterations, bool updateJacobians, bool updateQ, bool cubature) {
+filterPtr createObserver(int filterVariant, size_t nx, size_t nb, size_t nu, size_t nz, bool useSRformulation, int RK4Iterations, bool updateJacobians, bool updateQ, bool cubature, bool normalized) {
   switch (filterVariant) {
     case 0:
       return std::make_unique<KalmanFilter>(nx, nb, nu, nz, useSRformulation);
@@ -20,7 +20,7 @@ filterPtr createObserver(int filterVariant, size_t nx, size_t nb, size_t nu, siz
       return std::make_unique<ExtendedKalmanFilter>(nx, nb, nu, nz, useSRformulation, RK4Iterations, updateJacobians, updateQ);
 
     case 2:
-      return std::make_unique<UnscentedKalmanFilter>(nx, nb, nu, nz, useSRformulation, RK4Iterations, cubature);
+      return std::make_unique<UnscentedKalmanFilter>(nx, nb, nu, nz, useSRformulation, RK4Iterations, cubature, normalized);
 
     default:
       throw std::invalid_argument("Invalid filter variant");
@@ -29,7 +29,7 @@ filterPtr createObserver(int filterVariant, size_t nx, size_t nb, size_t nu, siz
 
 
 // filter: 0 KF, 1 EKF, 2 UKF
-filterPtr initObserver(int filterVariant, double dt, double x0[NUMBER_OBSERVER_STATES], bool useSRformulation, int RK4Iterations, bool updateJacobians, bool updateQ, bool cubature) {
+filterPtr initObserver(int filterVariant, double dt, double x0[NUMBER_OBSERVER_STATES], bool useSRformulation, int RK4Iterations, bool updateJacobians, bool updateQ, bool cubature, bool normalized) {
 
   size_t nx = NUMBER_OBSERVER_STATES;
   size_t nb = NUMBER_BIAS_STATES; // Only available for linear KF
@@ -112,7 +112,7 @@ filterPtr initObserver(int filterVariant, double dt, double x0[NUMBER_OBSERVER_S
   FilterParams params {xLp, P0, Ad, Bd, H, D, Qd, R, dt};
 
   // Initialize filter
-  filterPtr observer = createObserver(filterVariant, nx, nb, nu, nz, useSRformulation, RK4Iterations, updateJacobians, updateQ, cubature);
+  filterPtr observer = createObserver(filterVariant, nx, nb, nu, nz, useSRformulation, RK4Iterations, updateJacobians, updateQ, cubature, normalized);
 
   observer->init(params);
 

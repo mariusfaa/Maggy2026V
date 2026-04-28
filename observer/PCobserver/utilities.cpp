@@ -3,6 +3,7 @@
 #include "include/matlab/maglevModel.h"
 #include "integrator.h"
 #include <armadillo>
+#include <csignal>
 #include <cstddef>
 #include <cstdio>
 

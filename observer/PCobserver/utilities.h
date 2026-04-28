@@ -7,7 +7,7 @@
 #define NUMBER_STATES_REDUCED_EXTRA 6 // states minus rotation around z axis and orientation
 #define NUMBER_BIAS_STATES 0
 #define NUMBER_STATES_TEST 5 // only for testing observer on coordinated turn model
-#define NUMBER_OBSERVER_STATES NUMBER_STATES_REDUCED
+#define NUMBER_OBSERVER_STATES NUMBER_STATES_REDUCED_EXTRA
 #define NUMBER_INPUTS 4          // input from solenoids
 #define NUMBER_SENSORS 1         // number of magnetic sensors
 #define NUMBER_MEASUREMENTS_PER_SENSOR 3 // magnetic field measurements in xyz directions
