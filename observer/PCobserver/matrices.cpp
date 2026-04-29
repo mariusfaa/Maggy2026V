@@ -148,9 +148,6 @@ mat get_P0_xred() {
 
 // State transition covariance
 mat get_Q() {
-  mat Q;
-  Q.load("Q.txt");
-  return Q;
  return {
   {0,0,0,0,0,0,0,0,0,0},
   {0,0,0,0,0,0,0,0,0,0},
@@ -166,16 +163,13 @@ mat get_Q() {
 }
 
 mat get_Q_xred() {
-  mat Q;
-  Q.load("Qxred.txt");
-  return Q;
-  mat _A_ = {
-    {1e-4, 0, 0, 0, 0, 0},
-    {0, 1e-4, 0, 0, 0, 0},
-    {0, 0, 1e-0, 0, 0, 0},
+  return {
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0},
     {0, 0, 0, 1e+0, 0, 0},
     {0, 0, 0, 0, 1e+0, 0},
-    {0, 0, 0, 0, 0, 1e-0},
+    {0, 0, 0, 0, 0, 1e+0},
   };
 }
 
@@ -196,9 +190,6 @@ mat get_Q_d() {
 
 // Measurement covariance. 0.1 mT std has variance given in tesla of (1e-4)^2
 mat get_R() {
-  mat R;
-  R.load("R.txt");
-  return R;
   return 1e-8*arma::eye(NUMBER_MEASUREMENTS, NUMBER_MEASUREMENTS);
 }
 

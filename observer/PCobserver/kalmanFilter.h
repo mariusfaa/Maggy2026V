@@ -16,7 +16,6 @@ protected:
     double dt; // Discretization time
 
     size_t nx; // Number of states
-    size_t nb; // Number of bias states
     size_t nu; // Number of inputs
     size_t nz; // Number of measurements
 
@@ -49,9 +48,8 @@ public:
     ~KalmanFilter() = default;
 
     // Constructor
-    KalmanFilter(size_t numberStates, size_t numberBiasStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation):
-        nb(numberBiasStates),
-        nx(numberStates+numberBiasStates),
+    KalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation):
+        nx(numberStates),
         nu(numberInputs),
         nz(numberMeasurements),
 

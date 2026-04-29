@@ -84,7 +84,7 @@ protected:
     mat deNormFacts;
 
 public:
-    UnscentedKalmanFilter(size_t numberStates, size_t numberBiasStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, int RK4Iterations, bool cubature=0, bool normalized=0):
+    UnscentedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, int RK4Iterations, bool cubature=0, bool normalized=0):
     cubature(cubature),
     normalized(normalized),
     ns(2*nx+static_cast<size_t>(!cubature)),
@@ -99,7 +99,7 @@ public:
     normFacts(arma::zeros(nx, nx)),
     deNormFacts(arma::zeros(nx, nx)),
     Pxz(arma::zeros(nx, nz)),
-    Base(numberStates, numberBiasStates, numberInputs, numberMeasurements, useSRformulation, RK4Iterations) {
+    Base(numberStates, numberInputs, numberMeasurements, useSRformulation, RK4Iterations) {
         if (cubature) {
             weights_cov = weights_mean = ones(ns)/ns;
             weights_cov_sr = arma::sqrt(weights_cov);

@@ -53,12 +53,12 @@ protected:
   using Base::W;
 
 public:
-  ExtendedKalmanFilter(size_t numberStates, size_t numberBiasStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, int RK4Iterations, bool updateJacobians=1, bool updateQ=1):
+  ExtendedKalmanFilter(size_t numberStates, size_t numberInputs, size_t numberMeasurements, bool useSRformulation, int RK4Iterations, bool updateJacobians=1, bool updateQ=1):
     dx(arma::zeros(numberStates)),
     RK4Iterations(RK4Iterations),
     updateJacobians(updateJacobians),
     updateQ(updateQ),
-    Base(numberStates, numberBiasStates, numberInputs, numberMeasurements, useSRformulation) {
+    Base(numberStates, numberInputs, numberMeasurements, useSRformulation) {
       maglevModel_initialize();
       dxd.dx = &dx;
       dxd.x_next = &x_pred;
