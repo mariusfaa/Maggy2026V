@@ -1,6 +1,6 @@
 
 clear;
-addpath(genpath('~/MSc/MatlabCode'));
+addpath(genpath('~/MSc/Maggy2026V/observer/MatlabCode'));
 parameters_maggy_V4;
 
 %% correction factors
@@ -49,16 +49,21 @@ delta = 1e-6; % Step-size used in numerical linearization
 [AFil,BFil,CFil,DFil] = finiteDifferenceLinearization(fFil,hFil,xLpFil,uLp,delta);
 
 I = [1:5,7:11];
-Ared = A(I,I); AAqred = AAq(I,I); AFilred = AFil(I,I); Axred = Ared(1:end-2,1:end-2);
-Bred = B(I,:); BAqred = BAq(I,:); BFilred = BFil(I,:); Bxred = Bred(1:end-2,:);
-Cred = C(:,I); CAqred = CAq(:,I); CFilred = CFil(:,I); Cxred = Cred(:,1:end-2);
-Dred = D(:,:); DAqred = DAq(:,:); DFilred = DFil(:,:);
+Ixred = [1:3,7:9];
+Ared = A(I,I); AAqred = AAq(I,I); AFilred = AFil(I,I); Axred = A(Ixred,Ixred);
+Bred = B(I,:); BAqred = BAq(I,:); BFilred = BFil(I,:); Bxred = B(Ixred,:);
+Cred = C(:,I); CAqred = CAq(:,I); CFilred = CFil(:,I); Cxred = C(:,Ixred);
+Dred = D(:,:); DAqred = DAq(:,:); DFilred = DFil(:,:); Dxred = D(:,:);
 
 %% discretizing
 dt = 0.01; % 100 Hz
-sysd = c2d(ss(Ared,Bred,Cred,Dred), dt, 'zoh');
+sysd = c2d(ss(Axred,Bxred,Cxred,Dxred), dt, 'zoh');
 Ad = sysd.A;
 Bd = sysd.B;
+Cd = sysd.C;
+Dd = sysd.D;
+Rd = 1e-8*eye(3,3);
+
 
 %threshold = 1e-9;
 %Ad(abs(Ad) < threshold) = 0;
@@ -68,8 +73,28 @@ Bd = sysd.B;
 
 %% van loan
 
+% Linear integrating part of system. Only used to discretize Q
+
+Aint = [0 0 0 0 0 1 0 0 0 0;
+        0 0 0 0 0 0 1 0 0 0;
+        0 0 0 0 0 0 0 1 0 0;
+        0 0 0 0 0 0 0 0 1 0;
+        0 0 0 0 0 0 0 0 0 1;
+        0 0 0 0 0 0 0 0 0 0;
+        0 0 0 0 0 0 0 0 0 0;
+        0 0 0 0 0 0 0 0 0 0;
+        0 0 0 0 0 0 0 0 0 0;
+        0 0 0 0 0 0 0 0 0 0];
+
+Aintxred = [0 0 0 1 0 0;
+            0 0 0 0 1 0;
+            0 0 0 0 0 1;
+            0 0 0 0 0 0;
+            0 0 0 0 0 0;
+            0 0 0 0 0 0];
+
 nred = 10;
-nxred = 8;
+nxred = 6;
 
 % Noise spectral density
 NSDred = [1 0 0 0 0;
@@ -94,17 +119,17 @@ Gred = [0 0 0 0 0;
         0 0 0 1 0;
         0 0 0 0 1];
 
-Gxred = Gred(1:8, 1:3);
+Gxred = Gred(3:8, 1:3);
 
 Qred = Gred*NSDred*Gred';
 
 Qxred = Gxred*NSDxred*Gxred';
 
-Mred = [-Ared          Qred;
-        zeros(nred,nred)  Ared'];
+Mred = [-Aint          Qred;
+        zeros(nred,nred)  Aint'];
 
-Mxred = [-Axred          Qxred;
-         zeros(nxred,nxred)  Axred'];
+Mxred = [-Aintxred          Qxred;
+         zeros(nxred,nxred)  Aintxred'];
 
 Phired = expm(Mred * dt);
 
@@ -124,10 +149,10 @@ Qd_xred = Phi22xred' * Phi12xred;
 Qd = round(Qd, 9);
 Qd_xred = round(Qd_xred, 9);
 %% matrix analysis
-ObsvMat = obsv(Ared, Cred);
+ObsvMat = obsv(Axred, Cxred);
 fprintf('Rank of observability matrix %.2f\n', rank(ObsvMat));
 
-ObsvMatd = obsv(Ad, Cred);
+ObsvMatd = obsv(Ad, Cd);
 fprintf('Rank of discrete observability matrix %.2f\n', rank(ObsvMatd));
 
 %% save data

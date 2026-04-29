@@ -1,0 +1,26 @@
+TLx493D_P2B6.o: \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_P2B6.c \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/CommunicationInterface.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/Logger.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_types.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_enums.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/pal.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_common_defines.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_common.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_gen_2_common_defines.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_gen_2_common.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_P2B6_defines.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_P2B6_enums.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_P2B6.h
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/CommunicationInterface.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/Logger.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_types.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_enums.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/pal.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_common_defines.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_common.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_gen_2_common_defines.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_gen_2_common.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_P2B6_defines.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_P2B6_enums.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_P2B6.h:

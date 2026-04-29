@@ -1,0 +1,30 @@
+tlx493d.o: \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d.c \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_types.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_enums.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/pal.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_common_defines.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_common.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_A1B6.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_A2B6.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_A2BW.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_P2B6.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_W2B6.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_W2BW.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_P3B6.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_P3I8.h
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_types.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_enums.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/pal.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_common_defines.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_common.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_A1B6.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_A2B6.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_A2BW.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_P2B6.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_W2B6.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_W2BW.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_P3B6.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_P3I8.h:

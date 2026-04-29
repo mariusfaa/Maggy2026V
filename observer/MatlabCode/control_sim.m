@@ -1,26 +1,32 @@
 %% control
 % Cost matrices
-Qlqr = diag([1e6,1e6,1e2, 1e1,1e1, 1e2,1e2,1e2, 1e2,1e2]);
+Qlqr = diag([1e6,1e6,1e4, 1e1,1e1, 1e2,1e2,1e2, 1e2,1e2]);
+Qlqr_xred = diag([1e6,1e6,1e4, 1e2,1e2,1e2]);
 Rlqr = 1e-0*eye(length(params.solenoids.r));
 
+sysd_lqr = c2d(ss(Ared,Bred,Cred,Dred), dt, 'zoh');
+Ad_lqr = sysd_lqr.A;
+Bd_lqr = sysd_lqr.B;
+
 % Computing LQR estimate
-Kcred = round(lqr(Ared,Bred,Qlqr,Rlqr),3); % Rounding can sometimes be dangerous!
-Kred = dlqr(Ad,Bd,Qlqr,Rlqr);
+Kcred = lqr(Ared,Bred,Qlqr,Rlqr);
+Kred = dlqr(Ad_lqr,Bd_lqr,Qlqr,Rlqr);
 
 % increasing order of our controller for controlling the real system
-Kc = [Kcred(:,1:5), zeros(4,1), Kcred(:,6:end), zeros(4,1)];
-K = [Kred(:,1:5), zeros(4,1), Kred(:,6:end), zeros(4,1)];
+%Kc = [Kcred(:,1:5), zeros(4,1), Kcred(:,6:end), zeros(4,1)];
+%K = [Kred(:,1:5), zeros(4,1), Kred(:,6:end), zeros(4,1)];
 
-%writematrix(K, 'feedbackGain.csv');
-%% simulation
+%writematrix(Kred, 'feedbackGain.txt');
+
+%% Observer
+clear obs;
+obs = Observer(2, dt, xLp(1:6));
+
+%% Simulation
 % Initial conditions
-x0 = xLp + [0.000 -0.00 0.04 0 0 0 zeros(1, 6)].';
+x0 = xLp(1:10) + [0.0001 -0.0001 0.001 0 0 0 zeros(1, 4)].';
 tSpan = 0:dt:1;
 N = length(tSpan);
-
-% Observer initialization
-clear observer_mex;
-observer('init', 0);
 
 % Preallocate arrays
 x = zeros(length(x0), N);
@@ -30,35 +36,74 @@ u = zeros(4, N);
 y = zeros(3, N);
 x(:,1) = x0;
 
-% Simulation loop
-for k = 1:N-1
+% Simulation loop - start from k=2 to skip time=0 and simulate from previous to current
+for k = 2:N
     % Current time
     t_current = tSpan(k);
+    t_previous = tSpan(k-1);
+    
+    % Simulate continuous plant from previous timestep to current timestep
+    [~, x_cont] = ode15s(@(t,xf) maglevSystemDynamics_red(xf, u(:,k-1)), [t_previous t_current], x(:,k-1));
+    x(:,k) = x_cont(end,:).';
     
     % Get measurement at current time
-    y(:,k) = h(x(:,k), zeros(4,1));  % Assuming feedthrough is compensated for
-
+    y_ = maglevSystemMeasurements_red(x(:,k), u(:,k-1));  % Using previous control input
+    y(:,k) = y_(1:3);
     
     % Estimation
-    x_est(:,k) = x(:,k);
-    [x_est(:,k), NIS_values(k)] = observer(u(:,k), y(:,k));
+    x_est(:,k) = obs.run(u(:,k-1), y(:,k));
     
-    % Compute control input using estimated state
-    u(:,k) = -K * (x_est(:,k) - xLp) - uLp;
-    
-    % Simulate continuous plant from t_current to t_current+dt
-    [~, x_cont] = ode15s(@(t,xf) f(xf, u(:,k)), [t_current t_current+dt], x(:,k));
-    x(:,k+1) = x_cont(end,:).';
+    % Compute control input using true state
+    u(:,k) = -Kred * (x(:,k) - xLp(1:10)) - uLp;
 end
 
 t = tSpan;
 
-% plotting
+%% Plotting
 figure(1);
-clf; grid on; hold on; box on;
+clf;
 
-plot(t,x(1:3,:),'linewidth',2)
+% Subplot 1: XYZ positions (true and estimated)
+subplot(2,2,1);
+hold on; grid on; box on;
+plot(t, x(1:3,:), 'linewidth', 2, 'LineStyle', '-');
+plot(t, x_est(1:3,:), 'linewidth', 2, 'LineStyle', '--');
+xlabel('t (s)');
+ylabel('Position (m)');
+title('XYZ States');
+legend({'x true', 'y true', 'z true', 'x est', 'y est', 'z est'}, 'location', 'best');
 
-xlabel('t')
-ylabel('x/y/z')
-legend({'x','y','z'},'location','best')
+% Subplot 2: Alpha and Beta angles (true and estimated)
+subplot(2,2,2);
+hold on; grid on; box on;
+plot(t, x(4:5,:), 'linewidth', 2, 'LineStyle', '-');
+plot(t, x_est(4:5,:), 'linewidth', 2, 'LineStyle', '--');
+xlabel('t (s)');
+ylabel('Angle (rad)');
+title('Alpha and Beta States');
+legend({'α true', 'β true', 'α est', 'β est'}, 'location', 'best');
+
+% Subplot 3: Derivatives of XYZ (velocities)
+subplot(2,2,3);
+hold on; grid on; box on;
+x_dot_idx = 6;
+y_dot_idx = 7;
+z_dot_idx = 8;
+plot(t, x(x_dot_idx:x_dot_idx+2, :), 'linewidth', 2, 'LineStyle', '-');
+plot(t, x_est(x_dot_idx:x_dot_idx+2, :), 'linewidth', 2, 'LineStyle', '--');
+xlabel('t (s)');
+ylabel('Velocity (m/s)');
+title('XYZ Derivatives (Velocities)');
+legend({'ẋ true', 'ẏ true', 'ż true', 'ẋ est', 'ẏ est', 'ż est'}, 'location', 'best');
+
+% Subplot 4: Derivatives of Alpha and Beta (angular velocities)
+subplot(2,2,4);
+hold on; grid on; box on;
+alpha_dot_idx = 9;
+beta_dot_idx = 10;
+plot(t, x(alpha_dot_idx:beta_dot_idx, :), 'linewidth', 2, 'LineStyle', '-');
+plot(t, x_est(alpha_dot_idx:beta_dot_idx, :), 'linewidth', 2, 'LineStyle', '--');
+xlabel('t (s)');
+ylabel('Angular Velocity (rad/s)');
+title('Alpha and Beta Derivatives');
+legend({'α̇ true', 'β̇ true', 'α̇ est', 'β̇ est'}, 'location', 'best');

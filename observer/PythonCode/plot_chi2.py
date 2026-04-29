@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import scipy
 
-read_path = "~/MSc/Maggy2026V/observer/PCobserver/"
-data = pd.read_csv(read_path + "simulation_results.csv")
+read_path = "~/MSc/Maggy2026V/observer/PCobserver/results/"
+data = pd.read_csv(read_path + "/simulation_results.csv")
 nis_values = data["nis"].values
 nees_values = data["nees"].values
 
@@ -15,14 +15,24 @@ plt.figure(figsize=(10, 6))
 # prepare arrays
 timesteps = len(nis_values)
 
-# degrees of freedom
+
+# popping first element for better visualization
+nis_values = nis_values[1:]
+nees_values = nees_values[1:]
+timesteps -= 1
+
+# degrees of freedom1
 # measurement dim (m) and state dim (n)
 m = 3
-n = 10
+if 'alpha_est' in data:
+    n = 10
+else:
+    n = 6 # no attitude estimates
 
 # 95% confidence interval from chi-square
 nis_ci = scipy.stats.chi2.ppf([0.025, 0.975], df=m)
 nees_ci = scipy.stats.chi2.ppf([0.025, 0.975], df=n)
+
 
 eps = 1e-12
 
@@ -33,8 +43,8 @@ inside_nis = np.mean((nis_values >= nis_ci[0]) & (nis_values <= nis_ci[1])) * 10
 plt.hlines(nis_ci[0], 0, timesteps - 1, colors='C1', linestyles='--', label=rf'$\chi^2$' + f' 95% CI' + f" ({inside_nis:.1f}% inside)")
 plt.hlines(nis_ci[1], 0, timesteps - 1, colors='C1', linestyles='--')
 plt.title('NIS')
-plt.ylabel('NIS')
 plt.legend(loc='upper right')
+plt.gca().set_ylim(nis_ci[0]*1e-1, nis_ci[1]*1e+1)
 
 # NEES plot (log scale)
 plt.subplot(2, 1, 2)
@@ -44,7 +54,9 @@ plt.hlines(nees_ci[0], 0, timesteps - 1, colors='C1', linestyles='--', label=rf'
 plt.hlines(nees_ci[1], 0, timesteps - 1, colors='C1', linestyles='--')
 plt.title('NEES')
 plt.xlabel('Timestep')
-plt.ylabel('NEES')
 plt.legend(loc='upper right')
+plt.gca().set_ylim(nees_ci[0]*1e-1, nees_ci[1]*1e+1)
+
+plt.savefig('chi2.pdf', bbox_inches='tight')
 
 plt.show()

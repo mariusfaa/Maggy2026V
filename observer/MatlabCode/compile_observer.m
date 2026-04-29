@@ -1,5 +1,3 @@
-%% compile_observer.m
-% Script to compile the MEX wrapper
 
 % Add paths to necessary libraries
 armadillo_path = '/usr/include/armadillo';
@@ -9,30 +7,40 @@ observer_path = '~/MSc/Maggy2026V/observer/PCobserver/';
 cpp_files = {
     [observer_path 'observer.cpp'], ...
     [observer_path 'matrices.cpp'], ...
-    [observer_path 'utilities.cpp'], ...
-    [observer_path 'observer_mex.cpp']
+    [observer_path 'utilities.cpp']
+};
+
+% Function wrapper implementations
+wrappers = {
+    '~/MSc/Maggy2026V/observer/MatlabCode/observerBlock.cpp', ...
+    '~/MSc/Maggy2026V/observer/MatlabCode/observerBlock_wrapper.cpp'
 };
 
 % Include paths
 include_paths = {
     ['-I' observer_path 'include'], ...
-    ['-I' '/usr/include']
+    ['-I' 'include'], ...
+    ['-I' '/usr/local/MATLAB/R2025b/extern/include']
 };
 
 % Library paths and flags
 lib_flags = {
     ['-L' observer_path 'lib'], ...
-    ['-L' '/usr/lib'], ...
-    ['-l' 'armadillo'], ...
-    ['-l' 'maglevModel']
-    %['-f' 'openmp']
+    ['-L' '/usr/local/MATLAB/R2025b/bin/glnxa64'], ...
+    ['-l' 'maglevModel'], ...
+    ['-l' 'mwblas'], ...
+    ['-l' 'mwlapack'], ...
+    'CXXFLAGS="$CXXFLAGS -std=c++17 -g"', ...
+    'LDOPTIMFLAGS="$LDOPTIMFLAGS -O3"'
 };
+
 
 % Compilation command
 mex_command = ['mex ' strjoin(include_paths) ' ' ...
-    strjoin(cpp_files) ' ' strjoin(lib_flags)];
+    strjoin([wrappers strjoin(cpp_files)]) ' ' strjoin(lib_flags)];
 
 % Execute compilation
 disp('Compiling observer MEX...');
+disp(mex_command)
 eval(mex_command)
 disp('Compilation complete!');

@@ -1,9 +1,7 @@
 function dx = maglevSystemDynamics_xred(x,u) %#codegen
 modelName = 'fast';
-xnew = [x(1:5); 0; x(6:8); zeros(2,1); 0];
-persistent params;
-if isempty(params)
-    %% Parameters
+
+%% Parameters
 % Solenoids (Tuned to real solenoids and data from gikfun)
 params.solenoids.x  = 0.02*[1,0,-1,0];
 params.solenoids.y  = 0.02*[0,1,0,-1];
@@ -36,7 +34,7 @@ params.sensors.z  = 0;%, 0, 0];%-0.2e-3;
 % Physical constants
 params.physical.g   = 9.81;                                                % Gravitational acceleration [m/s^2]
 params.physical.mu0 = 4*pi*1e-7;   
-end
+
 
 % MAGLEVSYSTEMDYNAMICS implements the function f in the ODE dxdt = f(x,u)
 % defining the dynamics of a magnetic levitation system. The system is
@@ -66,29 +64,25 @@ end
 %     IFAC-PapersOnLine 56.2 (2023): 7276-7281.
 
 % Computing force and torque on levitating magnet
-[fx,fy,fz,tx,ty,tz] = computeForceAndTorque(xnew,u,params,modelName);
+[fx,fy,fz] = computeForceAndTorque_xred(x,u,params,modelName);
 
 % Setting up system matrices
 A = [
-    zeros(6), eye(6);
-    zeros(6), zeros(6)
+    zeros(3), eye(3);
+    zeros(3), zeros(3)
     ];
 
 B = [
-    zeros(6);
-    eye(6)
+    zeros(3);
+    eye(3)
     ];
 
 % Mass and inertia properties of the magnet
-M = [
-    params.magnet.m*eye(3), zeros(3);
-    zeros(3), diag(params.magnet.I)
-    ];
+M = params.magnet.m*eye(3);
 
 % Computing the nonlinear function f(x,u)
-f = M\([fx;fy;fz;tx;ty;tz]-[zeros(3,1);cross(xnew(10:12),diag(params.magnet.I)*xnew(10:12))])...
-    -[zeros(2,1);params.physical.g;zeros(3,1)];
+f = M\([fx;fy;fz])...
+    -[zeros(2,1);params.physical.g];
 
-dx = A*xnew+B*f;
-dx = [dx(1:5); dx(7:9)];
+dx = A*x+B*f;
 end

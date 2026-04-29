@@ -1,0 +1,26 @@
+TLx493D_W2BW.o: \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_W2BW.c \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/CommunicationInterface.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/Logger.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_types.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_enums.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/pal.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_common_defines.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_common.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_gen_2_common_defines.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_gen_2_common.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_W2BW_defines.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_W2BW_enums.h \
+ /home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_W2BW.h
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/CommunicationInterface.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/Logger.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_types.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_enums.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/pal.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_common_defines.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_common.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_gen_2_common_defines.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/tlx493d_gen_2_common.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_W2BW_defines.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_W2BW_enums.h:
+/home/miku/MSc/MagLevTbx/Blocks/MagSens/Lib/XENSIV_TLx493D/TLx493D_W2BW.h:

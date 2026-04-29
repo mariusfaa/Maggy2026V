@@ -1,9 +1,7 @@
 function y = maglevSystemMeasurements_xred(x,u) %#codegen
 modelName = 'fast';
-xnew = [x(1:5); 0; x(6:8); zeros(2,1); 0];
-persistent params;
-if isempty(params)
-    %% Parameters
+
+%% Parameters
 % Solenoids (Tuned to real solenoids and data from gikfun)
 params.solenoids.x  = 0.02*[1,0,-1,0];
 params.solenoids.y  = 0.02*[0,1,0,-1];
@@ -29,14 +27,14 @@ params.magnet.I     = [6.1686e-06, 6.1686e-06, 1.1274e-05];
 params.magnet.n     = 100;
 
 % Sensors (7, 2, 3)
-params.sensors.x  = -0.0003;%, -0.0326856, 0.0130152];
-params.sensors.y  = 0;%, 0.0137257, 0.0324254];
-params.sensors.z  = 0;%, 0, 0];%-0.2e-3;
+params.sensors.x  = [-0.0003];%, -0.0326856, 0.0130152];
+params.sensors.y  = [0];%, 0.0137257, 0.0324254];
+params.sensors.z  = [0];%, 0, 0];
 
 % Physical constants
 params.physical.g   = 9.81;                                                % Gravitational acceleration [m/s^2]
 params.physical.mu0 = 4*pi*1e-7;   
-end
+
 % MAGLEVSYSTEMMEASUREMENTS implements the function h in the ODE 
 %   dxdt = f(x,u); 
 %      y = h(x,u);
@@ -68,5 +66,6 @@ end
 %     "Modeling and Control of a Magnetic Levitation Platform." 
 %     IFAC-PapersOnLine 56.2 (2023): 7276-7281.
 
-[bx,by,bz] = computeFieldTotal(params.sensors.x,params.sensors.y,params.sensors.z,xnew,u,params,modelName);
+[bx,by,bz] = computeFieldTotal_xred(params.sensors.x,params.sensors.y,params.sensors.z,x,u,params,modelName);
 y = reshape([bx(:)'; by(:)'; bz(:)'],3*numel(bx),1);
+end

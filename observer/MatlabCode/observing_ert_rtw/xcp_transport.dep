@@ -1,0 +1,56 @@
+xcp_transport.o: \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/transport/src/xcp_transport.c \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/common/xcp_common.h \
+ /home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/rtwtypes.h \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/platform/include/xcp_platform.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/toolbox/target/supportpackages/arduinotarget/include/xcp_platform_custom.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/Arduino.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/WProgram.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr/pgmspace.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr/interrupt.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr_functions.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/wiring.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/binary.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/core_id.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/core_pins.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/imxrt.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/pins_arduino.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/HardwareSerial.h \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/include/xcp.h \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/include/xcp_transport.h \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/include/xcp.h \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/transport/src/xcp_transport_types.h \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/protocol/src/xcp_cfg.h \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/transport/include/xcp_transport_internal.h \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/platform/default/xcp_mem.h \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/protocol/include/xcp_internal.h \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/transport/src/xcp_frame.h \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/transport/src/xcp_fifo.h \
+ /usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/platform/default/xcp_mem_config.h
+/usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/common/xcp_common.h:
+/home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/rtwtypes.h:
+/usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/platform/include/xcp_platform.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/toolbox/target/supportpackages/arduinotarget/include/xcp_platform_custom.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/Arduino.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/WProgram.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr/pgmspace.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr/interrupt.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr_functions.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/wiring.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/binary.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/core_id.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/core_pins.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/imxrt.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/pins_arduino.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/HardwareSerial.h:
+/usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/include/xcp.h:
+/usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/include/xcp_transport.h:
+/usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/include/xcp.h:
+/usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/transport/src/xcp_transport_types.h:
+/usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/protocol/src/xcp_cfg.h:
+/usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/transport/include/xcp_transport_internal.h:
+/usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/platform/default/xcp_mem.h:
+/usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/protocol/include/xcp_internal.h:
+/usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/transport/src/xcp_frame.h:
+/usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/transport/src/xcp_fifo.h:
+/usr/local/MATLAB/R2025b/toolbox/coder/xcp/src/target/server/platform/default/xcp_mem_config.h:

@@ -1,0 +1,56 @@
+observing_data.o: \
+ /home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/observing_data.c \
+ /home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/observing.h \
+ /home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/rtwtypes.h \
+ /usr/local/MATLAB/R2025b/simulink/include/rtw_extmode.h \
+ /home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/rtwtypes.h \
+ /usr/local/MATLAB/R2025b/simulink/include/sysran_types.h \
+ /usr/local/MATLAB/R2025b/simulink/include/rtw_continuous.h \
+ /usr/local/MATLAB/R2025b/simulink/include/rtw_solver.h \
+ /usr/local/MATLAB/R2025b/simulink/include/rtw_continuous.h \
+ /home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/rt_nonfinite.h \
+ /home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/observing_types.h \
+ /home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/rtGetInf.h \
+ /home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/rtGetNaN.h \
+ /home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/MW_target_hardware_resources.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/toolbox/target/supportpackages/arduinotarget/include/MW_ArduinoHWInit.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/toolbox/target/supportpackages/arduinotarget/scheduler/include/arduinoARMm7Scheduler.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/Arduino.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/WProgram.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr/pgmspace.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr/interrupt.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr_functions.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/wiring.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/binary.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/core_id.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/core_pins.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/imxrt.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/pins_arduino.h \
+ /home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/HardwareSerial.h
+/home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/observing.h:
+/home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/rtwtypes.h:
+/usr/local/MATLAB/R2025b/simulink/include/rtw_extmode.h:
+/home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/rtwtypes.h:
+/usr/local/MATLAB/R2025b/simulink/include/sysran_types.h:
+/usr/local/MATLAB/R2025b/simulink/include/rtw_continuous.h:
+/usr/local/MATLAB/R2025b/simulink/include/rtw_solver.h:
+/usr/local/MATLAB/R2025b/simulink/include/rtw_continuous.h:
+/home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/rt_nonfinite.h:
+/home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/observing_types.h:
+/home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/rtGetInf.h:
+/home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/rtGetNaN.h:
+/home/miku/MSc/Maggy2026V/observer/MatlabCode/observing_ert_rtw/MW_target_hardware_resources.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/toolbox/target/supportpackages/arduinotarget/include/MW_ArduinoHWInit.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/toolbox/target/supportpackages/arduinotarget/scheduler/include/arduinoARMm7Scheduler.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/Arduino.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/WProgram.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr/pgmspace.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr/interrupt.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/avr_functions.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/wiring.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/binary.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/core_id.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/core_pins.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/imxrt.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/pins_arduino.h:
+/home/miku/Documents/MATLAB/SupportPackages/R2025b/3P.instrset/arduinoide.instrset/aCLI/data/packages/teensy/hardware/avr/1.58.2/cores/teensy4/HardwareSerial.h:

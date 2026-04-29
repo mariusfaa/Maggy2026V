@@ -210,6 +210,6 @@ ax2.legend(loc='upper right', fontsize=8)
 ax2.set_ylim(mean_transformed_true[1] - 0.8, mean_transformed_true[1] + 0.8)
 ax2.autoscale()
 
-plt.savefig('unscented_transform.pdf')
+plt.savefig('unscented_transform.pdf', bbox_inches='tight')
 plt.tight_layout()
 plt.show()

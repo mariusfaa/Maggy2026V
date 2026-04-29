@@ -1,0 +1,94 @@
+
+function [x_est, P_est] = Correction(x_pred, P_pred, meas, input, filter_type, obs)
+%CORRECTION  Measurement update for KF / EKF / UKF.
+%
+%  Inputs (all filters)
+%    x_pred     - predicted state                 (n x 1)
+%    P_pred     - predicted error covariance      (n x n)
+%    y          - raw measurement vector          (p x 1)
+%    Cd         - discrete output (observation) matrix  (p x n)
+%                 * KF  : fixed linearisation matrix
+%                 * EKF : Jacobian dh/dx evaluated at x_pred
+%                         (compute with finiteDifferenceLinearization)
+%                 * UKF : not used (pass [] if desired)
+%    Rd         - measurement noise covariance    (p x p)
+%    filter_type - 'KF' | 'EKF' | 'UKF'          (string)
+%
+%  Additional inputs for EKF / UKF
+%    h          - nonlinear measurement handle  h(x) -> y_hat   (p x 1)
+%                 NOTE: h must return measurements in the same
+%                 scaled units applied to y below.
+%
+%  Additional inputs for UKF only
+%    ukf_params - same struct as in Prediction
+
+    % --- Measurement scaling (applied once, consistently) ---
+    y(1) =  1e-3*y(1);
+    y(2) =  1e-3*y(2);
+    y(3) = -1e-3*y(3);
+
+    In = eye(obs.nx);
+
+    switch upper(filter_type)
+
+        % ------------------------------------------------------------------
+        case 'KF'
+            S     = obs.Cd*P_pred*obs.Cd' + obs.R;
+            L     = (P_pred*Cd') / S;                   % Kalman gain
+            x_est = x_pred + L*(meas - obs.Cd*x_pred - obs.Dd*input);
+            P_est = (In - L*Cd)*P_pred*(In - L*Cd)' + L*obs.R*L';
+
+        % ------------------------------------------------------------------
+        case 'EKF'
+            z_pred = obs.h(x_pred);                         % nonlinear measurement prediction
+            Cd = finiteDifferenceC(h,)
+            S      = obs.Cd*P_pred*obs.Cd' + obs.R;
+            L      = (P_pred*obs.Cd') / S;                  % Kalman gain (uses Jacobian Cd)
+            x_hat  = x_pred + L*(y - y_pred);
+            P_hat  = (In - L*Cd)*P_pred*(In - L*Cd)' + L*Rd*L';
+
+        % ------------------------------------------------------------------
+        case 'UKF'
+
+            % --- Sigma points centred on predicted state ---
+            S_chol = chol((obs.nx + obs.lambda)*P_pred, 'lower');
+            sigma  = [x_pred,  x_pred + S_chol,  x_pred - S_chol];
+
+            % --- Propagate sigma points through nonlinear h ---
+            gamma = zeros(p, 2*n+1);
+            for i = 1:2*n+1
+                gamma(:,i) = h(sigma(:,i));
+            end
+
+            % --- Predicted measurement mean ---
+            y_pred = gamma * Wm;
+
+            % --- Innovation covariance Pyy and cross-covariance Pxy ---
+            Pyy = obs.R;
+            Pxy = zeros(n, p);
+            for i = 1:2*n+1
+                dy  = gamma(:,i)  - y_pred;
+                dx  = sigma(:,i)  - x_pred;
+                Pyy = Pyy + Wc(i)*(dy*dy');
+                Pxy = Pxy + Wc(i)*(dx*dy');
+            end
+
+            L     = Pxy / Pyy;                          % Kalman gain
+            x_hat = x_pred + L*(y - y_pred);
+            P_hat = P_pred - L*Pyy*L';
+
+        otherwise
+            error("filter_type must be 'KF', 'EKF', or 'UKF'.");
+    end
+end
+
+
+
+function C = finiteDifferenceC(h,xLp,uLp,delta,nx,nz)
+    
+    C = zeros(nz,nx);
+    
+    for i = 1:nx
+        C(:,i) = (h(xLp+delta*(i==1:nx)',uLp)-h(xLp-delta*(i==1:nx)',uLp))/(2*delta);
+    end
+end
