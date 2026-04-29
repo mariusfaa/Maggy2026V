@@ -21,8 +21,13 @@
 %% --- PROJECT SETUP ---
 clearvars -except ocp_solver sim_solver; clc;
 
-acados_root  = '/home/mariujf/acados';
-project_root = '/home/mariujf/Maggy2026V/NMPCProject';
+% Linux/WSL root
+% acados_root  = '/home/mariujf/acados';
+% project_root = '/home/mariujf/Maggy2026V/NMPCProject';
+
+% Windows root
+acados_root  = 'C:\Users\mariujf\acados';
+project_root = 'C:\Users\mariujf\Maggy2026V\NMPCProject';
 
 setenv('ACADOS_SOURCE_DIR',        acados_root);
 setenv('ENV_ACADOS_INSTALL_DIR',   acados_root);
