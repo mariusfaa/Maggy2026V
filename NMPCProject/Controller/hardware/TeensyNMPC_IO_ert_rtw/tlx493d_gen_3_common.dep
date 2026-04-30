@@ -1,0 +1,20 @@
+tlx493d_gen_3_common.o: \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_gen_3_common.c \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_types.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_enums.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\pal.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_common_defines.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_common.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\CommunicationInterface.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\Logger.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_gen_3_common_defines.h \
+ C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_gen_3_common.h
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_types.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_enums.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\pal.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_common_defines.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_common.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\CommunicationInterface.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\Logger.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_gen_3_common_defines.h:
+C:\Users\mariujf\MagLevTbx-main\Blocks\MagSens\Lib\XENSIV_TLx493D\tlx493d_gen_3_common.h:

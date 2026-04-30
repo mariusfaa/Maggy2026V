@@ -1,0 +1,10 @@
+rt_nonfinite.o: \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\rt_nonfinite.c \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\rtGetNaN.h \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\rt_nonfinite.h \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\rtwtypes.h \
+ C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\rtGetInf.h
+C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\rtGetNaN.h:
+C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\rt_nonfinite.h:
+C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\rtwtypes.h:
+C:\Users\mariujf\MagLevTbx-main\Controller\hardware\TeensyNMPC_IO_ert_rtw\rtGetInf.h:
