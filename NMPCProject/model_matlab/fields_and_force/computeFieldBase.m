@@ -46,23 +46,6 @@ switch modelId
             bz = bz + bzTemp;
         end
 
-    case MaglevModel.Dipole
-        mu0 = params.physical.mu0;
-        for i = 1:length(params.permanent.r)
-            r_i = params.permanent.r(i);
-            l_i = params.permanent.l(i);
-            V_i = pi * r_i^2 * l_i;
-            m_perm = (params.permanent.J / mu0) * V_i;
-            [bxT,byT,bzT] = dipoleField(...
-                x - params.permanent.x(i), ...
-                y - params.permanent.y(i), ...
-                z - params.permanent.z(i), ...
-                0, 0, m_perm, mu0);
-            bx = bx + bxT;
-            by = by + byT;
-            bz = bz + bzT;
-        end
-
     otherwise % Default is MaglevModel.Fast
         for i = 1:length(params.permanent.r)
             I = params.permanent.J/params.physical.mu0*params.permanent.l(i);
@@ -131,23 +114,6 @@ switch modelId
             bx = bx + bxTemp*params.solenoids.nw;
             by = by + byTemp*params.solenoids.nw;
             bz = bz + bzTemp*params.solenoids.nw;
-        end
-
-    case MaglevModel.Dipole
-        % Dipole field: B = (mu0/4pi) * [3(m.rhat)rhat - m] / r^3
-        mu0 = params.physical.mu0;
-        for i = 1:length(params.solenoids.r)
-            r_i = params.solenoids.r(i);
-            A_i = pi * r_i^2;
-            mz_sol = params.solenoids.nw * u(i) * A_i;
-            [bxT,byT,bzT] = dipoleField(...
-                x - params.solenoids.x(i), ...
-                y - params.solenoids.y(i), ...
-                z - params.solenoids.z(i), ...
-                0, 0, mz_sol, mu0);
-            bx = bx + bxT;
-            by = by + byT;
-            bz = bz + bzT;
         end
 
     otherwise % Default is MaglevModel.Fast

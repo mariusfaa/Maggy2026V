@@ -22,6 +22,10 @@ addpath(genpath(fullfile(project_root, 'model_matlab')));
 addpath(genpath(fullfile(project_root, 'model_reduced_casadi')));
 addpath(genpath(fullfile(project_root, 'system_parameters')));
 addpath(genpath(fullfile(project_root, 'utilities')));
+
+addpath(fullfile(project_root, 'tinympc-matlab',   'build'));
+addpath(fullfile(project_root, 'tinympc-matlab',   'src'));
+
 cd(project_root);
 
 import casadi.*
@@ -46,6 +50,11 @@ controllers = {'lmpc', 'solnmpc', 'nmpc'};
 N_horizon_list = [10,20,30];
 dt_mpc_list    = [0.001];
 out_folder = fullfile(project_root, 'results_nodare');
+
+controllers = {'tinylmpc'};
+N_horizon_list = [5,10,15,30];
+dt_mpc_list    = [0.001];
+out_folder = fullfile(project_root, 'results_lmpcdep');
 
 % Simulation settings
 T_sim   = 0.5;       % simulation duration (s)
@@ -135,6 +144,7 @@ for i_N = 1:n_N
             switch ctrl
                 case 'lqr',    simAcadosLqr;
                 case 'lmpc',   simAcadosLmpc;
+                case 'tinylmpc',   simTinyLmpc;
                 case 'solnmpc', simAcadosSolnmpc;
                 case 'nmpc',   simAcadosNmpc;
                 otherwise
@@ -178,5 +188,6 @@ fprintf('Loaded %d result files.\n', numel(results));
 %% ================================================================
 
 %simMainPlot(results, xEq, uEq);
+files = string(all_files');
 
 fprintf('\nDone.\n');

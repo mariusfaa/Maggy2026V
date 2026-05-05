@@ -34,7 +34,7 @@ k2 = 4*r*rho./((r+rho).^2+z.^2);
 k2 = min(k2,1); k2 = max(k2,0); % Fix for numerical error
 
 if ~isa(k2, 'sym')
-    [K,E] = ellipke(k2,1e-9);
+    [K,E] = ellipke(k2,1e-7);
 else
     [K,E] = ellipke(sym(k2));
 end

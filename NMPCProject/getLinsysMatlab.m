@@ -5,6 +5,7 @@ acados_root  = getenv('ACADOS_INSTALL_DIR');
 project_root = getenv('ACADOS_PROJECT_DIR');
 assert(~isempty(acados_root),  'ACADOS_INSTALL_DIR not set. Source env.sh first.');
 assert(~isempty(project_root), 'ACADOS_PROJECT_DIR not set. Source env.sh first.');
+
 addpath(fullfile(acados_root, 'interfaces', 'acados_matlab_octave'));
 addpath(fullfile(acados_root, 'external',   'jsonlab'));
 addpath(fullfile(acados_root, 'external',   'casadi-matlab'));
@@ -55,6 +56,11 @@ xEq_full = [0; 0; zEq(1); zeros(9,1)];
 xEq = xEq_full([1:5, 7:11]);
 uEq = zeros(nu, 1);
 
+f = @(x,u) maglevSystemDynamics(x,u,params_acc,modelId);
+h = @(x,u) maglevSystemMeasurements(x,u,params_acc,modelId);
+
+[A,B,C,D] = finiteDifferenceLinearization(f,h,xEq_full,zeros(4,1),1e-7);
+
 x0_full = xEq_full + dx0;
 x0 = x0_full([1:5, 7:11]);
 
@@ -91,41 +97,4 @@ Bd = M_exp(1:nx, nx+1:end);
 % Offset so xEq is a fixed point: x[k+1] = Ad*x[k] + Bd*u[k] + c
 c_offset = (eye(nx) - Ad) * xEq;   % uEq = 0
 
-fprintf('  Discrete-time eigenvalues (|z|): %s\n', ...
-    mat2str(sort(abs(eig(Ad)))', 4));
-
-%% --- OCP SETUP ---
-fprintf('\n--- Setting up OCP ---\n');
-
-x_sym = MX.sym('x', nx);
-u_sym = MX.sym('u', nu);
-
-mdl = AcadosModel();
-mdl.name          = 'maglev_lmpc';
-mdl.x             = x_sym;
-mdl.u             = u_sym;
-mdl.disc_dyn_expr = Ad * x_sym + Bd * u_sym + c_offset;
-
-ocp = AcadosOcp();
-ocp.model = mdl;
-
-ocp.solver_options.N_horizon             = N_horizon;
-ocp.solver_options.tf                    = dt_mpc * N_horizon;
-ocp.solver_options.integrator_type       = 'DISCRETE';
-ocp.solver_options.nlp_solver_type       = 'SQP';
-ocp.solver_options.nlp_solver_max_iter   = 1;
-ocp.solver_options.qp_solver             = 'PARTIAL_CONDENSING_HPIPM';
-ocp.solver_options.ext_fun_compile_flags = '-O2';
-
-ocp.cost        = getCost(xEq, uEq,dt_mpc);
-ocp.constraints = getConstraints(x0);
-
-solver_dir = fullfile('build', 'deployment');
-ocp.code_gen_opts.code_export_directory = fullfile(solver_dir, 'c_generated_code');
-ocp.code_gen_opts.json_file = fullfile(solver_dir, [mdl.name '_ocp.json']);
-solver_creation_opts = struct('output_dir', solver_dir, ...
-    'build', false, ...
-    'generate', true, ...
-    'check_reuse_possible', false, ...
-    'compile_mex_wrapper', false);
-ocp_solver = AcadosOcpSolver(ocp, solver_creation_opts);
+% sys: xdot = Ad*x+Bd*u+c_offset

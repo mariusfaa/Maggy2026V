@@ -23,9 +23,9 @@ fig_export_ext = 'png';
 %% Load files
 %% ==========================================================
 
-for i = 1:numel(files)
-    files(i) = fullfile(out_folder, files(i));
-end
+% for i = 1:numel(files)
+%     files(i) = fullfile(out_folder, files(i));
+% end
 
 nFiles = numel(files);
 assert(nFiles >= 2, 'Need at least 2 files to compare.');

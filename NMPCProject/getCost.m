@@ -43,6 +43,7 @@ cost.W_e = 10 * Q;  % terminal cost approx
 [Ad, Bd] = getLinsys(xEq, uEq, dt_mpc);
 [~, P, ~] = dlqr(Ad, Bd, Q, R);
 cost.W_e = P;
+cost.W_e = Q;
 
 cost.yref   = [xEq; uEq];
 cost.yref_0 = [xEq; uEq];
