@@ -23,6 +23,7 @@ function ok = verify_setup()
 
     % --- Check 1: correction factor n-independence ---
     fprintf('[1/4] Checking computeSolenoidRadiusCorrectionFactor(n=10) vs (n=30)...\n');
+    params = struct();                                      %#ok<NASGU>
     parameters_maggy_V4;                                    %#ok<NODEF>
     p10 = params; p10.magnet.n = 10;
     p30 = params; p30.magnet.n = 30;
