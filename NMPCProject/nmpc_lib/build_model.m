@@ -1,9 +1,9 @@
-function M = build_model_v2(model_kind, controller_n, plant_n)
-% BUILD_MODEL_V2  Build controller and plant CasADi expressions plus
+function M = build_model(model_kind, controller_n, plant_n)
+% BUILD_MODEL  Build controller and plant CasADi expressions plus
 % equilibrium and projection helpers.
 %
-%   M = build_model_v2('reduced10', 10, 30)
-%   M = build_model_v2('full12',     20, 30)
+%   M = build_model('reduced10', 10, 30)
+%   M = build_model('full12',     20, 30)
 %
 % Inputs
 %   model_kind     'reduced10' (10-state OCP) or 'full12' (12-state OCP)
@@ -91,7 +91,7 @@ function M = build_model_v2(model_kind, controller_n, plant_n)
             lift_to_plant   = @(x12) x12;
 
         otherwise
-            error('build_model_v2:bad_kind', ...
+            error('build_model:bad_kind', ...
                 'Unknown model_kind ''%s'' (expected ''reduced10'' or ''full12'').', model_kind);
     end
 

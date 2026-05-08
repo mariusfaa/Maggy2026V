@@ -75,7 +75,7 @@ function res = runOneConfig(cfg)
 
     % --- Build / fetch model and plant ---
     M = get_or_build_model(cfg.model_kind, cfg.controller_n, cfg.plant_n);
-    plant_solver = build_plant_v2(cfg.plant_n, dt, M);
+    plant_solver = build_plant(cfg.plant_n, dt, M);
 
     % --- Reference weights (always Bryson for cross-config comparability) ---
     if ~isfield(cfg, 'Q_ref') || isempty(cfg.Q_ref)
@@ -85,7 +85,7 @@ function res = runOneConfig(cfg)
 
     % --- Build OCP solver (timed) ---
     t_compile = tic;
-    [ocp_solver, model_name] = build_ocp_v2(cfg, M);
+    [ocp_solver, model_name] = build_ocp(cfg, M);
     compile_time_s = toc(t_compile);
     fprintf('  Compile time: %.2f s (model %s)\n', compile_time_s, model_name);
 
@@ -96,8 +96,8 @@ function res = runOneConfig(cfg)
     runs = cell(cfg.n_repeats, 1);
     summaries = cell(cfg.n_repeats, 1);
     for r = 1:cfg.n_repeats
-        runs{r} = run_sim_v2(ocp_solver, plant_solver, x0_plant, M, cfg);
-        summaries{r} = compute_metrics_v2(runs{r}, M, cfg, cfg.Q_ref, cfg.R_ref);
+        runs{r} = run_sim(ocp_solver, plant_solver, x0_plant, M, cfg);
+        summaries{r} = compute_metrics(runs{r}, M, cfg, cfg.Q_ref, cfg.R_ref);
         fprintf('  rep %d/%d: t_mean=%.2f ms  t_max=%.2f ms  J=%.3e  div=%d  n=%d/%d\n', ...
             r, cfg.n_repeats, summaries{r}.t_mean_ms, summaries{r}.t_max_ms, ...
             summaries{r}.J_integrated, summaries{r}.diverged, ...

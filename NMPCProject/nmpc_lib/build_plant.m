@@ -1,7 +1,7 @@
-function plant_solver = build_plant_v2(plant_n, dt, M)
-% BUILD_PLANT_V2  Build (or fetch from cache) the 12-state plant simulator.
+function plant_solver = build_plant(plant_n, dt, M)
+% BUILD_PLANT  Build (or fetch from cache) the 12-state plant simulator.
 %
-%   plant_solver = build_plant_v2(plant_n, dt, M)
+%   plant_solver = build_plant(plant_n, dt, M)
 %
 % Cached on (plant_n, round(dt*1e6)) inside this MATLAB session via a
 % persistent map. The plant is *always* 12-state and uses M.f_expl_plant
@@ -10,7 +10,7 @@ function plant_solver = build_plant_v2(plant_n, dt, M)
 % Inputs
 %   plant_n   discretization (typically 30)
 %   dt        Tsim for one call to the plant solver, equals controller's Tf/N
-%   M        struct from build_model_v2 (uses M.x_plant_sym, M.u_sym,
+%   M        struct from build_model (uses M.x_plant_sym, M.u_sym,
 %             M.xdot_plant_sym, M.f_expl_plant)
 %
 % Output

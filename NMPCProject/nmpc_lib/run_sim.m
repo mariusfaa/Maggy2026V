@@ -1,15 +1,15 @@
-function R = run_sim_v2(ocp_solver, plant_solver, x0_plant, M, cfg)
-% RUN_SIM_V2  Closed-loop simulation. Plant is 12-state; controller is
+function R = run_sim(ocp_solver, plant_solver, x0_plant, M, cfg)
+% RUN_SIM  Closed-loop simulation. Plant is 12-state; controller is
 % 10- or 12-state via M.project_to_ctrl. Captures wall-clock and acados
 % timing per step.
 %
-%   R = run_sim_v2(ocp_solver, plant_solver, x0_plant, M, cfg)
+%   R = run_sim(ocp_solver, plant_solver, x0_plant, M, cfg)
 %
 % Inputs
-%   ocp_solver   AcadosOcpSolver from build_ocp_v2
-%   plant_solver AcadosSimSolver from build_plant_v2 (always 12-state)
+%   ocp_solver   AcadosOcpSolver from build_ocp
+%   plant_solver AcadosSimSolver from build_plant (always 12-state)
 %   x0_plant     12-dim initial plant state
-%   M            struct from build_model_v2
+%   M            struct from build_model
 %   cfg          fields used here: .N, .Tf, .sim_steps
 %
 % Output struct R

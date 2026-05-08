@@ -1,26 +1,29 @@
 function ok = verify_setup()
-% VERIFY_SETUP  Sanity checks before launching the full benchmark.
+% VERIFY_SETUP  Sanity checks before launching the solver_tuning benchmark.
 %
 %   ok = verify_setup()
+%
+% Self-bootstraps: adds nmpc_lib/ and this experiment's folder to the
+% MATLAB path so the user can simply run `cd experiments/solver_tuning;
+% verify_setup` from any starting CWD.
 %
 % Checks
 %   1. computeSolenoidRadiusCorrectionFactor independence of magnet.n
 %      (or, if it does depend, document by how much).
 %   2. build_dynamics produces the expected 12-state CasADi function.
-%   3. build_model_v2 returns consistent equilibria for both model_kinds.
+%   3. build_model returns consistent equilibria for both model_kinds.
 %   4. A single short closed-loop run via runOneConfig completes without
 %      diverging from the baseline IC.
-%
-% Returns true if all checks pass.
 
-    project_setup();
-    ok = true;
+    bootstrap_paths();
+    paths = project_setup();
+    ok    = true;
 
-    fprintf('\n=== verify_setup ===\n\n');
+    fprintf('\n=== verify_setup (solver_tuning) ===\n\n');
 
     % --- Check 1: correction factor n-independence ---
     fprintf('[1/4] Checking computeSolenoidRadiusCorrectionFactor(n=10) vs (n=30)...\n');
-    p10 = struct(); parameters_maggy_V4;                          %#ok<NODEF>
+    parameters_maggy_V4;                                    %#ok<NODEF>
     p10 = params; p10.magnet.n = 10;
     p30 = params; p30.magnet.n = 30;
     cf10 = computeSolenoidRadiusCorrectionFactor(p10, 'fast');
@@ -48,10 +51,10 @@ function ok = verify_setup()
     end
     fprintf('       PASS: both return casadi.Function with (x,u)->dx.\n\n');
 
-    % --- Check 3: build_model_v2 equilibrium consistency ---
-    fprintf('[3/4] Checking build_model_v2 equilibria...\n');
-    M_red  = build_model_v2('reduced10', 10, 30);
-    M_full = build_model_v2('full12',    10, 30);
+    % --- Check 3: build_model equilibrium consistency ---
+    fprintf('[3/4] Checking build_model equilibria...\n');
+    M_red  = build_model('reduced10', 10, 30);
+    M_full = build_model('full12',    10, 30);
     if abs(M_red.xEq_plant(3) - M_full.xEq_plant(3)) > 1e-9
         error('Equilibria differ between reduced10 and full12.');
     end
@@ -66,6 +69,7 @@ function ok = verify_setup()
     % --- Check 4: a one-shot runOneConfig with the legacy baseline cfg ---
     fprintf('[4/4] Running a baseline closed-loop sanity run...\n');
     cfg = baseline_cfg();
+    cfg.save_dir = fullfile(experiment_dir(), 'results');
     res = runOneConfig(cfg);
     if res.summary.diverged
         warning('Baseline run diverged. Inspect results before launching the full sweep.');
@@ -80,6 +84,19 @@ function ok = verify_setup()
     else
         fprintf('\n=== verify_setup: ONE OR MORE FAILED ===\n');
     end
+end
+
+function bootstrap_paths()
+% Add nmpc_lib/ and this experiment's dir to MATLAB path so subsequent
+% function calls resolve. Idempotent.
+    this_dir   = experiment_dir();
+    proj_root  = fileparts(fileparts(this_dir));     % .../NMPCProject
+    addpath(this_dir);
+    addpath(fullfile(proj_root, 'nmpc_lib'));
+end
+
+function d = experiment_dir()
+    d = fileparts(mfilename('fullpath'));
 end
 
 function cfg = baseline_cfg()

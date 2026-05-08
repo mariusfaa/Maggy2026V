@@ -1,12 +1,15 @@
 function dump_index(results_dir)
-% DUMP_INDEX  Walk results/ and emit index.csv with one row per .mat file.
+% DUMP_INDEX  Walk an experiment's results/ tree and emit index.csv with
+% one row per .mat file. Schema is <results_dir>/<model_kind>/<stage>/*.mat.
 %
-%   dump_index()                              % default: NMPCProject/results
-%   dump_index('path/to/results')
+%   dump_index('experiments/solver_tuning/results')   % typical
+%   dump_index('/abs/path/to/some/results')
+%
+% No default — pass the explicit path of the experiment whose results
+% you want to index. (Multiple experiments each have their own results.)
 
     if nargin < 1 || isempty(results_dir)
-        paths = project_setup();
-        results_dir = fullfile(paths.project_root, 'results');
+        error('dump_index: pass the absolute or relative path to the experiment''s results/ directory.');
     end
     if ~exist(results_dir, 'dir')
         error('dump_index: directory not found: %s', results_dir);

@@ -1,11 +1,11 @@
-function S = compute_metrics_v2(R, M, cfg, Q_ref, R_ref)
-% COMPUTE_METRICS_V2  Reduce a single closed-loop run to a summary struct.
+function S = compute_metrics(R, M, cfg, Q_ref, R_ref)
+% COMPUTE_METRICS  Reduce a single closed-loop run to a summary struct.
 %
-%   S = compute_metrics_v2(R, M, cfg, Q_ref, R_ref)
+%   S = compute_metrics(R, M, cfg, Q_ref, R_ref)
 %
 % Inputs
-%   R         struct from run_sim_v2 (one repetition)
-%   M         struct from build_model_v2
+%   R         struct from run_sim (one repetition)
+%   M         struct from build_model
 %   cfg       cfg used for the run (.lbx_idx_zero_based, .lbx, .ubx for
 %             violation tracking)
 %   Q_ref     reference Q on x_ctrl for J_integrated (always Bryson Q so

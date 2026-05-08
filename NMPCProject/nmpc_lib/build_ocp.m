@@ -1,7 +1,7 @@
-function [ocp_solver, model_name] = build_ocp_v2(cfg, M)
-% BUILD_OCP_V2  Build an acados OCP solver from a single cfg struct.
+function [ocp_solver, model_name] = build_ocp(cfg, M)
+% BUILD_OCP  Build an acados OCP solver from a single cfg struct.
 %
-%   [ocp_solver, model_name] = build_ocp_v2(cfg, M)
+%   [ocp_solver, model_name] = build_ocp(cfg, M)
 %
 % Required cfg fields:
 %   .stage, .exp_id            string identifiers (used in model_name)
@@ -145,11 +145,11 @@ end
 
 function W = asMatrix(W_in, n)
     if isempty(W_in)
-        error('build_ocp_v2:emptyWeight', 'Weight matrix is empty.');
+        error('build_ocp:emptyWeight', 'Weight matrix is empty.');
     end
     if isvector(W_in)
         if numel(W_in) ~= n
-            error('build_ocp_v2:wrongDim', ...
+            error('build_ocp:wrongDim', ...
                 'Diagonal vector length %d != expected %d.', numel(W_in), n);
         end
         W = diag(W_in(:));

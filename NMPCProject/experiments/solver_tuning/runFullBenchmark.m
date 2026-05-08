@@ -1,16 +1,20 @@
 function runFullBenchmark(varargin)
-% RUNFULLBENCHMARK  Orchestrate the entire NMPC benchmark sweep.
+% RUNFULLBENCHMARK  Orchestrate the entire NMPC solver-tuning benchmark.
 %
 %   runFullBenchmark()                   % both models, all stages
 %   runFullBenchmark('models', {'reduced10'})
 %   runFullBenchmark('stages', {'P0','1a','0','1b','2','3a','3b'})
+%
+% Self-bootstraps: adds nmpc_lib/ and this experiment's folder to the
+% MATLAB path so the user can simply run `cd experiments/solver_tuning;
+% runFullBenchmark` from any starting CWD.
 %
 % Behavior
 %   - Runs Stages P0 -> 1a -> 0 -> 1b -> 2 -> 3a -> 3b for each model.
 %   - Picks best configs from earlier stages to fill the cfg context for
 %     later stages (top_1b for Stage 2, top_2 for Stage 3a, top_1b_three
 %     for Stage 3b).
-%   - Checkpoints to results/_checkpoints/progress.mat after each run;
+%   - Checkpoints to <save_dir>/_checkpoints/progress.mat after each run;
 %     restart skips runs whose .mat already exists.
 %   - Writes a JSON copy of progress for human inspection.
 %
@@ -18,7 +22,8 @@ function runFullBenchmark(varargin)
 % MATLAB session) — this orchestrator schedules it at the very end so its
 % effect on caches is contained.
 
-    paths = project_setup();
+    bootstrap_paths();
+    project_setup();
 
     p = inputParser();
     p.addParameter('models', {'reduced10', 'full12'}, @(c) iscell(c));
@@ -27,7 +32,7 @@ function runFullBenchmark(varargin)
     models = p.Results.models;
     stages = expand_stage0_passes(p.Results.stages);
 
-    save_dir = fullfile(paths.project_root, 'results');
+    save_dir = fullfile(experiment_dir(), 'results');
     if ~exist(save_dir, 'dir'); mkdir(save_dir); end
     ckpt_dir = fullfile(save_dir, '_checkpoints');
     if ~exist(ckpt_dir, 'dir'); mkdir(ckpt_dir); end
@@ -36,7 +41,7 @@ function runFullBenchmark(varargin)
     progress = load_progress(ckpt_file);
 
     fprintf('\n========================================================\n');
-    fprintf('  NMPC benchmark — runFullBenchmark\n');
+    fprintf('  solver_tuning benchmark — runFullBenchmark\n');
     fprintf('  Models: %s\n', strjoin(models, ', '));
     fprintf('  Stages: %s\n', strjoin(stages, ', '));
     fprintf('  Output: %s\n', save_dir);
@@ -90,8 +95,24 @@ function runFullBenchmark(varargin)
     end
 
     fprintf('\n========================================================\n');
-    fprintf('  Done. Run dump_index() to refresh the CSV index.\n');
+    fprintf('  Done. Refresh the index with:\n');
+    fprintf('    dump_index(''%s'')\n', save_dir);
     fprintf('========================================================\n');
+end
+
+% =========================================================================
+% Path bootstrap
+% =========================================================================
+
+function bootstrap_paths()
+    this_dir  = experiment_dir();
+    proj_root = fileparts(fileparts(this_dir));      % .../NMPCProject
+    addpath(this_dir);
+    addpath(fullfile(proj_root, 'nmpc_lib'));
+end
+
+function d = experiment_dir()
+    d = fileparts(mfilename('fullpath'));
 end
 
 % =========================================================================
@@ -167,7 +188,9 @@ function ctx = update_ctx_after_stage(ctx, model_kind, stage, save_dir)
             picks = pick_top_1b(save_dir, model_kind);
             ctx.top_1b       = picks.top2;
             ctx.top_1b_three = picks.top3;
-            fprintf('  1b top-2: %s, %s\n', picks.top2_ids{1}, picks.top2_ids{2});
+            if ~isempty(picks.top2_ids) && length(picks.top2_ids) >= 2
+                fprintf('  1b top-2: %s, %s\n', picks.top2_ids{1}, picks.top2_ids{2});
+            end
 
         case '2'
             picks = pick_top_2(save_dir, model_kind);
@@ -288,7 +311,7 @@ function picks = pick_top_1b(save_dir, model_kind)
     [files, summaries] = load_stage(save_dir, model_kind, '1b');
     if isempty(files)
         picks.top2     = {};
-        picks.top2_ids = {'',''};
+        picks.top2_ids = {};
         picks.top3     = {};
         return;
     end
