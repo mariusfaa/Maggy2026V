@@ -30,9 +30,15 @@ cd(project_root);
 
 import casadi.*
 
+
+% 'flip', 'smallpert', 'dare', 'nodare', 'zstep', 'zstepunst'
+scenario = 'zstep';
+
 %% ================================================================
 %  CONFIGURATION — edit this section
 %  ================================================================
+
+umax = 1.0;
 
 % Controllers to run (any subset of these)
 controllers = {'lqr', 'lmpc', 'solnmpc', 'nmpc'};
@@ -47,21 +53,44 @@ dt_mpc_list    = [0.001,0.0015,0.002];
 
 % Configuration for dare vs 10Q
 controllers = {'lmpc', 'solnmpc', 'nmpc'};
-N_horizon_list = [10,20,30];
+N_horizon_list = [11,20,30];
 dt_mpc_list    = [0.001];
-out_folder = fullfile(project_root, 'results_nodare');
+out_folder = fullfile(project_root, 'results_dare');
 
-controllers = {'tinylmpc'};
-N_horizon_list = [5,10,15,30];
-dt_mpc_list    = [0.001];
-out_folder = fullfile(project_root, 'results_lmpcdep');
+% controllers = {'tinylmpc'};
+% N_horizon_list = [5,10,15,30];
+% dt_mpc_list    = [0.001];
+% out_folder = fullfile(project_root, 'results_lmpcdep');
 
 % Simulation settings
 T_sim   = 0.5;       % simulation duration (s)
+T_sim   = 0.1;
 dt_plant = 0.0001;   % plant integration step (s)
 
 % Initial perturbation from equilibrium
 dx0 = [-0.0005; 0.00025; 0.0007; deg2rad(5); 0; 0; zeros(6,1)];
+
+if strcmp(scenario,'zstep') == 1
+    T_sim = 0.2;
+    dt_mpc_list    = [0.001];
+    out_folder = fullfile(project_root, 'results_zstep');
+    dx0 = [0; 0; 0.005; deg2rad(5); 0; 0; zeros(6,1)]; controllers = {'lqr','lmpc', 'solnmpc', 'nmpc'};N_horizon_list = [20];
+    umax = 1.0;
+elseif strcmp(scenario, 'zstepunst') == 1
+    T_sim = 0.2;
+    dt_mpc_list    = [0.001];
+    out_folder = fullfile(project_root, 'results_zstep');
+    dx0 = [0; 0; 0.015; deg2rad(20); 0; 0; zeros(6,1)]; controllers = {'lmpc', 'solnmpc', 'nmpc'};N_horizon_list = [25];
+    umax = 1.0;
+elseif strcmp(scenario,'flip') == 1
+    T_sim = 1.0;
+    N_horizon_list = [50];
+    dt_mpc_list    = [0.001];
+    controllers = {'lmpc', 'solnmpc'};%, 'nmpc'};
+    out_folder = fullfile(project_root, 'results');
+    dx0 = [0; 0; 0.05; deg2rad(180); 0; 0; zeros(6,1)];
+    umax = 50.0;
+end
 
 % Models (AcadosModel objects)
 %   plant_model — used by acados sim_solver (the "real" plant)

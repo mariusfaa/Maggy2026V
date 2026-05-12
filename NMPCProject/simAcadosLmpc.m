@@ -64,14 +64,18 @@ ocp.solver_options.qp_solver             = 'PARTIAL_CONDENSING_HPIPM';
 ocp.solver_options.ext_fun_compile_flags = '-O2';
 
 ocp.cost        = getCost(xEq, uEq,dt_mpc);
-ocp.constraints = getConstraints(x0);
+if ~exist('umax','var')
+    warning("umax undefined, setting to default umax=1.0");
+    umax = 1.0;
+end
+ocp.constraints = getConstraints(x0,umax);
 
 save_filename = fullfile(out_folder, getFilename('lmpc', N_horizon, dt_mpc));
 
 solver_dir = fullfile('build', 'lmpc');
 ocp.code_gen_opts.code_export_directory = fullfile(solver_dir, 'c_generated_code');
 ocp.code_gen_opts.json_file = fullfile(solver_dir, [mdl.name '_ocp.json']);
-ocp_solver = AcadosOcpSolver(ocp, struct('output_dir', solver_dir));
+ocp_solver = AcadosOcpSolver(ocp, struct('output_dir', solver_dir,'force_cmake',true,'verbose',true));
 
 % Warm-start: initialize all shooting nodes to equilibrium
 for k = 0:N_horizon

@@ -253,7 +253,9 @@ fprintf('%-12s  %8s  %8s  %8s  |  %8s  %8s  %8s  |  %8s\n', ...
 
 for f = 1:nFiles
     d = data{f};
+
     if ~isfield(d, 'step_time_tot'), continue; end
+    if ~isfield(d, 'ocp_time_tot'), continue; end
 
     t_mpc = (0:numel(d.step_time_tot)-1) * d.dt_mpc;
 

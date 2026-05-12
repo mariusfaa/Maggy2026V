@@ -1,10 +1,12 @@
-function xEq = getSimEquilibrium(model)
+function xEq = getSimEquilibrium(model,x)
     import casadi.*
     
     z = MX.sym('z', 1, 1);
     
     nx = 10;
-    x = MX.zeros(nx, 1);
+    if ~exist('x', 'var')
+        x = MX.zeros(nx, 1);
+    end
     x(3) = z;
     u = MX.zeros(4, 1);
     

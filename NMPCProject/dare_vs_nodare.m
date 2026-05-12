@@ -12,6 +12,8 @@
 
 clear; clc; close all;
 
+T_sim = 100;
+
 %% ================================================================
 %  PATHS
 %  ================================================================
@@ -31,11 +33,11 @@ dir_nodare = fullfile(project_root, 'results_nodare');
 
 controllers  = {'lmpc', 'solnmpc', 'nmpc'};
 ctrl_labels  = {'LMPC', 'SolNMPC', 'NMPC'};
-N_list       = [10, 20, 30];
+N_list       = [11, 20, 30];
 dt_mpc       = 0.001;   % 1 ms
 
 % Export options
-save_pdf = false;
+save_pdf = true;
 out_dir  = fullfile(project_root, 'figures', 'terminalcost');
 if save_pdf && ~exist(out_dir, 'dir'), mkdir(out_dir); end
 
@@ -187,6 +189,8 @@ for ic = 1:nC
     if ic == 1, ylabel('\Deltaz (mm)'); end
     title(ctrl_labels{ic}, 'FontWeight', 'bold');
     if ic == nC, legend('Location','best','FontSize',7); end
+
+    xlim([0 T_sim]);
 end
 
 sgtitle(sprintf('z-axis deviation: DARE vs no terminal cost — \\Deltat_{mpc}=%.0f\\mus', ...
@@ -202,32 +206,44 @@ fprintf('--- Figure 2: Final cumulative cost ---\n');
 fig2 = figure('Name','Cost: DARE vs no-DARE', ...
     'Units','normalized','Position',[0.15 0.2 0.55 0.4]);
 
-% Build bar data: rows = N values, columns = controllers*2 (dare/nodare interleaved)
-% We'll use grouped bars: groups = N, bars = controller, with DARE/noDARE side-by-side
+ax = gobjects(1, nC);   % Store axes handles
 
 % Simpler layout: one subplot per controller
 for ic = 1:nC
-    subplot(1, nC, ic); hold on; grid on; box on;
+    ax(ic) = subplot(1, nC, ic); 
+    hold on; grid on; box on;
 
     bar_data = [squeeze(cost_dare(ic,:))', squeeze(cost_nodare(ic,:))'];
     b = bar(N_list, bar_data, 'grouped');
 
     col = ctrl_colors(controllers{ic});
+
     b(1).FaceColor = col;
     b(1).EdgeColor = 'none';
     b(1).DisplayName = 'DARE';
+
     b(2).FaceColor = col * 0.5 + 0.5;  % lighter version
     b(2).EdgeColor = col;
     b(2).LineWidth = 1.2;
     b(2).DisplayName = 'No terminal cost';
 
     xlabel('N_{horizon}');
-    if ic == 1, ylabel('Final cumulative cost'); end
+
+    if ic == 1
+        ylabel('Final cumulative cost');
+    end
+
     title(ctrl_labels{ic}, 'FontWeight', 'bold');
-    if ic == 1, legend('Location', 'best', 'FontSize', 8); end
+
+    if ic == 1
+        legend('Location', 'south', 'FontSize', 8);
+    end
 
     set(gca, 'XTick', N_list);
 end
+
+% Sync y-axes across all subplots
+linkaxes(ax, 'y');
 
 sgtitle(sprintf('Final cumulative cost — \\Deltat_{mpc}=%.0f\\mus', dt_mpc*1e6), 'FontSize', 12);
 saveFig(fig2, out_dir, 'dare_cost_comparison', save_pdf);
@@ -235,14 +251,16 @@ saveFig(fig2, out_dir, 'dare_cost_comparison', save_pdf);
 %% ================================================================
 %% FIG 3: Settling time — grouped bar (DARE vs no-DARE)
 %% ================================================================
-
 fprintf('--- Figure 3: Settling time ---\n');
 
 fig3 = figure('Name','Settling time: DARE vs no-DARE', ...
     'Units','normalized','Position',[0.15 0.2 0.55 0.4]);
 
+ax = gobjects(1, nC);   % Store axes handles
+
 for ic = 1:nC
-    subplot(1, nC, ic); hold on; grid on; box on;
+    ax(ic) = subplot(1, nC, ic); 
+    hold on; grid on; box on;
 
     bar_data = [squeeze(settle_dare(ic,:))', squeeze(settle_nodare(ic,:))'];
     b = bar(N_list, bar_data, 'grouped');
@@ -251,18 +269,28 @@ for ic = 1:nC
     b(1).FaceColor = col;
     b(1).EdgeColor = 'none';
     b(1).DisplayName = 'DARE';
+
     b(2).FaceColor = col * 0.5 + 0.5;
     b(2).EdgeColor = col;
     b(2).LineWidth = 1.2;
     b(2).DisplayName = 'No terminal cost';
 
     xlabel('N_{horizon}');
-    if ic == 1, ylabel('Settling time (ms)'); end
+    if ic == 1
+        ylabel('Settling time (ms)');
+    end
+
     title(ctrl_labels{ic}, 'FontWeight', 'bold');
-    if ic == 1, legend('Location', 'best', 'FontSize', 8); end
+
+    if ic == 1
+        legend('Location', 'south', 'FontSize', 8);
+    end
 
     set(gca, 'XTick', N_list);
 end
+
+% Sync y-axes across all subplots
+linkaxes(ax, 'y');
 
 sgtitle(sprintf('Settling time (2%% criterion on z) — \\Deltat_{mpc}=%.0f\\mus', ...
     dt_mpc*1e6), 'FontSize', 12);
@@ -272,6 +300,7 @@ saveFig(fig3, out_dir, 'dare_settling_time', save_pdf);
 %% FIG 4: Input comparison at smallest N (most visible difference)
 %% ================================================================
 
+if false
 fprintf('--- Figure 4: Input trajectories at N=%d ---\n', N_list(1));
 
 fig4 = figure('Name','Inputs: DARE vs no-DARE', ...
@@ -301,13 +330,15 @@ for ic = 1:nC
         if s == 1, ylabel(sprintf('%s u (A)', ctrl_labels{ic})); end
         if ic == 1, title(sprintf('u_%d', s)); end
         if ic == 1 && s == 1, legend('Location','best','FontSize',7); end
+
+        xlim([0 T_sim]);
     end
 end
 
 sgtitle(sprintf('Input trajectories — N=%d, \\Deltat_{mpc}=%.0f\\mus', ...
     N_list(iN_show), dt_mpc*1e6), 'FontSize', 12);
 saveFig(fig4, out_dir, 'dare_inputs', save_pdf);
-
+end
 %% ================================================================
 %% FIG 5: Cumulative cost over time — overlay DARE vs no-DARE
 %% ================================================================
@@ -341,6 +372,9 @@ for ic = 1:nC
     if ic == 1, ylabel('Cumulative cost'); end
     title(ctrl_labels{ic}, 'FontWeight', 'bold');
     if ic == nC, legend('Location','best','FontSize',7); end
+
+
+    xlim([0 T_sim]);
 end
 
 sgtitle(sprintf('Cumulative cost evolution — \\Deltat_{mpc}=%.0f\\mus', ...

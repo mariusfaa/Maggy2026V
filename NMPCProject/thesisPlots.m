@@ -31,6 +31,7 @@ plot_compute_vs_N          = true;   % Fig 4: compute time vs N_horizon
 plot_timing_breakdown      = true;   % Fig 5: stacked timing bar chart
 plot_convergence           = false;   % Fig 6: semilogy error norm
 plot_min_horizon           = false;   % Fig 7: minimum N for convergence per controller
+plot_sqp_iter_vs_N         = false;
 
 %% ================================================================
 %  FIGURE CONFIGURATIONS — edit per plot
@@ -256,8 +257,8 @@ if plot_cost_vs_N
         end
         if isempty(N_vals), continue; end
         col = ctrl_colors(cname);
-        plot(N_vals, cost_vals, '-o', 'Color',col, 'LineWidth',1.4, ...
-            'MarkerFaceColor',col, 'MarkerSize',5, ...
+        plot(N_vals, cost_vals, '-o', 'Color',col, 'LineWidth',1.6, ...
+            'MarkerFaceColor',col, 'MarkerSize',6, ...
             'DisplayName',upper(cname));
     end
 
@@ -556,6 +557,10 @@ function [data, ok] = loadRuns(res_dir, controllers, N_list, dt_mpc)
             if isfile(f)
                 d = load(f);
                 d.file = f;
+
+                if strcmp(d.controller,'solmpc')
+                    d.controller = 'solnmpc';
+                end
                 data{end+1} = d; %#ok<AGROW>
             else
                 missing{end+1} = sprintf('  %s  (run: simMain with %s, N=%d, dt=%.0fus)', ...

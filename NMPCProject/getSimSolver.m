@@ -14,6 +14,6 @@ sim.solver_options.num_steps       = 1;
 solver_dir = fullfile('build', 'sim');
 sim.code_gen_opts.code_export_directory = fullfile(solver_dir, 'c_generated_code');
 sim.code_gen_opts.json_file = fullfile(solver_dir, [model.name '_sim.json']);
-sim_solver = AcadosSimSolver(sim, struct('output_dir', solver_dir));
+sim_solver = AcadosSimSolver(sim, struct('output_dir', solver_dir,'force_cmake',true,'verbose',true));
 
 end
