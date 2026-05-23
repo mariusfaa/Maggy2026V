@@ -2,15 +2,13 @@
 # Makefile
 #
 # Targets
-#   make sim       – build simulator binary (original workflow, unchanged)
 #   make lib       – build libobserver.so with static openblas/lapack/openmp
-#   make all       – both
 #   make clean
 #
 # =============================================================================
 
 CXX      := g++
-CXXFLAGS := -std=c++17 -O2
+CXXFLAGS := -std=c++17 -O2 -fopenmp
 
 # ---------------------------------------------------------------------------
 # Paths  –  edit these
@@ -29,31 +27,13 @@ INCLUDE_DIRS := -I./include
 # LAPACK static:
 #   - often at /usr/lib/x86_64-linux-gnu/liblapack.a
 #   - or bundled inside OpenBLAS (use -lopenblas only)
-#
-# libgomp static:
-#   - at $(dirname $(gcc --print-libgcc-file-name))/libgomp.a
-#     run: gcc --print-file-name=libgomp.a  to find it
 OPENBLAS_STATIC := /usr/lib/x86_64-linux-gnu/libopenblas.a
-LIBGOMP_STATIC  := $(shell $(CXX) --print-file-name=libgomp.a)
 
 MODEL_LIB_DIR  := ./lib
 MODEL_LIB      := -lmaglevModel
 
-# Source files shared between sim and lib
+# Source files
 COMMON_SRCS := matrices.cpp observer.cpp utilities.cpp
-
-# ---------------------------------------------------------------------------
-# Simulator target
-# ---------------------------------------------------------------------------
-.PHONY: sim
-sim:
-	$(CXX) $(CXXFLAGS) \
-	    $(COMMON_SRCS) \
-	    $(INCLUDE_DIRS) \
-	    -L$(MODEL_LIB_DIR) $(MODEL_LIB) \
-	    -larmadillo \
-	    simulator.cpp \
-	    -o target/sim
 
 # ---------------------------------------------------------------------------
 # Shared library target  –  embeds openblas / lapack / openmp statically

@@ -97,7 +97,7 @@ public:
     virtual void predict(vec &u) {
         // Predict mean
         x_pred = F * x_est + B * u;
-        x_pred(5) -= dt*9.80665; // Gravity is considered constant input
+        x_pred(5) -= 9.80665; // Gravity is considered constant input
 
         // Predict covariance
         if (useSRformulation) {
@@ -158,6 +158,11 @@ public:
                 // std::cout << "P is not symmetric positive definite!" << endl;
             }
         }
+    }
+
+    // Get number of states used
+    size_t getNstates() const {
+        return nx;
     }
 
     // Get state estimate

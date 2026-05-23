@@ -5,7 +5,7 @@
 // File: maglevModel_types.h
 //
 // MATLAB Coder version            : 25.2
-// C/C++ source code generated on  : 17-Apr-2026 12:51:14
+// C/C++ source code generated on  : 06-May-2026 14:33:23
 //
 
 #ifndef MAGLEVMODEL_TYPES_H

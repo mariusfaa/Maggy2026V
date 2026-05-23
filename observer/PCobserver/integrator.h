@@ -3,6 +3,7 @@
 #include "utilities.h"
 #include "include/matlab/maglevModel.h"
 #include <armadillo>
+#include <cstdint>
 
 using namespace arma;
 
@@ -19,7 +20,7 @@ void eulerForward(const vec &x, const vec &u, const double dt, struct_type &s) {
 
 
 template<typename derivative_struct_type>
-void rk4(const vec &x, const vec &u, const double dt, size_t n, derivative_struct_type &s) {
+void rk4(const vec &x, const vec &u, const double dt, size_t n, derivative_struct_type &s, int8_t model=0) {
 
   // Storage for RK4 stages
   vec k1(n, arma::fill::zeros);
@@ -34,25 +35,25 @@ void rk4(const vec &x, const vec &u, const double dt, size_t n, derivative_struc
   vec x_next(n, arma::fill::zeros);
 
   // k1: derivative at initial state
-  dynamics_f(x, u, k1);
+  dynamics_f(x, u, k1, model);
 
   // k2: derivative at x_k + (dt/2)*k1
   for(int i = 0; i < n; i++) {
     temp(i) = x(i) + 0.5 * dt * k1(i);
   }
-  dynamics_f(temp, u, k2);
+  dynamics_f(temp, u, k2, model);
 
   // k3: derivative at x_k + (dt/2)*k2
   for(int i = 0; i < n; i++) {
     temp(i) = x(i) + 0.5 * dt * k2(i);
   }
-  dynamics_f(temp, u, k3);
+  dynamics_f(temp, u, k3, model);
 
   // k4: derivative at x_k + dt*k3
   for(int i = 0; i < n; i++) {
     temp(i) = x(i) + dt * k3(i);
   }
-  dynamics_f(temp, u, k4);
+  dynamics_f(temp, u, k4, model);
 
   // RK4 update
   x_next = x + (dt/6.0) * (k1 + 2.0*k2 + 2.0*k3 + k4);
@@ -63,7 +64,7 @@ void rk4(const vec &x, const vec &u, const double dt, size_t n, derivative_struc
 
 // Does multiple rk4 step to better simulate continuous dynamics
 template<typename derivative_struct_type>
-void rk4_multi(const vec &x0, const vec &u, const double dt, size_t num_substeps, size_t n, derivative_struct_type &s)
+void rk4_multi(const vec &x0, const vec &u, const double dt, size_t num_substeps, size_t n, derivative_struct_type &s, int8_t model=0)
 {
     vec x_curr = x0;
     vec x_next(n, arma::fill::zeros);
@@ -76,7 +77,7 @@ void rk4_multi(const vec &x0, const vec &u, const double dt, size_t num_substeps
     derivative_struct_type inner = {&dx, &x_tmp};
 
     for (int i = 0; i < num_substeps; ++i) {
-        rk4(x_curr, u, h, n, inner);
+        rk4(x_curr, u, h, n, inner, model);
         x_curr = *inner.x_next;
     }
 

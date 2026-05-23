@@ -27,6 +27,7 @@
 #include <mutex>
 #include <atomic>
 #include <stdexcept>
+#include <chrono>
 
 /* -----------------------------------------------------------------------
  * Internal handle registry
@@ -39,6 +40,7 @@ struct Entry {
     int         nx;
     int         nu;
     int         ny;
+    double last_runtime_us;
 };
 
 std::unordered_map<int, Entry> g_registry;
@@ -61,24 +63,26 @@ extern "C" {
 
 ObserverHandle observer_init(int    filterVariant,
                              double dt,
-                             double* xLp,
                              int    nx,
+                             double *x0, /* nx x nx */
+                             double *R,  /* 3 x 3 */
+                             double *Q,  /* nx x nx */
+                             double *P0, /* nx x nx */
                              int    useSRformulation,
                              int    RK4Iterations,
                              int    updateJacobians,
                              int    updateQ,
-                             int    cubature,
-                             int    normalized)
+                             int    cubature)
 {
     try {
         filterPtr fp = initObserver(
-            filterVariant, dt, xLp,
+            filterVariant, dt, static_cast<size_t>(nx),
+            x0, R, Q, P0,
             static_cast<bool>(useSRformulation),
             RK4Iterations,
             static_cast<bool>(updateJacobians),
             static_cast<bool>(updateQ),
-            static_cast<bool>(cubature),
-            static_cast<bool>(normalized)
+            static_cast<bool>(cubature)
         );
 
         if (!fp) return OBSERVER_INVALID_HANDLE;
@@ -92,7 +96,7 @@ ObserverHandle observer_init(int    filterVariant,
             g_registry[handle] = Entry{
                 std::move(fp),
                 nx,
-                NUMBER_INPUTS,        /* compile-time constants from your header */
+                NUMBER_INPUTS,        /* compile-time constants from header */
                 NUMBER_MEASUREMENTS
             };
         }
@@ -116,7 +120,10 @@ int observer_run(ObserverHandle handle,
     /* Optional dimension guard */
     if (nu != e->nu || ny != e->ny || nx_out != e->nx) return -2;
 
+    auto t0 = std::chrono::steady_clock::now();
     runObserver(input, meas, stateEstimates, *e->filter);
+    auto t1 = std::chrono::steady_clock::now();
+    e->last_runtime_us = std::chrono::duration<double, std::micro>(t1 - t0).count();
     return 0;
 }
 
@@ -149,5 +156,35 @@ int observer_get_ny(ObserverHandle handle)
     Entry* e = find(handle);
     return e ? e->ny : -1;
 }
+
+double observer_get_last_runtime_us(ObserverHandle handle)
+{
+    std::lock_guard<std::mutex> lk(g_mutex);
+    Entry* e = find(handle);
+    return e ? e->last_runtime_us : -1.0;
+}
+
+// Helper macro to reduce boilerplate — expands to a full getter function.
+// mat_expr is any expression that yields an arma::mat given a KalmanFilter&.
+#define DEFINE_MAT_GETTER(fn_name, mat_expr)                                  \
+int fn_name(ObserverHandle handle, double* out,                               \
+            int* rows_out, int* cols_out)                                     \
+{                                                                             \
+    std::lock_guard<std::mutex> lk(g_mutex);                                  \
+    Entry* e = find(handle);                                                  \
+    if (!e) return -1;                                                        \
+    arma::mat result = (e->filter->mat_expr);                                 \
+    *rows_out = static_cast<int>(result.n_rows);                              \
+    *cols_out = static_cast<int>(result.n_cols);                              \
+    std::memcpy(out, result.memptr(), result.n_elem * sizeof(double));        \
+    return 0;                                                                 \
+}
+
+DEFINE_MAT_GETTER(observer_get_innovation_cov, getInnovationCovariance())
+DEFINE_MAT_GETTER(observer_get_innovation, getInnovation())
+DEFINE_MAT_GETTER(observer_get_meas_pred, getMeasPred())
+DEFINE_MAT_GETTER(observer_get_state_cov, getCovariance())
+DEFINE_MAT_GETTER(observer_get_state, getState())
+DEFINE_MAT_GETTER(observer_get_kalman_gain, getKalmanGain())
 
 } // extern "C"

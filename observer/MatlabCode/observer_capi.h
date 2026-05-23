@@ -27,27 +27,31 @@ typedef int ObserverHandle;
  *
  * @param filterVariant     Filter variant selector (passed to initObserver)
  * @param dt                Sample time [s]
- * @param xLp               Initial state vector (length nx)
- * @param nx                Length of xLp
+ * @param nx                Length of x0
+ * @param x0                Initial state and linearization point
+ * @param R                 Measurement noise covariance
+ * @param Q                 Process noise covariance
+ * @param P0                Initial covariance
  * @param useSRformulation  0 = false, 1 = true
  * @param RK4Iterations     Number of RK4 sub-steps (0 = default)
  * @param updateJacobians   0 = false, 1 = true
  * @param updateQ           0 = false, 1 = true
  * @param cubature          0 = false, 1 = true
- * @param normalized        0 = false, 1 = true
  *
  * @return  Integer handle (>= 0) on success, OBSERVER_INVALID_HANDLE on failure.
  */
 ObserverHandle observer_init(int    filterVariant,
                              double dt,
-                             double* xLp,
                              int    nx,
+			     double *x0, /* nx x nx */
+			     double *R,  /* 3 x 3 */
+			     double *Q,  /* nx x nx */
+			     double *P0, /* nx x nx */
                              int    useSRformulation,
                              int    RK4Iterations,
                              int    updateJacobians,
                              int    updateQ,
-                             int    cubature,
-			     int    normalized);
+                             int    cubature);
 
 /**
  * Run one filter step.
@@ -56,7 +60,7 @@ ObserverHandle observer_init(int    filterVariant,
  * @param input           Input vector  (length nu)
  * @param nu              Length of input
  * @param meas            Measurement vector (length ny)
- * @param ny              Length of meas
+ * @param nz              Length of meas
  * @param stateEstimates  Output buffer to fill  (length nx)
  * @param nx              Length of stateEstimates
  *
@@ -64,7 +68,7 @@ ObserverHandle observer_init(int    filterVariant,
  */
 int observer_run(ObserverHandle handle,
                  const double*  input,  int nu,
-                 const double*  meas,   int ny,
+                 const double*  meas,   int nz,
                  double*        stateEstimates, int nx);
 
 /**
@@ -81,6 +85,22 @@ void observer_destroy(ObserverHandle handle);
 int observer_get_nx(ObserverHandle handle);
 int observer_get_nu(ObserverHandle handle);
 int observer_get_ny(ObserverHandle handle);
+
+/**
+ * Generic matrix getter pattern.
+ * out      – caller-allocated buffer, size rows_out * cols_out * sizeof(double)
+ *            safe upper bound: nx*nx for square matrices, ny*ny for S
+ * rows_out / cols_out – filled by the function
+ * Returns 0 on success, -1 bad handle.
+ */
+int observer_get_innovation_cov (ObserverHandle handle, double* out, int* rows_out, int* cols_out);
+int observer_get_innovation     (ObserverHandle handle, double* out, int* rows_out, int* cols_out);
+int observer_get_meas_pred      (ObserverHandle handle, double* out, int* rows_out, int* cols_out);
+int observer_get_state_cov      (ObserverHandle handle, double* out, int* rows_out, int* cols_out);
+int observer_get_state          (ObserverHandle handle, double* out, int* rows_out, int* cols_out);
+int observer_get_kalman_gain    (ObserverHandle handle, double* out, int* rows_out, int* cols_out);
+double observer_get_last_runtime_us(ObserverHandle handle);
+
 
 #ifdef __cplusplus
 }

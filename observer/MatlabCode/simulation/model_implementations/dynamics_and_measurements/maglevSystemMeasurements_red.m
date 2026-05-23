@@ -1,13 +1,23 @@
-function y = maglevSystemMeasurements_red(x,u) %#codegen
-modelName = 'fast';
+function y = maglevSystemMeasurements_red(x,u,model) %#codegen
 xnew = [x(1:5); 0; x(6:10); 0];
-persistent params;
-if isempty(params)
-    %% Parameters
+
+%% fast accurate filament switch
+if model == 0
+    correction = 0.564394804131228; % 'fast' parameter correction
+    modelName = 'fast';
+elseif model == 1
+    correction = 0.548863066449565; % 'accurate' parameter correction
+    modelName = 'accurate';
+else
+    correction = 1; % no correction for filament
+    modelName = 'filament';
+end
+
+%% Parameters
 % Solenoids (Tuned to real solenoids and data from gikfun)
 params.solenoids.x  = 0.02*[1,0,-1,0];
 params.solenoids.y  = 0.02*[0,1,0,-1];
-params.solenoids.r  = 0.0185/2*ones(1,4)*0.564394804131228; % mod; 'fast' parameter correction
+params.solenoids.r  = 0.0185/2*ones(1,4)*correction;
 params.solenoids.l  = 0.012*ones(1,4);
 params.solenoids.z  = 0.012*ones(1,4)/2;
 params.solenoids.nw = 480;
@@ -29,14 +39,14 @@ params.magnet.I     = [6.1686e-06, 6.1686e-06, 1.1274e-05];
 params.magnet.n     = 100;
 
 % Sensors (7, 2, 3)
-params.sensors.x  = [-0.0003, -0.0326856, 0.0130152];
-params.sensors.y  = [0, 0.0137257, 0.0324254];
-params.sensors.z  = [0, 0, 0];
+params.sensors.x  = -0.0003;%, -0.0326856, 0.0130152];
+params.sensors.y  = 0;%, 0.0137257, 0.0324254];
+params.sensors.z  = 0;%, 0, 0];
 
 % Physical constants
 params.physical.g   = 9.81;                                                % Gravitational acceleration [m/s^2]
 params.physical.mu0 = 4*pi*1e-7;   
-end
+
 % MAGLEVSYSTEMMEASUREMENTS implements the function h in the ODE 
 %   dxdt = f(x,u); 
 %      y = h(x,u);

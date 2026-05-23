@@ -1,6 +1,7 @@
 
 #include "utilities.h"
 #include "include/matlab/maglevModel.h"
+#include "include/matlab/tmwtypes.h"
 #include "integrator.h"
 #include <armadillo>
 #include <csignal>
@@ -42,14 +43,15 @@ void reduceStateSpace(const double x_pad[NUMBER_STATES], vec &x) {
 }
 
 
-void dynamics_f(const vec &x, const vec &u, vec &dx) {
+// Model: 0 fast, 1 accurate, 2 filament
+void dynamics_f(const vec &x, const vec &u, vec &dx, int8_t model) {
   switch (x.n_elem) {
     case NUMBER_STATES_REDUCED:
-    maglevSystemDynamics_red(x.memptr(), u.memptr(), dx.memptr());
+    maglevSystemDynamics_red(x.memptr(), u.memptr(), model, dx.memptr());
     break;
 
     case NUMBER_STATES_REDUCED_EXTRA:
-    maglevSystemDynamics_xred(x.memptr(), u.memptr(), dx.memptr());
+    maglevSystemDynamics_xred(x.memptr(), u.memptr(), model, dx.memptr());
     break;
 
     // Test model for filter verification
@@ -64,14 +66,15 @@ void dynamics_f(const vec &x, const vec &u, vec &dx) {
 }
 
 
-void measurements_h(const vec &x, const vec &u, vec &z) {
+// Model: 0 fast, 1 accurate, 2 filament
+void measurements_h(const vec &x, const vec &u, vec &z, int8_t model) {
   switch (x.n_elem) {
     case NUMBER_STATES_REDUCED:
-    maglevSystemMeasurements_red(x.memptr(), u.memptr(), z.memptr());
+    maglevSystemMeasurements_red(x.memptr(), u.memptr(), model, z.memptr());
     break;
 
     case NUMBER_STATES_REDUCED_EXTRA:
-    maglevSystemMeasurements_xred(x.memptr(), u.memptr(), z.memptr());
+    maglevSystemMeasurements_xred(x.memptr(), u.memptr(), model, z.memptr());
     break;
 
     // Test model for filter verification
@@ -90,7 +93,8 @@ void measurements_h(const vec &x, const vec &u, vec &z) {
 
 // mode: 0 forward difference, 1 backward difference, 2 central
 // jacType: 0 is process, 1 is measurement
-mat calculateJacobian(const vec &x, const vec &u, const int jacType, const vec &curr,  const double dt, const int mode) {
+// curr: current dynamics/measurement function value f(x, u)
+mat calculateJacobian(const vec &x, const vec &u, const int jacType, const vec &curr, const double dt, const int mode) {
 
   double delta = 1e-12;
 

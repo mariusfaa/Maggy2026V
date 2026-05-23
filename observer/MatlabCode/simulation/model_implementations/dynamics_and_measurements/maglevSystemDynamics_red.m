@@ -1,13 +1,23 @@
-function dx = maglevSystemDynamics_red(x,u) %#codegen
-modelName = 'fast';
+function dx = maglevSystemDynamics_red(x,u,model,noise) %#codegen
 xnew = [x(1:5); 0; x(6:10); 0];
-persistent params;
-if isempty(params)
-    %% Parameters
+
+%% fast accurate filament switch
+if model == 0
+    correction = 0.564394804131228; % 'fast' parameter correction
+    modelName = 'fast';
+elseif model == 1
+    correction = 0.548863066449565; % 'accurate' parameter correction
+    modelName = 'accurate';
+else
+    correction = 1; % no correction for filament
+    modelName = 'filament';
+end
+
+%% Parameters
 % Solenoids (Tuned to real solenoids and data from gikfun)
 params.solenoids.x  = 0.02*[1,0,-1,0];
 params.solenoids.y  = 0.02*[0,1,0,-1];
-params.solenoids.r  = 0.0185/2*ones(1,4)*0.564394804131228; % mod; 'fast' parameter correction
+params.solenoids.r  = 0.0185/2*ones(1,4)*correction;
 params.solenoids.l  = 0.012*ones(1,4);
 params.solenoids.z  = 0.012*ones(1,4)/2;
 params.solenoids.nw = 480;
@@ -36,7 +46,7 @@ params.sensors.z  = 0;%, 0, 0];%-0.2e-3;
 % Physical constants
 params.physical.g   = 9.81;                                                % Gravitational acceleration [m/s^2]
 params.physical.mu0 = 4*pi*1e-7;   
-end
+
 
 % MAGLEVSYSTEMDYNAMICS implements the function f in the ODE dxdt = f(x,u)
 % defining the dynamics of a magnetic levitation system. The system is
@@ -91,4 +101,9 @@ f = M\([fx;fy;fz;tx;ty;tz]-[zeros(3,1);cross(xnew(10:12),diag(params.magnet.I)*x
 
 dx = A*xnew+B*f;
 dx = [dx(1:5); dx(7:11)];
+
+% adding process noise
+if nargin == 4
+    dx = dx + noise;
+end
 end

@@ -1,7 +1,6 @@
 function dx = maglevSystemDynamics_fast(x,u) %#codegen
 modelName = 'fast';
-persistent params;
-if isempty(params)
+
     %% Parameters
 % Solenoids (Tuned to real solenoids and data from gikfun)
 params.solenoids.x  = 0.02*[1,0,-1,0];
@@ -35,7 +34,6 @@ params.sensors.z  = [0];%, 0, 0];%-0.2e-3;
 % Physical constants
 params.physical.g   = 9.81;                                                % Gravitational acceleration [m/s^2]
 params.physical.mu0 = 4*pi*1e-7;   
-end
 
 % MAGLEVSYSTEMDYNAMICS implements the function f in the ODE dxdt = f(x,u)
 % defining the dynamics of a magnetic levitation system. The system is

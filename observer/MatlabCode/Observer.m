@@ -1,10 +1,23 @@
 classdef Observer < handle
-    % Observer  MATLAB wrapper around the compiled KalmanFilter shared library.
+    % Observer  MATLAB wrapper
+    %
+    % Copy this file, libobserver.so, and observer_capi.h to working directory
+    % Only usable on linux. Might require openMP installed
     %
     % Usage
     % -----
-    %   obs = Observer(filterVariant, dt, xLp);          % minimal
-    %   obs = Observer(filterVariant, dt, xLp, Name, Value, ...);
+    %   filterVariant: 0 KF
+    %                  1 EKF
+    %                  2 UKF
+    %
+    %   numberStates: 6 or 10
+    %   R - measurement noise: 3x3 sympd matrix
+    %   Q - discretized process noise: 6x6 or 10x10 sympd matrix
+    %   P0 - initial unscertainty matrix: 6x6 or 10x10 sympd matrix
+    %   
+    %
+    %   obs = Observer(filterVariant, dt, numberStates, x0, R, Q, P0); % minimal
+    %   obs = Observer(filterVariant, dt, x0, Name, Value, ...);
     %
     %   stateEst = obs.run(input, meas);
     %
@@ -12,7 +25,7 @@ classdef Observer < handle
     %
     % Named options (all optional, defaults match initObserver defaults)
     % ------------------------------------------------------------------
-    %  'useSRformulation'  logical, default false
+    %   'useSRformulation'  logical, default false
     %   'RK4Iterations'     integer, default 0
     %   'updateJacobians'   logical, default true
     %   'updateQ'           logical, default false
@@ -41,40 +54,44 @@ classdef Observer < handle
     % ==================================================================
     methods
 
-        function obj = Observer(filterVariant, dt, xLp, varargin)
+        function obj = Observer(filterVariant, dt, numberStates, x0, R, Q, P0, varargin)
             % Parse optional name-value pairs
             p = inputParser();
-            addRequired (p, 'filterVariant', @(x) isnumeric(x) && isscalar(x));
-            addRequired (p, 'dt',            @(x) isnumeric(x) && isscalar(x));
-            addRequired (p, 'xLp',           @(x) isnumeric(x) && isvector(x));
+            addRequired(p, 'filterVariant', @(x) isnumeric(x) && isscalar(x));
+            addRequired(p, 'dt',            @(x) isnumeric(x) && isscalar(x));
+            addRequired(p, 'nx',            @(x) isnumeric(x) && isscalar(x));
+            addRequired(p, 'x0',            @(x) isnumeric(x) && isvector(x));
+            addRequired(p, 'R',             @(x) isnumeric(x) && ismatrix(x));
+            addRequired(p, 'Q',             @(x) isnumeric(x) && ismatrix(x));
+            addRequired(p, 'P0',            @(x) isnumeric(x) && ismatrix(x));
             addParameter(p, 'useSRformulation', false, @islogical);
             addParameter(p, 'RK4Iterations',    0,     @(x) isnumeric(x) && isscalar(x));
             addParameter(p, 'updateJacobians',  true,  @islogical);
             addParameter(p, 'updateQ',          false, @islogical);
             addParameter(p, 'cubature',         false, @islogical);
-            addParameter(p, 'normalized',       false, @islogical);
-            parse(p, filterVariant, dt, xLp, varargin{:});
+            parse(p, filterVariant, dt, numberStates, x0, R, Q, P0, varargin{:});
             r = p.Results;
 
             Observer.loadLib();
 
-            xLp_col = double(r.xLp(:));   % ensure column, double
-            nx      = int32(numel(xLp_col));
+            % Wrap in a libpointer so calllib passes a double*
+            x0_ptr = libpointer('doublePtr', double(r.x0(:)));
+            R_ptr  = libpointer('doublePtr', double(r.R(:)));
+            Q_ptr  = libpointer('doublePtr', double(r.Q(:)));
+            P0_ptr = libpointer('doublePtr', double(r.P0(:)));
 
-            % Wrap xLp in a libpointer so calllib passes a double*
-            xLp_ptr = libpointer('doublePtr', xLp_col);
 
             h = calllib(Observer.LIB_NAME, 'observer_init', ...
                 int32(r.filterVariant), ...
                 double(r.dt),           ...
-                xLp_ptr,                ...
-                nx,                     ...
+                numberStates,           ...
+                x0_ptr, R_ptr, Q_ptr, P0_ptr, ...
                 int32(r.useSRformulation), ...
                 int32(r.RK4Iterations),    ...
                 int32(r.updateJacobians),  ...
                 int32(r.updateQ),          ...
-                int32(r.cubature),        ...
-                int32(r.normalized));
+                int32(r.cubature));
+
 
             if h < 0
                 error('Observer:initFailed', ...
@@ -190,6 +207,57 @@ classdef Observer < handle
             else
                 name = 'libobserver.so';
             end
+        end
+
+    end
+    % ==================================================================
+    % Getters
+    methods (Access = private)
+        function out = getMatrix(obj, fn_name, buf_size)
+            % Generic retrieval. buf_size is the max elements (rows*cols).
+            buf      = libpointer('doublePtr', zeros(buf_size, 1));
+            rows_ptr = libpointer('int32Ptr',  int32(0));
+            cols_ptr = libpointer('int32Ptr',  int32(0));
+
+            ret = calllib(Observer.LIB_NAME, fn_name, ...
+                obj.handle_, buf, rows_ptr, cols_ptr);
+            if ret ~= 0
+                error('Observer:getFailed', '%s returned %d', fn_name, ret);
+            end
+
+            r   = double(rows_ptr.Value);
+            c   = double(cols_ptr.Value);
+            out = reshape(buf.Value(1 : r*c), r, c);   % column-major reshape
+        end
+    end
+    
+    methods (Access = public)
+        function S = getInnovationCovariance(obj)
+            S = obj.getMatrix('observer_get_innovation_cov', obj.ny_^2);
+        end
+
+        function v = getInnovation(obj)
+            v = obj.getMatrix('observer_get_innovation', obj.ny_);
+        end
+
+        function ypred = getMeasPred(obj)
+            ypred = obj.getMatrix('observer_get_meas_pred', obj.ny_);
+        end
+
+        function P = getCovariance(obj)
+            P = obj.getMatrix('observer_get_state_cov', obj.nx_^2);
+        end
+
+        function xest = getState(obj)
+            xest = obj.getMatrix('observer_get_state', obj.nx_);
+        end
+
+        function K = getKalmanGain(obj)
+            K = obj.getMatrix('observer_get_kalman_gain', obj.nx_ * obj.ny_);
+        end
+
+        function us = lastRuntimeUs(obj)
+            us = calllib(Observer.LIB_NAME, 'observer_get_last_runtime_us', obj.handle_);
         end
 
     end

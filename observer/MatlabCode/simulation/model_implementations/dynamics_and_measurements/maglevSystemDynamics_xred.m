@@ -1,11 +1,22 @@
-function dx = maglevSystemDynamics_xred(x,u) %#codegen
-modelName = 'fast';
+function dx = maglevSystemDynamics_xred(x,u,model) %#codegen
+
+%% fast accurate filament switch
+if model == 0
+    correction = 0.564394804131228; % 'fast' parameter correction
+    modelName = 'fast';
+elseif model == 1
+    correction = 0.548863066449565; % 'accurate' parameter correction
+    modelName = 'accurate';
+else
+    correction = 1; % no correction for filament
+    modelName = 'filament';
+end
 
 %% Parameters
 % Solenoids (Tuned to real solenoids and data from gikfun)
 params.solenoids.x  = 0.02*[1,0,-1,0];
 params.solenoids.y  = 0.02*[0,1,0,-1];
-params.solenoids.r  = 0.0185/2*ones(1,4)*0.564394804131228; % mod; 'fast' parameter correction
+params.solenoids.r  = 0.0185/2*ones(1,4)*correction;
 params.solenoids.l  = 0.012*ones(1,4);
 params.solenoids.z  = 0.012*ones(1,4)/2;
 params.solenoids.nw = 480;
