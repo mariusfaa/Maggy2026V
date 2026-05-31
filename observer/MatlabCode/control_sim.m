@@ -64,7 +64,7 @@ clear obs;
 
 % arguments
 filterVariant = 0;
-nx = 10;
+nx = 6;
 useSRformulation = false;
 RK4Iterations = 0;
 updateJacobians = true;
@@ -88,7 +88,7 @@ Aint = [zeros(nxh,nxh) eye(nxh,nxh); zeros(nxh,nxh*2)];
 if nx == 10
     NSD = diag([1 1 1 1 1]);
 elseif nx == 6
-    NSD = diag([8 8 8])*1e-3;
+    NSD = diag([1 1 1]);
 end
 
 % how noise enters state space

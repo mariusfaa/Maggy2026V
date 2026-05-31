@@ -9,6 +9,9 @@ nis_values = data["nis"].values
 nees_values = data["nees"].values
 t = data['t'].values
 
+# Select filter name
+filterIndex = int(data.filterVariant[0])
+filterVariants = ['Linear', 'Extended', 'Unscented']
 
 # Compute NIS and NEES and plot on a logarithmic scale with 95% CI
 plt.figure(figsize=(10, 6))
@@ -31,6 +34,9 @@ if 'alpha_est' in data:
 else:
     n = 6 # no attitude estimates
 
+figTitle = f'{n} State {filterVariants[filterIndex]} Kalman Filter on Maggy Simulator'
+
+
 # 95% confidence interval from chi-square
 nis_ci = scipy.stats.chi2.ppf([0.025, 0.975], df=m)
 nees_ci = scipy.stats.chi2.ppf([0.025, 0.975], df=n)
@@ -50,7 +56,7 @@ plt.gca().set_ylim(nis_ci[0]*1e-1, nis_ci[1]*1e+1)
 #plt.gca().set_ylim(min(nis_values)*1e-1, max(nis_values)*1e+1)
 #plt.gca().set_ylim(nis_ci[0]*1e-1, max(nis_values)*1e+1)
 
-plt.title(f'{n} State Unscented Kalman Filter on Maggy Simulator', fontsize=14)
+plt.title(figTitle, fontsize=14)
 
 # NEES plot (log scale)
 plt.subplot(2, 1, 2)
