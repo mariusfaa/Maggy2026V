@@ -9,8 +9,8 @@ function project_setup_thesis()
 %
 % Notes
 %   - Honors ACADOS_SOURCE_DIR / ACADOS_INSTALL_DIR / ENV_ACADOS_INSTALL_DIR
-%     environment variables if set; falls back to "C:\Users\mariujf\acados"
-%     (the path used by workingSimulator.m).
+%     environment variables if set; otherwise uses the acados path you
+%     enter manually below.
 %   - Does NOT add the legacy nmpc_lib/ top-level directory to the path so
 %     the new core/ and io/ implementations are never shadowed by the
 %     legacy files (which use different cfg field names).
@@ -40,8 +40,8 @@ function project_setup_thesis()
     if isempty(acados_root); acados_root = getenv('ACADOS_INSTALL_DIR'); end
     if isempty(acados_root); acados_root = getenv('ENV_ACADOS_INSTALL_DIR'); end
     if isempty(acados_root) || ~exist(acados_root,'dir')
-        % Convention used by workingSimulator.m.
-        acados_root = 'C:\Users\mariujf\acados';
+        % No env var set: enter the path to your local acados installation.
+        acados_root = '';   % e.g. 'C:\Users\you\acados' or '/home/you/acados'
     end
     if exist(acados_root,'dir')
         setenv('ACADOS_SOURCE_DIR',      acados_root);

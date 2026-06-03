@@ -13,8 +13,11 @@
 %% --- PROJECT SETUP ---
 clearvars -except ocp_solver_ana ocp_solver_nn sim_solver; clc;
 
-acados_root  = '/home/mariujf/acados';
-project_root = '/home/mariujf/Maggy2026V/NMPCProject';
+% --- Enter your own paths here ---
+% acados_root  : path to your local acados installation
+% project_root : path to the NMPCProject folder (this repository)
+acados_root  = '';   % e.g. 'C:\Users\you\acados' or '/home/you/acados'
+project_root = '';   % e.g. 'C:\Users\you\Maggy2026V\NMPCProject'
 
 setenv('ACADOS_SOURCE_DIR',        acados_root);
 setenv('ENV_ACADOS_INSTALL_DIR',   acados_root);

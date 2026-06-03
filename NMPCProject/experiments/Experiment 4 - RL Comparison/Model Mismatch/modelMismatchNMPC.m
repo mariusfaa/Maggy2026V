@@ -1,9 +1,11 @@
 %% Clear Workspace and Add Paths
 clearvars -except ocp_solver sim_solver; clc; close all;
 
-% Windows root (matches workingSimulatorReducedOrder.m)
-acados_root  = 'C:\Users\mariujf\acados';
-project_root = 'C:\Users\mariujf\model_mismatch';
+% --- Enter your own paths here (matches workingSimulatorReducedOrder.m) ---
+% acados_root  : path to your local acados installation
+% project_root : path to the working directory for this experiment
+acados_root  = '';   % e.g. 'C:\Users\you\acados' or '/home/you/acados'
+project_root = '';   % e.g. 'C:\Users\you\model_mismatch'
 
 setenv('ACADOS_SOURCE_DIR',      acados_root);
 setenv('ENV_ACADOS_INSTALL_DIR', acados_root);

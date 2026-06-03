@@ -29,9 +29,11 @@
 %% --- PROJECT SETUP ---
 clearvars; clc;
 
-% Windows root
-acados_root  = 'C:\Users\mariujf\acados';
-project_root = 'C:\Users\mariujf\MagLevTbx-main\Controller';
+% --- Enter your own paths here ---
+% acados_root  : path to your local acados installation
+% project_root : path to the Controller folder
+acados_root  = '';   % e.g. 'C:\Users\you\acados' or '/home/you/acados'
+project_root = '';   % e.g. 'C:\Users\you\MagLevTbx-main\Controller'
 
 setenv('ACADOS_SOURCE_DIR',        acados_root);
 setenv('ENV_ACADOS_INSTALL_DIR',   acados_root);

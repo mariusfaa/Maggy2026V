@@ -15,7 +15,8 @@ clearvars; clc;
 %% -------------------- USER CONFIGURATION --------------------
 cfg = struct();
 
-cfg.acados_root = '/home/mariujf/acados';
+% --- Enter the path to your local acados installation here ---
+cfg.acados_root = '';   % e.g. 'C:\Users\you\acados' or '/home/you/acados'
 cfg.project_root = fileparts(mfilename('fullpath'));
 if isempty(cfg.project_root)
     cfg.project_root = pwd;

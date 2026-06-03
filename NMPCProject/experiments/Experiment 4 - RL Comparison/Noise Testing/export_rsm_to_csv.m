@@ -6,7 +6,8 @@
 %     - rsm_contours_yrms.fig      -> rsm_runs.csv  + rsm_contour_grid.csv
 %  Also writes meta.csv with factor decoding info.
 %
-%  Run from C:\Users\mariujf\noise_testing
+%  Run from your noise-testing working directory (the folder containing
+%  rsm_noise_results.mat).
 % =========================================================================
 clearvars; clc;
 

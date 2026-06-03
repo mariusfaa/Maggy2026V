@@ -22,10 +22,11 @@ function paths = project_setup()
     paths.project_root    = project_root;
     paths.experiments_dir = fullfile(project_root, 'experiments');
 
+    % --- Enter the path to your local acados installation here ---
     if ispc
-        paths.acados_root = 'C:\Users\mariujf\acados';
+        paths.acados_root = '';   % e.g. 'C:\Users\you\acados'
     else
-        paths.acados_root = '/home/mariujf/acados';
+        paths.acados_root = '';   % e.g. '/home/you/acados'
     end
 
     setenv('ACADOS_SOURCE_DIR',      paths.acados_root);

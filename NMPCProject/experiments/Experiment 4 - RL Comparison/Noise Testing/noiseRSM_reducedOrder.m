@@ -33,8 +33,11 @@
 clear ocp_solver sim_solver;
 clearvars; clc;
 
-acados_root  = 'C:\Users\mariu\acados';
-project_root = 'C:\Users\mariu\noise_testing';
+% --- Enter your own paths here ---
+% acados_root  : path to your local acados installation
+% project_root : path to the working directory for this experiment
+acados_root  = '';   % e.g. 'C:\Users\you\acados' or '/home/you/acados'
+project_root = '';   % e.g. 'C:\Users\you\noise_testing'
 
 setenv('ACADOS_SOURCE_DIR',        acados_root);
 setenv('ENV_ACADOS_INSTALL_DIR',   acados_root);
