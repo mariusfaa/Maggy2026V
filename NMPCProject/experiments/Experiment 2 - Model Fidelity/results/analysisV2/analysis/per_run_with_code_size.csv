@@ -1,0 +1,1317 @@
+run_id,variant,magnet_n,repetition,completed,timestamp_start,timestamp_end,nx,N,Tf,dt,sim_steps_requested,sim_steps_completed,disturbance_time_s,disturbance_applied,perturbation_scale,graph_build_time_s,equilibrium_time_s,n_instructions,n_nodes,nnz_jac_x,nnz_jac_u,ext_fun_compile_flags,correction_factor_fast,correction_time_s,build_ocp_time_s,build_sim_time_s,build_total_time_s,total_wall_time_s,generated_code_bytes,zEq_m,status_ok_count,status_max_iter_count,status_qp_fail_count,status_nonzero_count,diverged,sqp_iter_mean,sqp_iter_max,solve_time_reported_mean_ms,solve_time_reported_median_ms,solve_time_reported_p95_ms,solve_time_reported_max_ms,solve_wall_mean_ms,solve_wall_median_ms,solve_wall_p95_ms,solve_wall_max_ms,sim_wall_mean_ms,sim_wall_max_ms,final_state_error_norm,final_position_error_m,final_angle_norm_deg,rms_state_error_norm,rms_position_error_m,max_position_error_m,max_angle_norm_deg,mean_control_abs,max_control_abs,generated_code_dir,error_message,failure_category,per_run_bytes,per_run_c_lines,per_run_dyn_c_lines
+,,NaN,NaN,0,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"",other_failure,0,0,0
+,,NaN,NaN,0,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"",other_failure,0,0,0
+,,NaN,NaN,0,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"",other_failure,0,0,0
+,,NaN,NaN,0,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"",other_failure,0,0,0
+,,NaN,NaN,0,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"",other_failure,0,0,0
+full_n0006_rep01,,NaN,NaN,0,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"",other_failure,16613163,300883,296969
+full_n0006_rep02,,NaN,NaN,0,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"",other_failure,16613163,300883,296969
+reduced_n0006_rep01,,NaN,NaN,0,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"",other_failure,14454238,255810,251918
+reduced_n0006_rep02,reduced,6,2,1,20-May-2026 20:12:04,20-May-2026 20:12:54,10,10,0.05,0.005,2000,35,5,0,0.05,0.281273,0.030542,6522,6512,30,20,-O1,0.56440190770214,16.999219,17.147348,15.943073,33.09056,50.67514,24121300,0.0301175269560138,32,0,3,3,1,1,1,2.49954285714286,1.262,7.2303,7.412,2.58237142857143,1.286,7.2445,7.427,0.391942857142857,7.597,7053.25910633656,0.0572103346707743,989.949791968288,1176.00620235415,0.0111324038114753,0.0572103346707743,989.949791968288,0.956185559559903,1,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0006_rep02,"",ok,14454238,255810,251918
+reduced_n0006_rep03,reduced,6,3,1,20-May-2026 20:12:54,20-May-2026 20:13:46,10,10,0.05,0.005,2000,35,5,0,0.05,0.20402,0.02073,6522,6512,30,20,-O1,0.56440190770214,20.999407,15.290911,15.07043,30.361472,51.750566,14464568,0.0301175269560138,32,0,3,3,1,1,1,2.47014285714286,1.248,7.2042,7.43,2.5484,1.268,7.2156,7.442,0.370742857142857,7.12,7053.25910633656,0.0572103346707743,989.949791968288,1176.00620235415,0.0111324038114753,0.0572103346707743,989.949791968288,0.956185559559903,1,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0006_rep03,"",ok,14454238,255810,251918
+full_n0006_rep03,full,6,3,1,20-May-2026 20:13:58,20-May-2026 20:14:55,12,10,0.05,0.005,2000,35,5,0,0.05,0.355005,0.374572,6628,6616,48,24,-O1,0.56440190770214,18.105284,19.736611,18.312522,38.050106,57.146807,34812255,0.0301175269560138,28,0,7,7,1,1,1,1.29657142857143,0.81,4.48769999999999,7.362,1.40568571428571,0.833,4.50099999999999,7.375,0.481714285714286,7.099,3114.09888120995,0.0454172808857225,431.800932687692,581.028350128426,0.00913683841300315,0.0454172808857225,431.800932687692,0.956836516139923,1,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0006_rep03,"",ok,16613163,300883,296969
+full_n0008_rep01,full,8,1,1,20-May-2026 20:14:55,20-May-2026 20:16:13,12,10,0.05,0.005,2000,34,5,0,0.05,0.29,0.037071,8783,8771,48,24,-O1,0.565776750905842,20.436422,28.506707,28.001714,56.508556,77.471932,40159091,0.0303908501858847,28,0,6,6,1,1,1,1.83688235294118,1.6215,2.32145,7.757,1.92676470588235,1.64,3.1471,7.769,0.441441176470588,8.32,4103.3126391367,0.0239392687646311,582.781310421323,693.650346426538,0.00618710247086771,0.0239392687646311,582.781310421323,0.922418545206582,1,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0008_rep01,"",ok,21959999,400285,396371
+full_n0008_rep02,full,8,2,1,20-May-2026 20:16:13,20-May-2026 20:17:31,12,10,0.05,0.005,2000,34,5,0,0.05,0.266355,0.038322,8783,8771,48,24,-O1,0.565776750905842,20.995756,28.484209,28.188,56.672356,78.179747,40159091,0.0303908501858847,28,0,6,6,1,1,1,1.85447058823529,1.6205,2.36,7.862,1.94282352941177,1.643,3.152,7.887,0.449264705882353,8.047,4103.3126391367,0.0239392687646311,582.781310421323,693.650346426538,0.00618710247086771,0.0239392687646311,582.781310421323,0.922418545206582,1,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0008_rep02,"",ok,21959999,400285,396371
+reduced_n0008_rep01,reduced,8,1,1,20-May-2026 20:17:33,20-May-2026 20:18:42,10,10,0.05,0.005,2000,34,5,0,0.05,0.191126,0.026353,8657,8647,30,20,-O1,0.565776750905842,22.05253,23.404524,22.975248,46.379894,68.812998,36211096,0.0303908501858847,27,0,7,7,1,1,1,2.09476470588235,1.5645,4.36085,7.064,2.18447058823529,1.579,4.3748,7.091,0.431352941176471,7.675,33177.0209792462,0.0668856505222782,4720.18796329714,5607.94848995815,0.0123628748771828,0.0668856505222782,4720.18796329714,0.923512707065444,1,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0008_rep01,"",ok,19089756,340564,336672
+full_n0008_rep03,full,8,3,1,20-May-2026 20:22:02,20-May-2026 20:23:21,12,10,0.05,0.005,2000,34,5,0,0.05,0.448721,0.358993,8783,8771,48,24,-O1,0.565776750905842,19.938294,29.444605,28.280112,57.725693,78.793362,41950535,0.0303908501858847,28,0,6,6,1,1,1,0.91514705882353,0.687,1.43325,7.032,1.02185294117647,0.703,2.22375,7.046,0.482617647058823,6.804,4103.3126391367,0.0239392687646311,582.781310421323,693.650346426538,0.00618710247086771,0.0239392687646311,582.781310421323,0.922418545206582,1,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0008_rep03,"",ok,21959999,400285,396371
+reduced_n0008_rep02,reduced,8,2,1,20-May-2026 20:23:21,20-May-2026 20:24:30,10,10,0.05,0.005,2000,34,5,0,0.05,0.258335,0.029291,8657,8647,30,20,-O1,0.565776750905842,22.440292,22.787414,23.067359,45.854919,68.770228,39080292,0.0303908501858847,27,0,7,7,1,1,1,2.07955882352941,1.543,4.2339,7.355,2.17494117647059,1.5725,4.3795,7.37,0.46,8.684,33177.0209792462,0.0668856505222782,4720.18796329714,5607.94848995815,0.0123628748771828,0.0668856505222782,4720.18796329714,0.923512707065444,1,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0008_rep02,"",ok,19089756,340564,336672
+reduced_n0008_rep03,reduced,8,3,1,20-May-2026 20:24:30,20-May-2026 20:25:37,10,10,0.05,0.005,2000,34,5,0,0.05,0.2701,0.03605,8657,8647,30,20,-O1,0.565776750905842,19.748421,23.531049,22.991184,46.522392,66.781458,36436502,0.0303908501858847,27,0,7,7,1,1,1,2.0695,1.5325,4.4167,6.953,2.15717647058823,1.5505,4.43325,6.97,0.437529411764706,8.141,33177.0209792462,0.0668856505222782,4720.18796329714,5607.94848995815,0.0123628748771828,0.0668856505222782,4720.18796329714,0.923512707065444,1,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0008_rep03,"",ok,19089756,340564,336672
+reduced_n0010_rep02,reduced,10,2,1,20-May-2026 20:25:40,20-May-2026 20:27:08,10,10,0.05,0.005,2000,2000,5,1,0.05,0.181042,0.027825,10821,10811,30,20,-O1,0.564394821465138,21.14545,31.346195,30.730393,62.076736,87.638658,46424994,0.0301191833390181,2000,0,0,0,0,1,1,1.626109,1.631,1.72305,2.249,1.640008,1.642,1.74205,4.368,0.1708295,8.56,4.00101354057957e-12,3.95056210063793e-12,2.23044635599886e-13,0.114233171625096,0.00014276827336692,0.00236737538766778,0.698443776386709,0.015341318047804,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0010_rep02,"",ok,23769666,425554,421662
+reduced_n0010_rep03,reduced,10,3,1,20-May-2026 20:27:08,20-May-2026 20:28:36,10,10,0.05,0.005,2000,2000,5,1,0.05,0.207778,0.029849,10821,10811,30,20,-O1,0.564394821465138,22.094949,30.404532,30.679959,61.084636,87.621064,46424994,0.0301191833390181,2000,0,0,0,0,1,1,1.620705,1.606,1.704,2.677,1.6352755,1.618,1.72105,4.186,0.170165000000001,7.783,4.00101354057957e-12,3.95056210063793e-12,2.23044635599886e-13,0.114233171625096,0.00014276827336692,0.00236737538766778,0.698443776386709,0.015341318047804,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0010_rep03,"",ok,23769666,425554,421662
+full_n0010_rep03,full,10,3,1,20-May-2026 20:28:42,20-May-2026 20:30:19,12,10,0.05,0.005,2000,2000,5,1,0.05,0.183039,0.026474,10971,10959,48,24,-O1,0.564394821465138,19.550666,35.980367,35.816684,71.797181,96.111052,54510469,0.0301191833390181,2000,0,0,0,0,1,1,1.7803465,1.752,1.83405,2.853,1.794817,1.764,1.8511,4.558,0.182748,8.203,0.00042877836947863,2.62966735668189e-13,0.0244870394258246,0.11426942476415,0.000142705543677093,0.00236737543042521,0.700088467887247,0.0153272495963123,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0010_rep03,"",ok,27349939,500085,496171
+reduced_n0010_rep01,reduced,10,1,1,20-May-2026 20:30:19,20-May-2026 20:31:43,10,10,0.05,0.005,2000,2000,5,1,0.05,0.206356,0.03031,10821,10811,30,20,-O1,0.564394821465138,17.948407,31.076942,30.937738,62.014824,84.340901,47712452,0.0301191833390181,2000,0,0,0,0,1,1,1.5917435,1.582,1.661,2.008,1.6060665,1.594,1.679,4.348,0.165547500000001,8.936,4.00101354057957e-12,3.95056210063793e-12,2.23044635599886e-13,0.114233171625096,0.00014276827336692,0.00236737538766778,0.698443776386709,0.015341318047804,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0010_rep01,"",ok,23769666,425554,421662
+full_n0012_rep01,full,12,1,1,20-May-2026 20:31:43,20-May-2026 20:33:38,12,10,0.05,0.005,2000,2000,5,1,0.05,0.203116,0.035495,13131,13119,48,24,-O1,0.564401907475815,15.654987,47.470404,46.433705,93.904248,115.081036,59968303,0.0301175269560138,2000,0,0,0,0,1,1,2.0799825,2.067,2.153,2.573,2.095429,2.08,2.17305,4.711,0.22235,8.216,0.000428492048736825,2.09665965149434e-11,0.0244705689040676,0.114481651855115,0.00014255775732366,0.00236745358822248,0.700346598596787,0.0152632461025309,0.999999999999998,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0012_rep01,"",ok,32807773,599407,595493
+full_n0010_rep02,full,10,2,1,20-May-2026 20:39:22,20-May-2026 20:40:58,12,10,0.05,0.005,2000,2000,5,1,0.05,0.24518,0.034753,10971,10959,48,24,-O1,0.564394821465138,21.49535,36.232712,35.556097,71.789026,95.961106,54657603,0.0301191833390181,2000,0,0,0,0,1,1,0.653489,0.623,0.79605,1.419,0.667404,0.635,0.812,2.89,0.190555,6.384,0.00042877836947863,2.62966735668189e-13,0.0244870394258246,0.11426942476415,0.000142705543677093,0.00236737543042521,0.700088467887247,0.0153272495963123,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0010_rep02,"",ok,27349939,500085,496171
+full_n0010_rep01,full,10,1,1,20-May-2026 20:41:39,20-May-2026 20:43:16,12,10,0.05,0.005,2000,2000,5,1,0.05,0.378425,0.382041,10971,10959,48,24,-O1,0.564394821465138,20.874702,36.751131,35.421963,72.174067,96.457137,52878949,0.0301191833390181,2000,0,0,0,0,1,1,0.676735,0.675,0.758,1.341,0.691667,0.688,0.77105,3.282,0.234741499999999,7.224,0.00042877836947863,2.62966735668189e-13,0.0244870394258246,0.11426942476415,0.000142705543677093,0.00236737543042521,0.700088467887247,0.0153272495963123,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0010_rep01,"",ok,27349939,500085,496171
+reduced_n0012_rep01,reduced,12,1,1,20-May-2026 20:43:23,20-May-2026 20:45:07,10,10,0.05,0.005,2000,2000,5,1,0.05,0.207834,0.035504,12961,12951,30,20,-O1,0.564401907475815,18.654287,40.461873,39.580951,80.042978,103.741017,55641816,0.0301175269560138,2000,0,0,0,0,1,1,1.854519,1.844,1.924,2.348,1.868492,1.856,1.944,4.606,0.192334500000001,9.121,3.96935186965387e-12,3.95939531188736e-12,2.80087023341136e-14,0.114445389527503,0.00014262076043582,0.00236745413635794,0.698705805514531,0.0152779890314292,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0012_rep01,"",ok,28481286,510136,506244
+reduced_n0012_rep02,reduced,12,2,1,20-May-2026 20:45:07,20-May-2026 20:46:51,10,10,0.05,0.005,2000,2000,5,1,0.05,0.255547,0.044852,12961,12951,30,20,-O1,0.564401907475815,19.883874,39.411651,39.879868,79.291678,104.229793,55641816,0.0301175269560138,2000,0,0,0,0,1,1,1.8648255,1.852,1.94125,2.373,1.878561,1.863,1.961,4.541,0.1903985,8.185,3.96935186965387e-12,3.95939531188736e-12,2.80087023341136e-14,0.114445389527503,0.00014262076043582,0.00236745413635794,0.698705805514531,0.0152779890314292,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0012_rep02,"",ok,28481286,510136,506244
+full_n0012_rep03,full,12,3,0,NaT,20-May-2026 20:47:03,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosSimSolver/compile_sim_shared_lib (line 318)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_sim_solver_maglev_sim_full_n0012_rep03.o
+acados_sim_solver_maglev_sim_full_n0012_rep03.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun.o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun_jac_x_xdot_z.o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun_jac_x_xdot_z.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_jac_x_xdot_u_z.o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_jac_x_xdot_u_z.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun_jac_x_xdot_u.o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun_jac_x_xdot_u.c
+Assembler messages:
+Fatal error: can't create
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun_jac_x_xdot_u.o:
+No such file or directory
+make: *** [<builtin>:
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun_jac_x_xdot_u.o]
+Error 1
+
+
+Error in AcadosSimSolver (line 142)
+                obj.compile_sim_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 249)
+    sim_solver = AcadosSimSolver(setup.sim);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",other_failure,0,0,0
+reduced_n0012_rep03,reduced,12,3,1,20-May-2026 20:47:03,20-May-2026 20:48:34,10,10,0.05,0.005,2000,2000,5,1,0.05,0.193639,0.03245,12961,12951,30,20,-O1,0.564401907475815,16.751551,29.222455,40.0532,69.275787,90.999712,NaN,0.0301175269560138,2000,0,0,0,0,1,1,1.865008,1.834,1.96615,2.973,1.879351,1.845,1.985,4.4,0.190831000000001,8.255,3.96935186965387e-12,3.95939531188736e-12,2.80087023341136e-14,0.114445389527503,0.00014262076043582,0.00236745413635794,0.698705805514531,0.0152779890314292,0.999999999999999,,"",ok,28481286,510136,506244
+full_n0004_rep01,full,4,1,0,NaT,20-May-2026 20:51:05,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",no_equilibrium,0,0,0
+full_n0004_rep02,full,4,2,0,NaT,20-May-2026 20:51:06,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",no_equilibrium,0,0,0
+full_n0004_rep03,full,4,3,0,NaT,20-May-2026 20:51:06,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",no_equilibrium,0,0,0
+reduced_n0004_rep01,reduced,4,1,0,NaT,20-May-2026 20:51:06,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",no_equilibrium,0,0,0
+reduced_n0004_rep02,reduced,4,2,0,NaT,20-May-2026 20:51:06,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",no_equilibrium,0,0,0
+reduced_n0004_rep03,reduced,4,3,0,NaT,20-May-2026 20:51:07,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",no_equilibrium,0,0,0
+full_n0016_rep01,full,16,1,0,NaT,20-May-2026 20:51:28,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosSimSolver/compile_sim_shared_lib (line 318)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_sim_solver_maglev_sim_full_n0016_rep01.o
+acados_sim_solver_maglev_sim_full_n0016_rep01.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0016_rep01_model/maglev_sim_full_n0016_rep01_impl_dae_fun.o
+maglev_sim_full_n0016_rep01_model/maglev_sim_full_n0016_rep01_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0016_rep01_model/maglev_sim_full_n0016_rep01_impl_dae_fun_jac_x_xdot_z.o
+maglev_sim_full_n0016_rep01_model/maglev_sim_full_n0016_rep01_impl_dae_fun_jac_x_xdot_z.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0016_rep01_model/maglev_sim_full_n0016_rep01_impl_dae_jac_x_xdot_u_z.o
+maglev_sim_full_n0016_rep01_model/maglev_sim_full_n0016_rep01_impl_dae_jac_x_xdot_u_z.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0016_rep01_model/maglev_sim_full_n0016_rep01_impl_dae_fun_jac_x_xdot_u.o
+maglev_sim_full_n0016_rep01_model/maglev_sim_full_n0016_rep01_impl_dae_fun_jac_x_xdot_u.c
+Assembler messages:
+Fatal error: can't create
+maglev_sim_full_n0016_rep01_model/maglev_sim_full_n0016_rep01_impl_dae_fun_jac_x_xdot_u.o:
+No such file or directory
+make: *** [<builtin>:
+maglev_sim_full_n0016_rep01_model/maglev_sim_full_n0016_rep01_impl_dae_fun_jac_x_xdot_u.o]
+Error 1
+
+
+Error in AcadosSimSolver (line 142)
+                obj.compile_sim_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 249)
+    sim_solver = AcadosSimSolver(setup.sim);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",other_failure,0,0,0
+full_n0012_rep02,full,12,2,0,NaT,20-May-2026 20:51:28,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using cd
+Unable to change current folder to
+'/home/mariujf/n_sweep/isolated_experiment2/c_generated_code/..' (Name is
+nonexistent or not a folder).
+
+Error in render_file (line 50)
+        cd ..
+        ^^
+Error in AcadosOcp/render_templates (line 1762)
+                render_file( in_file, out_file, json_fullfile )
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in AcadosOcpSolver/generate (line 770)
+            obj.ocp.render_templates()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in AcadosOcpSolver (line 139)
+                obj.generate();
+                ^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",other_failure,0,0,0
+full_n0016_rep02,full,16,2,1,20-May-2026 20:51:28,20-May-2026 20:54:22,12,10,0.05,0.005,2000,2000,5,1,0.05,0.202861,0.044516,17477,17465,48,24,-O1,0.564394454152293,18.308358,74.544046,74.499081,149.043268,174.15962,43628365,0.0301190191978034,2000,0,0,0,0,1,1,2.708467,2.701,2.751,3.728,2.7218405,2.712,2.76525,5.169,0.251894999999999,7.753,0.000428598266364679,3.51912249499412e-12,0.024476675235481,0.114495163009433,0.000142643693761487,0.00236743605875948,0.700618074530659,0.0153086522822904,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0016_rep02,"",ok,43618398,798761,794847
+full_n0016_rep03,full,16,3,1,20-May-2026 20:54:22,20-May-2026 20:57:09,12,10,0.05,0.005,2000,2000,5,1,0.05,0.174226,0.038931,17477,17465,48,24,-O1,0.564394454152293,11.957106,73.796997,74.736211,148.53334,167.268004,43628227,0.0301190191978034,2000,0,0,0,0,1,1,2.709986,2.702,2.7611,3.301,2.72338,2.714,2.782,5.157,0.256955,14.606,0.000428598266364679,3.51912249499412e-12,0.024476675235481,0.114495163009433,0.000142643693761487,0.00236743605875948,0.700618074530659,0.0153086522822904,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0016_rep03,"",ok,43618398,798761,794847
+reduced_n0016_rep01,reduced,16,1,1,20-May-2026 20:57:09,20-May-2026 20:59:25,10,10,0.05,0.005,2000,2000,5,1,0.05,0.180483,0.039317,17263,17253,30,20,-O1,0.564394454152293,11.820271,58.633769,58.864904,117.498802,135.468908,37882773,0.0301190191978034,2000,0,0,0,0,1,1,2.4170505,2.409,2.47005,2.999,2.431858,2.421,2.48605,8.296,0.235484,7.716,3.9641566286296e-12,3.95013535857349e-12,1.12543677045308e-13,0.114458854261443,0.00014270694376714,0.00236744053875083,0.698973535489908,0.0153232295611628,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0016_rep01,"",ok,37872581,680118,676226
+reduced_n0016_rep02,reduced,16,2,1,20-May-2026 20:59:25,20-May-2026 21:01:40,10,10,0.05,0.005,2000,2000,5,1,0.05,0.180604,0.039223,17263,17253,30,20,-O1,0.564394454152293,11.848409,58.424391,58.54137,116.965896,135.05467,37882773,0.0301190191978034,2000,0,0,0,0,1,1,2.4421525,2.419,2.551,3.8,2.4560495,2.431,2.572,4.949,0.242743999999999,7.901,3.9641566286296e-12,3.95013535857349e-12,1.12543677045308e-13,0.114458854261443,0.00014270694376714,0.00236744053875083,0.698973535489908,0.0153232295611628,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0016_rep02,"",ok,37872581,680118,676226
+reduced_n0016_rep03,reduced,16,3,1,20-May-2026 21:01:40,20-May-2026 21:03:55,10,10,0.05,0.005,2000,2000,5,1,0.05,0.182097,0.039369,17263,17253,30,20,-O1,0.564394454152293,11.845869,58.311604,58.692034,117.003766,135.025582,37882773,0.0301190191978034,2000,0,0,0,0,1,1,2.424754,2.412,2.494,3.409,2.438386,2.424,2.514,4.896,0.236811499999998,7.554,3.9641566286296e-12,3.95013535857349e-12,1.12543677045308e-13,0.114458854261443,0.00014270694376714,0.00236744053875083,0.698973535489908,0.0153232295611628,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0016_rep03,"",ok,37872581,680118,676226
+full_n0020_rep01,full,20,1,1,20-May-2026 21:03:55,20-May-2026 21:07:53,12,10,0.05,0.005,2000,2000,5,1,0.05,0.175494,0.047308,21810,21798,48,24,-O1,0.564394817323794,14.346853,108.096883,106.577938,214.674949,237.456508,57316682,0.0301191833390181,2000,0,0,0,0,1,1,3.4432345,3.428,3.57105,4.374,3.4582085,3.441,3.597,6.003,0.325856500000001,7.959,0.000428612034416052,2.62824486593481e-13,0.0244774666078673,0.114504451136279,0.000142652978881019,0.00236738876464579,0.700666715515277,0.0153150619093505,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0020_rep01,"",ok,57306853,997557,993643
+full_n0020_rep02,full,20,2,1,20-May-2026 21:07:53,20-May-2026 21:11:52,12,10,0.05,0.005,2000,2000,5,1,0.05,0.178892,0.047709,21810,21798,48,24,-O1,0.564394817323794,14.796964,108.041835,107.456319,215.49828,238.726201,57316682,0.0301191833390181,2000,0,0,0,0,1,1,3.4431655,3.426,3.60115,4.217,3.458089,3.438,3.6262,6.007,0.323870000000001,7.965,0.000428612034416052,2.62824486593481e-13,0.0244774666078673,0.114504451136279,0.000142652978881019,0.00236738876464579,0.700666715515277,0.0153150619093505,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0020_rep02,"",ok,57306853,997557,993643
+full_n0020_rep03,full,20,3,1,20-May-2026 21:11:52,20-May-2026 21:15:52,12,10,0.05,0.005,2000,2000,5,1,0.05,0.18093,0.047444,21810,21798,48,24,-O1,0.564394817323794,14.7563,108.099155,108.417199,216.516499,239.766549,57316682,0.0301191833390181,2000,0,0,0,0,1,1,3.4624465,3.445,3.61405,4.291,3.477597,3.458,3.643,6.032,0.3300185,8.043,0.000428612034416052,2.62824486593481e-13,0.0244774666078673,0.114504451136279,0.000142652978881019,0.00236738876464579,0.700666715515277,0.0153150619093505,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0020_rep03,"",ok,57306853,997557,993643
+reduced_n0020_rep01,reduced,20,1,1,20-May-2026 21:15:52,20-May-2026 21:19:14,10,10,0.05,0.005,2000,2000,5,1,0.05,0.182231,0.047686,21552,21542,30,20,-O1,0.564394817323794,14.737544,90.144302,89.486325,179.630766,201.914512,49686730,0.0301191833390181,2000,0,0,0,0,1,1,3.036469,3.02,3.17705,3.787,3.0505355,3.031,3.2,5.627,0.299145000000001,8.051,3.95612422711735e-12,3.94890371710287e-12,2.98763167777365e-13,0.114468127557042,0.000142716246715109,0.00236739319871591,0.699021999088922,0.0153295185107346,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0020_rep01,"",ok,49676538,849156,845264
+reduced_n0020_rep02,reduced,20,2,1,20-May-2026 21:19:14,20-May-2026 21:22:36,10,10,0.05,0.005,2000,2000,5,1,0.05,0.181821,0.047492,21552,21542,30,20,-O1,0.564394817323794,14.71782,90.106008,89.773862,179.880005,202.150764,49686730,0.0301191833390181,2000,0,0,0,0,1,1,3.033322,2.999,3.18905,3.814,3.048188,3.011,3.21005,5.699,0.296231,7.986,3.95612422711735e-12,3.94890371710287e-12,2.98763167777365e-13,0.114468127557042,0.000142716246715109,0.00236739319871591,0.699021999088922,0.0153295185107346,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0020_rep02,"",ok,49676538,849156,845264
+reduced_n0020_rep03,reduced,20,3,1,20-May-2026 21:22:36,20-May-2026 21:25:58,10,10,0.05,0.005,2000,2000,5,1,0.05,0.185594,0.047183,21552,21542,30,20,-O1,0.564394817323794,14.533943,90.170471,89.998274,180.168894,202.331619,49686730,0.0301191833390181,2000,0,0,0,0,1,1,3.062627,3.036,3.19005,4.912,3.07733,3.049,3.21805,5.655,0.3007195,7.912,3.95612422711735e-12,3.94890371710287e-12,2.98763167777365e-13,0.114468127557042,0.000142716246715109,0.00236739319871591,0.699021999088922,0.0153295185107346,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0020_rep03,"",ok,49676538,849156,845264
+full_n0030_rep01,full,30,1,1,20-May-2026 21:25:58,20-May-2026 21:33:53,12,10,0.05,0.005,2000,2000,5,1,0.05,0.178686,0.06849,32695,32683,48,24,-O1,0.564394803908671,15.510846,222.945191,223.027154,445.972469,474.230934,85964318,0.0301191786658315,2000,0,0,0,0,1,1,5.2660355,5.232,5.4838,7.035,5.2838375,5.247,5.51705,7.933,0.597155,8.437,0.000428611605109177,9.72347353416381e-14,0.0244774419327343,0.114504157422843,0.00014265270941618,0.00236739065284935,0.700665266706591,0.0153148605042932,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0030_rep01,"",ok,85954489,1496127,1492213
+full_n0030_rep02,full,30,2,1,20-May-2026 21:33:53,20-May-2026 21:41:43,12,10,0.05,0.005,2000,2000,5,1,0.05,0.181188,0.069746,32695,32683,48,24,-O1,0.564394803908671,14.722477,221.321633,221.614906,442.936668,470.408331,85964318,0.0301191786658315,2000,0,0,0,0,1,1,5.250935,5.194,5.53035,8.73,5.268812,5.209,5.5593,8.77,0.608847,8.604,0.000428611605109177,9.72347353416381e-14,0.0244774419327343,0.114504157422843,0.00014265270941618,0.00236739065284935,0.700665266706591,0.0153148605042932,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0030_rep02,"",ok,85954489,1496127,1492213
+full_n0030_rep03,full,30,3,1,20-May-2026 21:41:43,20-May-2026 21:49:36,12,10,0.05,0.005,2000,2000,5,1,0.05,0.185661,0.069484,32695,32683,48,24,-O1,0.564394803908671,14.813836,222.862048,222.434632,445.296813,473.00947,85964318,0.0301191786658315,2000,0,0,0,0,1,1,5.330362,5.296,5.55405,7.078,5.3488375,5.312,5.5814,8.011,0.598488,8.579,0.000428611605109177,9.72347353416381e-14,0.0244774419327343,0.114504157422843,0.00014265270941618,0.00236739065284935,0.700665266706591,0.0153148605042932,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0030_rep03,"",ok,85954489,1496127,1492213
+reduced_n0030_rep01,reduced,30,1,1,20-May-2026 21:49:36,20-May-2026 21:56:11,10,10,0.05,0.005,2000,2000,5,1,0.05,0.194089,0.069286,32325,32315,30,20,-O1,0.564394803908671,14.93989,183.186872,185.064873,368.251874,394.449212,74392514,0.0301191786658315,2000,0,0,0,0,1,1,4.6622975,4.634,4.89125,6.121,4.6779235,4.647,4.91405,7.403,0.479427,8.346,3.95794160103756e-12,3.94892799034009e-12,1.15402088133541e-13,0.11446783427314,0.000142715976988689,0.00236739508842053,0.699020556187065,0.0153293208969891,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0030_rep01,"",ok,74382322,1274330,1270438
+reduced_n0030_rep02,reduced,30,2,1,20-May-2026 21:56:11,20-May-2026 22:02:48,10,10,0.05,0.005,2000,2000,5,1,0.05,0.187113,0.068661,32325,32315,30,20,-O1,0.564394803908671,15.096096,185.383181,185.028236,370.411548,396.748605,74392514,0.0301191786658315,2000,0,0,0,0,1,1,4.655381,4.632,4.83205,5.839,4.6710215,4.645,4.85515,7.372,0.481493,8.431,3.95794160103756e-12,3.94892799034009e-12,1.15402088133541e-13,0.11446783427314,0.000142715976988689,0.00236739508842053,0.699020556187065,0.0153293208969891,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0030_rep02,"",ok,74382322,1274330,1270438
+reduced_n0030_rep03,reduced,30,3,1,20-May-2026 22:02:48,20-May-2026 22:09:28,10,10,0.05,0.005,2000,2000,5,1,0.05,0.187764,0.068711,32325,32315,30,20,-O1,0.564394803908671,14.820114,187.56249,185.96386,373.526484,399.624678,74392514,0.0301191786658315,2000,0,0,0,0,1,1,4.6639205,4.638,4.8556,6.161,4.6802215,4.652,4.88515,7.435,0.4898335,8.448,3.95794160103756e-12,3.94892799034009e-12,1.15402088133541e-13,0.11446783427314,0.000142715976988689,0.00236739508842053,0.699020556187065,0.0153293208969891,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0030_rep03,"",ok,74382322,1274330,1270438
+full_n0040_rep01,full,40,1,1,20-May-2026 22:09:28,20-May-2026 22:22:50,12,10,0.05,0.005,2000,2000,5,1,0.05,0.190313,0.090439,43506,43494,48,24,-O1,0.564394806949419,14.696062,383.836521,385.90795,769.744613,802.457762,114486456,0.0301191786658315,2000,0,0,0,0,1,1,7.350399,7.311,7.5151,10.096,7.3726405,7.331,7.54025,10.179,1.067176,9.06,0.000428611604912186,9.7241659555662e-14,0.0244774419214135,0.11450415621104,0.000142652708087869,0.00236739064785851,0.700665266907109,0.0153148599751763,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0040_rep01,"",ok,114476627,1993497,1989583
+full_n0040_rep02,full,40,2,1,20-May-2026 22:22:50,20-May-2026 22:36:18,12,10,0.05,0.005,2000,2000,5,1,0.05,0.184532,0.089119,43506,43494,48,24,-O1,0.564394806949419,14.403893,390.131216,385.27389,775.405236,807.78655,114486456,0.0301191786658315,2000,0,0,0,0,1,1,7.3212015,7.259,7.64105,10.134,7.343604,7.278,7.6711,10.22,1.0731145,9.152,0.000428611604912186,9.7241659555662e-14,0.0244774419214135,0.11450415621104,0.000142652708087869,0.00236739064785851,0.700665266907109,0.0153148599751763,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0040_rep02,"",ok,114476627,1993497,1989583
+full_n0040_rep03,full,40,3,1,20-May-2026 22:36:18,20-May-2026 22:49:45,12,10,0.05,0.005,2000,2000,5,1,0.05,0.184282,0.08822,43506,43494,48,24,-O1,0.564394806949419,14.522329,391.480192,382.900348,774.380692,806.91381,114486456,0.0301191786658315,2000,0,0,0,0,1,1,7.35292,7.3,7.5721,13.82,7.3755785,7.32,7.60025,13.893,1.0638855,9.146,0.000428611604912186,9.7241659555662e-14,0.0244774419214135,0.11450415621104,0.000142652708087869,0.00236739064785851,0.700665266907109,0.0153148599751763,0.999999999999985,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/full_n0040_rep03,"",ok,114476627,1993497,1989583
+reduced_n0040_rep01,reduced,40,1,1,20-May-2026 22:49:45,20-May-2026 23:00:47,10,10,0.05,0.005,2000,2000,5,1,0.05,0.196155,0.10161,43028,43018,30,20,-O1,0.564394806949419,14.535079,315.555837,315.760376,631.316352,661.591277,99311812,0.0301191786658315,2000,0,0,0,0,1,1,6.364502,6.309,6.62165,10.214,6.3855165,6.327,6.66535,10.262,0.8977705,8.891,3.95240564725887e-12,3.94892452292447e-12,1.43776715092301e-13,0.114467833060352,0.000142715975660607,0.00236739508342832,0.699020556358806,0.0153293203759286,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0040_rep01,"",ok,99301620,1698100,1694208
+reduced_n0040_rep02,reduced,40,2,1,20-May-2026 23:00:47,20-May-2026 23:11:50,10,10,0.05,0.005,2000,2000,5,1,0.05,0.199266,0.089458,43028,43018,30,20,-O1,0.564394806949419,14.41745,312.989942,319.585636,632.575729,662.766418,99311812,0.0301191786658315,2000,0,0,0,0,1,1,6.3874555,6.343,6.63055,8.488,6.40877,6.362,6.6528,9.208,0.928716499999999,8.977,3.95240564725887e-12,3.94892452292447e-12,1.43776715092301e-13,0.114467833060352,0.000142715975660607,0.00236739508342832,0.699020556358806,0.0153293203759286,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0040_rep02,"",ok,99301620,1698100,1694208
+reduced_n0040_rep03,reduced,40,3,1,20-May-2026 23:11:50,20-May-2026 23:22:58,10,10,0.05,0.005,2000,2000,5,1,0.05,0.195404,0.093278,43028,43018,30,20,-O1,0.564394806949419,14.624301,320.44443,317.014447,637.459008,667.725549,99311812,0.0301191786658315,2000,0,0,0,0,1,1,6.374337,6.329,6.62705,8.782,6.3945485,6.347,6.65125,9.284,0.884367,8.979,3.95240564725887e-12,3.94892452292447e-12,1.43776715092301e-13,0.114467833060352,0.000142715975660607,0.00236739508342832,0.699020556358806,0.0153293203759286,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0040_rep03,"",ok,99301620,1698100,1694208
+full_n0060_rep01,full,60,1,0,NaT,20-May-2026 23:30:37,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep01_cost/maglev_nmpc_full_n0060_rep01_cost_y_0_fun.o
+maglev_nmpc_full_n0060_rep01_cost/maglev_nmpc_full_n0060_rep01_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep01_cost/maglev_nmpc_full_n0060_rep01_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_full_n0060_rep01_cost/maglev_nmpc_full_n0060_rep01_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep01_cost/maglev_nmpc_full_n0060_rep01_cost_y_fun.o
+maglev_nmpc_full_n0060_rep01_cost/maglev_nmpc_full_n0060_rep01_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep01_cost/maglev_nmpc_full_n0060_rep01_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_full_n0060_rep01_cost/maglev_nmpc_full_n0060_rep01_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep01_cost/maglev_nmpc_full_n0060_rep01_cost_y_e_fun.o
+maglev_nmpc_full_n0060_rep01_cost/maglev_nmpc_full_n0060_rep01_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep01_cost/maglev_nmpc_full_n0060_rep01_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_full_n0060_rep01_cost/maglev_nmpc_full_n0060_rep01_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_full_n0060_rep01.o
+acados_solver_maglev_nmpc_full_n0060_rep01.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep01_model/maglev_nmpc_full_n0060_rep01_impl_dae_fun.o
+maglev_nmpc_full_n0060_rep01_model/maglev_nmpc_full_n0060_rep01_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep01_model/maglev_nmpc_full_n0060_rep01_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_full_n0060_rep01_model/maglev_nmpc_full_n0060_rep01_impl_dae_fun_jac_x_xdot_z.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep01_model/maglev_nmpc_full_n0060_rep01_impl_dae_jac_x_xdot_u_z.o
+maglev_nmpc_full_n0060_rep01_model/maglev_nmpc_full_n0060_rep01_impl_dae_jac_x_xdot_u_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_full_n0060_rep01_model/maglev_nmpc_full_n0060_rep01_impl_dae_jac_x_xdot_u_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+full_n0060_rep02,full,60,2,0,NaT,20-May-2026 23:38:13,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep02_cost/maglev_nmpc_full_n0060_rep02_cost_y_0_fun.o
+maglev_nmpc_full_n0060_rep02_cost/maglev_nmpc_full_n0060_rep02_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep02_cost/maglev_nmpc_full_n0060_rep02_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_full_n0060_rep02_cost/maglev_nmpc_full_n0060_rep02_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep02_cost/maglev_nmpc_full_n0060_rep02_cost_y_fun.o
+maglev_nmpc_full_n0060_rep02_cost/maglev_nmpc_full_n0060_rep02_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep02_cost/maglev_nmpc_full_n0060_rep02_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_full_n0060_rep02_cost/maglev_nmpc_full_n0060_rep02_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep02_cost/maglev_nmpc_full_n0060_rep02_cost_y_e_fun.o
+maglev_nmpc_full_n0060_rep02_cost/maglev_nmpc_full_n0060_rep02_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep02_cost/maglev_nmpc_full_n0060_rep02_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_full_n0060_rep02_cost/maglev_nmpc_full_n0060_rep02_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_full_n0060_rep02.o
+acados_solver_maglev_nmpc_full_n0060_rep02.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep02_model/maglev_nmpc_full_n0060_rep02_impl_dae_fun.o
+maglev_nmpc_full_n0060_rep02_model/maglev_nmpc_full_n0060_rep02_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep02_model/maglev_nmpc_full_n0060_rep02_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_full_n0060_rep02_model/maglev_nmpc_full_n0060_rep02_impl_dae_fun_jac_x_xdot_z.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep02_model/maglev_nmpc_full_n0060_rep02_impl_dae_jac_x_xdot_u_z.o
+maglev_nmpc_full_n0060_rep02_model/maglev_nmpc_full_n0060_rep02_impl_dae_jac_x_xdot_u_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_full_n0060_rep02_model/maglev_nmpc_full_n0060_rep02_impl_dae_jac_x_xdot_u_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+full_n0060_rep03,full,60,3,0,NaT,20-May-2026 23:45:53,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep03_cost/maglev_nmpc_full_n0060_rep03_cost_y_0_fun.o
+maglev_nmpc_full_n0060_rep03_cost/maglev_nmpc_full_n0060_rep03_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep03_cost/maglev_nmpc_full_n0060_rep03_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_full_n0060_rep03_cost/maglev_nmpc_full_n0060_rep03_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep03_cost/maglev_nmpc_full_n0060_rep03_cost_y_fun.o
+maglev_nmpc_full_n0060_rep03_cost/maglev_nmpc_full_n0060_rep03_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep03_cost/maglev_nmpc_full_n0060_rep03_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_full_n0060_rep03_cost/maglev_nmpc_full_n0060_rep03_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep03_cost/maglev_nmpc_full_n0060_rep03_cost_y_e_fun.o
+maglev_nmpc_full_n0060_rep03_cost/maglev_nmpc_full_n0060_rep03_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep03_cost/maglev_nmpc_full_n0060_rep03_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_full_n0060_rep03_cost/maglev_nmpc_full_n0060_rep03_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_full_n0060_rep03.o
+acados_solver_maglev_nmpc_full_n0060_rep03.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep03_model/maglev_nmpc_full_n0060_rep03_impl_dae_fun.o
+maglev_nmpc_full_n0060_rep03_model/maglev_nmpc_full_n0060_rep03_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep03_model/maglev_nmpc_full_n0060_rep03_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_full_n0060_rep03_model/maglev_nmpc_full_n0060_rep03_impl_dae_fun_jac_x_xdot_z.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0060_rep03_model/maglev_nmpc_full_n0060_rep03_impl_dae_jac_x_xdot_u_z.o
+maglev_nmpc_full_n0060_rep03_model/maglev_nmpc_full_n0060_rep03_impl_dae_jac_x_xdot_u_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_full_n0060_rep03_model/maglev_nmpc_full_n0060_rep03_impl_dae_jac_x_xdot_u_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+reduced_n0060_rep01,reduced,60,1,1,20-May-2026 23:45:53,21-May-2026 00:11:24,10,10,0.05,0.005,2000,2000,5,1,0.05,0.264401,0.238333,64520,64510,30,20,-O1,0.564394807509528,16.505169,738.869005,749.340081,1488.209322,1529.991469,148756148,0.0301191786658315,2000,0,0,0,0,1,1,10.313029,10.215,10.6552,15.355,10.342053,10.239,10.6894,19.738,1.4577725,20.974,3.95546703728398e-12,3.94892452170556e-12,9.33813091461598e-14,0.11446783283884,0.000142715975415256,0.00236739508250876,0.699020556396962,0.0153293202796581,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0060_rep01,"",ok,148745956,2544810,2540918
+reduced_n0060_rep02,reduced,60,2,1,21-May-2026 00:11:24,21-May-2026 00:36:31,10,10,0.05,0.005,2000,2000,5,1,0.05,0.205155,0.131865,64520,64510,30,20,-O1,0.564394807509528,16.254872,731.926255,733.756024,1465.682407,1507.575493,148756148,0.0301191786658315,2000,0,0,0,0,1,1,10.667392,10.565,11.0708,28.267,10.69718,10.591,11.11915,32.193,1.4511315,13.44,3.95546703728398e-12,3.94892452170556e-12,9.33813091461598e-14,0.11446783283884,0.000142715975415256,0.00236739508250876,0.699020556396962,0.0153293202796581,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0060_rep02,"",ok,148745956,2544810,2540918
+reduced_n0060_rep03,reduced,60,3,1,21-May-2026 00:36:31,21-May-2026 01:02:12,10,10,0.05,0.005,2000,2000,5,1,0.05,0.205789,0.131544,64520,64510,30,20,-O1,0.564394807509528,16.406657,754.4814,743.789159,1498.270852,1539.972526,148756148,0.0301191786658315,2000,0,0,0,0,1,1,10.371899,10.29,10.73335,15.345,10.428388,10.317,10.8011,21.708,1.4830295,17.29,3.95546703728398e-12,3.94892452170556e-12,9.33813091461598e-14,0.11446783283884,0.000142715975415256,0.00236739508250876,0.699020556396962,0.0153293202796581,0.999999999999999,/home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/generated_code/reduced_n0060_rep03,"",ok,148745956,2544810,2540918
+full_n0080_rep01,full,80,1,0,NaT,21-May-2026 01:05:17,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep01_cost/maglev_nmpc_full_n0080_rep01_cost_y_0_fun.o
+maglev_nmpc_full_n0080_rep01_cost/maglev_nmpc_full_n0080_rep01_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep01_cost/maglev_nmpc_full_n0080_rep01_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_full_n0080_rep01_cost/maglev_nmpc_full_n0080_rep01_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep01_cost/maglev_nmpc_full_n0080_rep01_cost_y_fun.o
+maglev_nmpc_full_n0080_rep01_cost/maglev_nmpc_full_n0080_rep01_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep01_cost/maglev_nmpc_full_n0080_rep01_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_full_n0080_rep01_cost/maglev_nmpc_full_n0080_rep01_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep01_cost/maglev_nmpc_full_n0080_rep01_cost_y_e_fun.o
+maglev_nmpc_full_n0080_rep01_cost/maglev_nmpc_full_n0080_rep01_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep01_cost/maglev_nmpc_full_n0080_rep01_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_full_n0080_rep01_cost/maglev_nmpc_full_n0080_rep01_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_full_n0080_rep01.o
+acados_solver_maglev_nmpc_full_n0080_rep01.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep01_model/maglev_nmpc_full_n0080_rep01_impl_dae_fun.o
+maglev_nmpc_full_n0080_rep01_model/maglev_nmpc_full_n0080_rep01_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep01_model/maglev_nmpc_full_n0080_rep01_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_full_n0080_rep01_model/maglev_nmpc_full_n0080_rep01_impl_dae_fun_jac_x_xdot_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_full_n0080_rep01_model/maglev_nmpc_full_n0080_rep01_impl_dae_fun_jac_x_xdot_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+full_n0080_rep02,full,80,2,0,NaT,21-May-2026 01:08:07,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep02_cost/maglev_nmpc_full_n0080_rep02_cost_y_0_fun.o
+maglev_nmpc_full_n0080_rep02_cost/maglev_nmpc_full_n0080_rep02_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep02_cost/maglev_nmpc_full_n0080_rep02_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_full_n0080_rep02_cost/maglev_nmpc_full_n0080_rep02_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep02_cost/maglev_nmpc_full_n0080_rep02_cost_y_fun.o
+maglev_nmpc_full_n0080_rep02_cost/maglev_nmpc_full_n0080_rep02_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep02_cost/maglev_nmpc_full_n0080_rep02_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_full_n0080_rep02_cost/maglev_nmpc_full_n0080_rep02_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep02_cost/maglev_nmpc_full_n0080_rep02_cost_y_e_fun.o
+maglev_nmpc_full_n0080_rep02_cost/maglev_nmpc_full_n0080_rep02_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep02_cost/maglev_nmpc_full_n0080_rep02_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_full_n0080_rep02_cost/maglev_nmpc_full_n0080_rep02_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_full_n0080_rep02.o
+acados_solver_maglev_nmpc_full_n0080_rep02.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep02_model/maglev_nmpc_full_n0080_rep02_impl_dae_fun.o
+maglev_nmpc_full_n0080_rep02_model/maglev_nmpc_full_n0080_rep02_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep02_model/maglev_nmpc_full_n0080_rep02_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_full_n0080_rep02_model/maglev_nmpc_full_n0080_rep02_impl_dae_fun_jac_x_xdot_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_full_n0080_rep02_model/maglev_nmpc_full_n0080_rep02_impl_dae_fun_jac_x_xdot_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+full_n0080_rep03,full,80,3,0,NaT,21-May-2026 01:10:53,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep03_cost/maglev_nmpc_full_n0080_rep03_cost_y_0_fun.o
+maglev_nmpc_full_n0080_rep03_cost/maglev_nmpc_full_n0080_rep03_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep03_cost/maglev_nmpc_full_n0080_rep03_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_full_n0080_rep03_cost/maglev_nmpc_full_n0080_rep03_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep03_cost/maglev_nmpc_full_n0080_rep03_cost_y_fun.o
+maglev_nmpc_full_n0080_rep03_cost/maglev_nmpc_full_n0080_rep03_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep03_cost/maglev_nmpc_full_n0080_rep03_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_full_n0080_rep03_cost/maglev_nmpc_full_n0080_rep03_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep03_cost/maglev_nmpc_full_n0080_rep03_cost_y_e_fun.o
+maglev_nmpc_full_n0080_rep03_cost/maglev_nmpc_full_n0080_rep03_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep03_cost/maglev_nmpc_full_n0080_rep03_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_full_n0080_rep03_cost/maglev_nmpc_full_n0080_rep03_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_full_n0080_rep03.o
+acados_solver_maglev_nmpc_full_n0080_rep03.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep03_model/maglev_nmpc_full_n0080_rep03_impl_dae_fun.o
+maglev_nmpc_full_n0080_rep03_model/maglev_nmpc_full_n0080_rep03_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0080_rep03_model/maglev_nmpc_full_n0080_rep03_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_full_n0080_rep03_model/maglev_nmpc_full_n0080_rep03_impl_dae_fun_jac_x_xdot_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_full_n0080_rep03_model/maglev_nmpc_full_n0080_rep03_impl_dae_fun_jac_x_xdot_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+reduced_n0080_rep01,reduced,80,1,0,NaT,21-May-2026 01:13:27,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep01_cost/maglev_nmpc_reduced_reduced_n0080_rep01_cost_y_0_fun.o
+maglev_nmpc_reduced_reduced_n0080_rep01_cost/maglev_nmpc_reduced_reduced_n0080_rep01_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep01_cost/maglev_nmpc_reduced_reduced_n0080_rep01_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0080_rep01_cost/maglev_nmpc_reduced_reduced_n0080_rep01_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep01_cost/maglev_nmpc_reduced_reduced_n0080_rep01_cost_y_fun.o
+maglev_nmpc_reduced_reduced_n0080_rep01_cost/maglev_nmpc_reduced_reduced_n0080_rep01_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep01_cost/maglev_nmpc_reduced_reduced_n0080_rep01_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0080_rep01_cost/maglev_nmpc_reduced_reduced_n0080_rep01_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep01_cost/maglev_nmpc_reduced_reduced_n0080_rep01_cost_y_e_fun.o
+maglev_nmpc_reduced_reduced_n0080_rep01_cost/maglev_nmpc_reduced_reduced_n0080_rep01_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep01_cost/maglev_nmpc_reduced_reduced_n0080_rep01_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0080_rep01_cost/maglev_nmpc_reduced_reduced_n0080_rep01_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_reduced_reduced_n0080_rep01.o
+acados_solver_maglev_nmpc_reduced_reduced_n0080_rep01.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep01_model/maglev_nmpc_reduced_reduced_n0080_rep01_impl_dae_fun.o
+maglev_nmpc_reduced_reduced_n0080_rep01_model/maglev_nmpc_reduced_reduced_n0080_rep01_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep01_model/maglev_nmpc_reduced_reduced_n0080_rep01_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_reduced_reduced_n0080_rep01_model/maglev_nmpc_reduced_reduced_n0080_rep01_impl_dae_fun_jac_x_xdot_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_reduced_reduced_n0080_rep01_model/maglev_nmpc_reduced_reduced_n0080_rep01_impl_dae_fun_jac_x_xdot_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+reduced_n0080_rep02,reduced,80,2,0,NaT,21-May-2026 01:16:06,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep02_cost/maglev_nmpc_reduced_reduced_n0080_rep02_cost_y_0_fun.o
+maglev_nmpc_reduced_reduced_n0080_rep02_cost/maglev_nmpc_reduced_reduced_n0080_rep02_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep02_cost/maglev_nmpc_reduced_reduced_n0080_rep02_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0080_rep02_cost/maglev_nmpc_reduced_reduced_n0080_rep02_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep02_cost/maglev_nmpc_reduced_reduced_n0080_rep02_cost_y_fun.o
+maglev_nmpc_reduced_reduced_n0080_rep02_cost/maglev_nmpc_reduced_reduced_n0080_rep02_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep02_cost/maglev_nmpc_reduced_reduced_n0080_rep02_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0080_rep02_cost/maglev_nmpc_reduced_reduced_n0080_rep02_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep02_cost/maglev_nmpc_reduced_reduced_n0080_rep02_cost_y_e_fun.o
+maglev_nmpc_reduced_reduced_n0080_rep02_cost/maglev_nmpc_reduced_reduced_n0080_rep02_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep02_cost/maglev_nmpc_reduced_reduced_n0080_rep02_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0080_rep02_cost/maglev_nmpc_reduced_reduced_n0080_rep02_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_reduced_reduced_n0080_rep02.o
+acados_solver_maglev_nmpc_reduced_reduced_n0080_rep02.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep02_model/maglev_nmpc_reduced_reduced_n0080_rep02_impl_dae_fun.o
+maglev_nmpc_reduced_reduced_n0080_rep02_model/maglev_nmpc_reduced_reduced_n0080_rep02_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep02_model/maglev_nmpc_reduced_reduced_n0080_rep02_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_reduced_reduced_n0080_rep02_model/maglev_nmpc_reduced_reduced_n0080_rep02_impl_dae_fun_jac_x_xdot_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_reduced_reduced_n0080_rep02_model/maglev_nmpc_reduced_reduced_n0080_rep02_impl_dae_fun_jac_x_xdot_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+reduced_n0080_rep03,reduced,80,3,0,NaT,21-May-2026 01:18:46,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep03_cost/maglev_nmpc_reduced_reduced_n0080_rep03_cost_y_0_fun.o
+maglev_nmpc_reduced_reduced_n0080_rep03_cost/maglev_nmpc_reduced_reduced_n0080_rep03_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep03_cost/maglev_nmpc_reduced_reduced_n0080_rep03_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0080_rep03_cost/maglev_nmpc_reduced_reduced_n0080_rep03_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep03_cost/maglev_nmpc_reduced_reduced_n0080_rep03_cost_y_fun.o
+maglev_nmpc_reduced_reduced_n0080_rep03_cost/maglev_nmpc_reduced_reduced_n0080_rep03_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep03_cost/maglev_nmpc_reduced_reduced_n0080_rep03_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0080_rep03_cost/maglev_nmpc_reduced_reduced_n0080_rep03_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep03_cost/maglev_nmpc_reduced_reduced_n0080_rep03_cost_y_e_fun.o
+maglev_nmpc_reduced_reduced_n0080_rep03_cost/maglev_nmpc_reduced_reduced_n0080_rep03_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep03_cost/maglev_nmpc_reduced_reduced_n0080_rep03_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0080_rep03_cost/maglev_nmpc_reduced_reduced_n0080_rep03_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_reduced_reduced_n0080_rep03.o
+acados_solver_maglev_nmpc_reduced_reduced_n0080_rep03.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep03_model/maglev_nmpc_reduced_reduced_n0080_rep03_impl_dae_fun.o
+maglev_nmpc_reduced_reduced_n0080_rep03_model/maglev_nmpc_reduced_reduced_n0080_rep03_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0080_rep03_model/maglev_nmpc_reduced_reduced_n0080_rep03_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_reduced_reduced_n0080_rep03_model/maglev_nmpc_reduced_reduced_n0080_rep03_impl_dae_fun_jac_x_xdot_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_reduced_reduced_n0080_rep03_model/maglev_nmpc_reduced_reduced_n0080_rep03_impl_dae_fun_jac_x_xdot_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+full_n0100_rep01,full,100,1,0,NaT,21-May-2026 01:22:34,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep01_cost/maglev_nmpc_full_n0100_rep01_cost_y_0_fun.o
+maglev_nmpc_full_n0100_rep01_cost/maglev_nmpc_full_n0100_rep01_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep01_cost/maglev_nmpc_full_n0100_rep01_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_full_n0100_rep01_cost/maglev_nmpc_full_n0100_rep01_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep01_cost/maglev_nmpc_full_n0100_rep01_cost_y_fun.o
+maglev_nmpc_full_n0100_rep01_cost/maglev_nmpc_full_n0100_rep01_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep01_cost/maglev_nmpc_full_n0100_rep01_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_full_n0100_rep01_cost/maglev_nmpc_full_n0100_rep01_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep01_cost/maglev_nmpc_full_n0100_rep01_cost_y_e_fun.o
+maglev_nmpc_full_n0100_rep01_cost/maglev_nmpc_full_n0100_rep01_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep01_cost/maglev_nmpc_full_n0100_rep01_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_full_n0100_rep01_cost/maglev_nmpc_full_n0100_rep01_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_full_n0100_rep01.o
+acados_solver_maglev_nmpc_full_n0100_rep01.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep01_model/maglev_nmpc_full_n0100_rep01_impl_dae_fun.o
+maglev_nmpc_full_n0100_rep01_model/maglev_nmpc_full_n0100_rep01_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep01_model/maglev_nmpc_full_n0100_rep01_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_full_n0100_rep01_model/maglev_nmpc_full_n0100_rep01_impl_dae_fun_jac_x_xdot_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_full_n0100_rep01_model/maglev_nmpc_full_n0100_rep01_impl_dae_fun_jac_x_xdot_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+full_n0100_rep02,full,100,2,0,NaT,21-May-2026 01:26:20,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep02_cost/maglev_nmpc_full_n0100_rep02_cost_y_0_fun.o
+maglev_nmpc_full_n0100_rep02_cost/maglev_nmpc_full_n0100_rep02_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep02_cost/maglev_nmpc_full_n0100_rep02_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_full_n0100_rep02_cost/maglev_nmpc_full_n0100_rep02_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep02_cost/maglev_nmpc_full_n0100_rep02_cost_y_fun.o
+maglev_nmpc_full_n0100_rep02_cost/maglev_nmpc_full_n0100_rep02_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep02_cost/maglev_nmpc_full_n0100_rep02_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_full_n0100_rep02_cost/maglev_nmpc_full_n0100_rep02_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep02_cost/maglev_nmpc_full_n0100_rep02_cost_y_e_fun.o
+maglev_nmpc_full_n0100_rep02_cost/maglev_nmpc_full_n0100_rep02_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep02_cost/maglev_nmpc_full_n0100_rep02_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_full_n0100_rep02_cost/maglev_nmpc_full_n0100_rep02_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_full_n0100_rep02.o
+acados_solver_maglev_nmpc_full_n0100_rep02.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep02_model/maglev_nmpc_full_n0100_rep02_impl_dae_fun.o
+maglev_nmpc_full_n0100_rep02_model/maglev_nmpc_full_n0100_rep02_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep02_model/maglev_nmpc_full_n0100_rep02_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_full_n0100_rep02_model/maglev_nmpc_full_n0100_rep02_impl_dae_fun_jac_x_xdot_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_full_n0100_rep02_model/maglev_nmpc_full_n0100_rep02_impl_dae_fun_jac_x_xdot_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+full_n0100_rep03,full,100,3,0,NaT,21-May-2026 01:30:04,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep03_cost/maglev_nmpc_full_n0100_rep03_cost_y_0_fun.o
+maglev_nmpc_full_n0100_rep03_cost/maglev_nmpc_full_n0100_rep03_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep03_cost/maglev_nmpc_full_n0100_rep03_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_full_n0100_rep03_cost/maglev_nmpc_full_n0100_rep03_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep03_cost/maglev_nmpc_full_n0100_rep03_cost_y_fun.o
+maglev_nmpc_full_n0100_rep03_cost/maglev_nmpc_full_n0100_rep03_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep03_cost/maglev_nmpc_full_n0100_rep03_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_full_n0100_rep03_cost/maglev_nmpc_full_n0100_rep03_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep03_cost/maglev_nmpc_full_n0100_rep03_cost_y_e_fun.o
+maglev_nmpc_full_n0100_rep03_cost/maglev_nmpc_full_n0100_rep03_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep03_cost/maglev_nmpc_full_n0100_rep03_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_full_n0100_rep03_cost/maglev_nmpc_full_n0100_rep03_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_full_n0100_rep03.o
+acados_solver_maglev_nmpc_full_n0100_rep03.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep03_model/maglev_nmpc_full_n0100_rep03_impl_dae_fun.o
+maglev_nmpc_full_n0100_rep03_model/maglev_nmpc_full_n0100_rep03_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_full_n0100_rep03_model/maglev_nmpc_full_n0100_rep03_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_full_n0100_rep03_model/maglev_nmpc_full_n0100_rep03_impl_dae_fun_jac_x_xdot_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_full_n0100_rep03_model/maglev_nmpc_full_n0100_rep03_impl_dae_fun_jac_x_xdot_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+reduced_n0100_rep01,reduced,100,1,0,NaT,21-May-2026 01:33:47,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep01_cost/maglev_nmpc_reduced_reduced_n0100_rep01_cost_y_0_fun.o
+maglev_nmpc_reduced_reduced_n0100_rep01_cost/maglev_nmpc_reduced_reduced_n0100_rep01_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep01_cost/maglev_nmpc_reduced_reduced_n0100_rep01_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0100_rep01_cost/maglev_nmpc_reduced_reduced_n0100_rep01_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep01_cost/maglev_nmpc_reduced_reduced_n0100_rep01_cost_y_fun.o
+maglev_nmpc_reduced_reduced_n0100_rep01_cost/maglev_nmpc_reduced_reduced_n0100_rep01_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep01_cost/maglev_nmpc_reduced_reduced_n0100_rep01_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0100_rep01_cost/maglev_nmpc_reduced_reduced_n0100_rep01_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep01_cost/maglev_nmpc_reduced_reduced_n0100_rep01_cost_y_e_fun.o
+maglev_nmpc_reduced_reduced_n0100_rep01_cost/maglev_nmpc_reduced_reduced_n0100_rep01_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep01_cost/maglev_nmpc_reduced_reduced_n0100_rep01_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0100_rep01_cost/maglev_nmpc_reduced_reduced_n0100_rep01_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_reduced_reduced_n0100_rep01.o
+acados_solver_maglev_nmpc_reduced_reduced_n0100_rep01.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep01_model/maglev_nmpc_reduced_reduced_n0100_rep01_impl_dae_fun.o
+maglev_nmpc_reduced_reduced_n0100_rep01_model/maglev_nmpc_reduced_reduced_n0100_rep01_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep01_model/maglev_nmpc_reduced_reduced_n0100_rep01_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_reduced_reduced_n0100_rep01_model/maglev_nmpc_reduced_reduced_n0100_rep01_impl_dae_fun_jac_x_xdot_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_reduced_reduced_n0100_rep01_model/maglev_nmpc_reduced_reduced_n0100_rep01_impl_dae_fun_jac_x_xdot_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+reduced_n0100_rep02,reduced,100,2,0,NaT,21-May-2026 01:37:30,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep02_cost/maglev_nmpc_reduced_reduced_n0100_rep02_cost_y_0_fun.o
+maglev_nmpc_reduced_reduced_n0100_rep02_cost/maglev_nmpc_reduced_reduced_n0100_rep02_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep02_cost/maglev_nmpc_reduced_reduced_n0100_rep02_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0100_rep02_cost/maglev_nmpc_reduced_reduced_n0100_rep02_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep02_cost/maglev_nmpc_reduced_reduced_n0100_rep02_cost_y_fun.o
+maglev_nmpc_reduced_reduced_n0100_rep02_cost/maglev_nmpc_reduced_reduced_n0100_rep02_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep02_cost/maglev_nmpc_reduced_reduced_n0100_rep02_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0100_rep02_cost/maglev_nmpc_reduced_reduced_n0100_rep02_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep02_cost/maglev_nmpc_reduced_reduced_n0100_rep02_cost_y_e_fun.o
+maglev_nmpc_reduced_reduced_n0100_rep02_cost/maglev_nmpc_reduced_reduced_n0100_rep02_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep02_cost/maglev_nmpc_reduced_reduced_n0100_rep02_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0100_rep02_cost/maglev_nmpc_reduced_reduced_n0100_rep02_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_reduced_reduced_n0100_rep02.o
+acados_solver_maglev_nmpc_reduced_reduced_n0100_rep02.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep02_model/maglev_nmpc_reduced_reduced_n0100_rep02_impl_dae_fun.o
+maglev_nmpc_reduced_reduced_n0100_rep02_model/maglev_nmpc_reduced_reduced_n0100_rep02_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep02_model/maglev_nmpc_reduced_reduced_n0100_rep02_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_reduced_reduced_n0100_rep02_model/maglev_nmpc_reduced_reduced_n0100_rep02_impl_dae_fun_jac_x_xdot_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_reduced_reduced_n0100_rep02_model/maglev_nmpc_reduced_reduced_n0100_rep02_impl_dae_fun_jac_x_xdot_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0
+reduced_n0100_rep03,reduced,100,3,0,NaT,21-May-2026 01:41:16,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,"Error using AcadosOcpSolver/compile_ocp_shared_lib (line 839)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep03_cost/maglev_nmpc_reduced_reduced_n0100_rep03_cost_y_0_fun.o
+maglev_nmpc_reduced_reduced_n0100_rep03_cost/maglev_nmpc_reduced_reduced_n0100_rep03_cost_y_0_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep03_cost/maglev_nmpc_reduced_reduced_n0100_rep03_cost_y_0_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0100_rep03_cost/maglev_nmpc_reduced_reduced_n0100_rep03_cost_y_0_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep03_cost/maglev_nmpc_reduced_reduced_n0100_rep03_cost_y_fun.o
+maglev_nmpc_reduced_reduced_n0100_rep03_cost/maglev_nmpc_reduced_reduced_n0100_rep03_cost_y_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep03_cost/maglev_nmpc_reduced_reduced_n0100_rep03_cost_y_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0100_rep03_cost/maglev_nmpc_reduced_reduced_n0100_rep03_cost_y_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep03_cost/maglev_nmpc_reduced_reduced_n0100_rep03_cost_y_e_fun.o
+maglev_nmpc_reduced_reduced_n0100_rep03_cost/maglev_nmpc_reduced_reduced_n0100_rep03_cost_y_e_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep03_cost/maglev_nmpc_reduced_reduced_n0100_rep03_cost_y_e_fun_jac_ut_xt.o
+maglev_nmpc_reduced_reduced_n0100_rep03_cost/maglev_nmpc_reduced_reduced_n0100_rep03_cost_y_e_fun_jac_ut_xt.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_solver_maglev_nmpc_reduced_reduced_n0100_rep03.o
+acados_solver_maglev_nmpc_reduced_reduced_n0100_rep03.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep03_model/maglev_nmpc_reduced_reduced_n0100_rep03_impl_dae_fun.o
+maglev_nmpc_reduced_reduced_n0100_rep03_model/maglev_nmpc_reduced_reduced_n0100_rep03_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_nmpc_reduced_reduced_n0100_rep03_model/maglev_nmpc_reduced_reduced_n0100_rep03_impl_dae_fun_jac_x_xdot_z.o
+maglev_nmpc_reduced_reduced_n0100_rep03_model/maglev_nmpc_reduced_reduced_n0100_rep03_impl_dae_fun_jac_x_xdot_z.c
+[01m[Kcc:[m[K [01;31m[Kfatal error: [m[KKilled signal terminated program cc1
+compilation terminated.
+make: *** [<builtin>:
+maglev_nmpc_reduced_reduced_n0100_rep03_model/maglev_nmpc_reduced_reduced_n0100_rep03_impl_dae_fun_jac_x_xdot_z.o]
+Error 1
+
+
+Error in AcadosOcpSolver (line 162)
+                obj.compile_ocp_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",compiler_killed,0,0,0

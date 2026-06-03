@@ -1,0 +1,481 @@
+=== Magnet n sweep started 2026-05-20 20:41:37 ===
+Results directory: /home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep
+Summary CSV:       /home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/magnet_n_sweep_summary.csv
+n values:          [4 6 8 10 12 16 20 30 40 60 80 100]
+repetitions:       3
+variants:          full, reduced
+
+
+[RUN] full_n0004_rep01 started 2026-05-20 20:41:38
+No real equilibrium for this system
+[FAIL] full_n0004_rep01
+Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[RUN] full_n0004_rep02 started 2026-05-20 20:41:38
+No real equilibrium for this system
+[FAIL] full_n0004_rep02
+Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[RUN] full_n0004_rep03 started 2026-05-20 20:41:39
+No real equilibrium for this system
+[FAIL] full_n0004_rep03
+Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[RUN] reduced_n0004_rep01 started 2026-05-20 20:41:39
+No real equilibrium for this system
+[FAIL] reduced_n0004_rep01
+Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[RUN] reduced_n0004_rep02 started 2026-05-20 20:41:39
+No real equilibrium for this system
+[FAIL] reduced_n0004_rep02
+Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[RUN] reduced_n0004_rep03 started 2026-05-20 20:41:39
+No real equilibrium for this system
+[FAIL] reduced_n0004_rep03
+Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[SKIP] full_n0006_rep01 already completed.
+[SKIP] full_n0006_rep02 already completed.
+[SKIP] full_n0006_rep03 already completed.
+[SKIP] reduced_n0006_rep01 already completed.
+[SKIP] reduced_n0006_rep02 already completed.
+[SKIP] reduced_n0006_rep03 already completed.
+[SKIP] full_n0008_rep01 already completed.
+[SKIP] full_n0008_rep02 already completed.
+[SKIP] full_n0008_rep03 already completed.
+[SKIP] reduced_n0008_rep01 already completed.
+[SKIP] reduced_n0008_rep02 already completed.
+[SKIP] reduced_n0008_rep03 already completed.
+
+[RUN] full_n0010_rep01 started 2026-05-20 20:41:39
+
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit https://github.com/coin-or/Ipopt
+******************************************************************************
+
+  Building OCP solver...
+found compiled acados MEX interface
+Not rendering Simulink-related templates, as simulink_opts are not specified.
+Successfully rendered acados templates!
+problem specific shared library compiled successfully
+compiling acados_mex_create_maglev_nmpc_full_n0010_rep01.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_free_maglev_nmpc_full_n0010_rep01.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_solve_maglev_nmpc_full_n0010_rep01.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_set_maglev_nmpc_full_n0010_rep01.c
+Building with 'gcc'.
+MEX completed successfully.
+maglev_nmpc_full_n0010_rep01_acados_create() -> success!
+  Building simulation solver...
+compiling /home/mariujf/acados/interfaces/acados_matlab_octave/sim_solve.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling /home/mariujf/acados/interfaces/acados_matlab_octave/sim_get.c
+Building with 'gcc'.
+MEX completed successfully.
+Successfully rendered acados templates!
+compiling acados_sim_create_maglev_sim_full_n0010_rep01.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_sim_free_maglev_sim_full_n0010_rep01.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_sim_set_maglev_sim_full_n0010_rep01.c
+Building with 'gcc'.
+MEX completed successfully.
+maglev_sim_full_n0010_rep01_acados_create() -> success!
+  step    1/2000: st=0, reported=1.178 ms, wall=3.282 ms, |e|=4.146e+00
+  step    2/2000: st=0, reported=1.208 ms, wall=1.454 ms, |e|=2.476e+00
+  step    3/2000: st=0, reported=1.000 ms, wall=1.203 ms, |e|=2.645e-01
+  step    4/2000: st=0, reported=0.804 ms, wall=0.996 ms, |e|=1.214e+00
+  step    5/2000: st=0, reported=0.816 ms, wall=1.605 ms, |e|=7.390e-01
+  step  100/2000: st=0, reported=0.611 ms, wall=0.625 ms, |e|=1.051e-04
+  step  200/2000: st=0, reported=0.621 ms, wall=0.633 ms, |e|=1.215e-04
+  step  300/2000: st=0, reported=0.611 ms, wall=0.623 ms, |e|=1.381e-04
+  step  400/2000: st=0, reported=0.598 ms, wall=0.612 ms, |e|=1.549e-04
+  step  500/2000: st=0, reported=0.612 ms, wall=0.624 ms, |e|=1.718e-04
+  step  600/2000: st=0, reported=0.627 ms, wall=0.639 ms, |e|=1.887e-04
+  step  700/2000: st=0, reported=0.622 ms, wall=0.634 ms, |e|=2.057e-04
+  step  800/2000: st=0, reported=0.617 ms, wall=0.628 ms, |e|=2.228e-04
+  step  900/2000: st=0, reported=0.594 ms, wall=0.606 ms, |e|=2.399e-04
+  step 1000/2000: st=0, reported=0.627 ms, wall=0.641 ms, |e|=2.001e-01
+  step 1100/2000: st=0, reported=0.671 ms, wall=0.685 ms, |e|=2.753e-04
+  step 1200/2000: st=0, reported=0.663 ms, wall=0.674 ms, |e|=2.910e-04
+  step 1300/2000: st=0, reported=0.677 ms, wall=0.688 ms, |e|=3.082e-04
+  step 1400/2000: st=0, reported=0.707 ms, wall=0.719 ms, |e|=3.254e-04
+  step 1500/2000: st=0, reported=0.684 ms, wall=0.695 ms, |e|=3.426e-04
+  step 1600/2000: st=0, reported=0.724 ms, wall=0.737 ms, |e|=3.598e-04
+  step 1700/2000: st=0, reported=0.714 ms, wall=0.727 ms, |e|=3.771e-04
+  step 1800/2000: st=0, reported=0.698 ms, wall=0.710 ms, |e|=3.943e-04
+  step 1900/2000: st=0, reported=0.719 ms, wall=0.730 ms, |e|=4.115e-04
+  step 2000/2000: st=0, reported=0.694 ms, wall=0.707 ms, |e|=4.288e-04
+delete template...
+done.
+delete template...
+done.
+[DONE] full_n0010_rep01 total 96.46 s, build 72.17 s, mean solve 0.677 ms
+[SKIP] full_n0010_rep02 already completed.
+[SKIP] full_n0010_rep03 already completed.
+[SKIP] reduced_n0010_rep01 already completed.
+[SKIP] reduced_n0010_rep02 already completed.
+[SKIP] reduced_n0010_rep03 already completed.
+[SKIP] full_n0012_rep01 already completed.
+
+[RUN] full_n0012_rep02 started 2026-05-20 20:43:16
+  Building OCP solver...
+found compiled acados MEX interface
+Not rendering Simulink-related templates, as simulink_opts are not specified.
+Successfully rendered acados templates!
+problem specific shared library compiled successfully
+compiling acados_mex_create_maglev_nmpc_full_n0012_rep02.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_free_maglev_nmpc_full_n0012_rep02.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_solve_maglev_nmpc_full_n0012_rep02.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_set_maglev_nmpc_full_n0012_rep02.c
+Building with 'gcc'.
+MEX completed successfully.
+maglev_nmpc_full_n0012_rep02_acados_create() -> success!
+  Building simulation solver...
+compiling /home/mariujf/acados/interfaces/acados_matlab_octave/sim_solve.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling /home/mariujf/acados/interfaces/acados_matlab_octave/sim_get.c
+Building with 'gcc'.
+MEX completed successfully.
+Successfully rendered acados templates!
+[Warning: The following error was caught while executing
+'maglev_nmpc_full_n0012_rep02_mex_solver' class destructor:
+Method 'delete' is not defined for class
+'maglev_nmpc_full_n0012_rep02_mex_solver' or is removed from MATLAB's search
+path.] 
+[> In run_magnet_n_sweep>runSingleCase (line 212)
+In run_magnet_n_sweep (line 91)] 
+[FAIL] full_n0012_rep02
+Error using AcadosSimSolver/compile_sim_shared_lib (line 318)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_sim_solver_maglev_sim_full_n0012_rep02.o
+acados_sim_solver_maglev_sim_full_n0012_rep02.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0012_rep02_model/maglev_sim_full_n0012_rep02_impl_dae_fun.o
+maglev_sim_full_n0012_rep02_model/maglev_sim_full_n0012_rep02_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0012_rep02_model/maglev_sim_full_n0012_rep02_impl_dae_fun_jac_x_xdot_z.o
+maglev_sim_full_n0012_rep02_model/maglev_sim_full_n0012_rep02_impl_dae_fun_jac_x_xdot_z.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0012_rep02_model/maglev_sim_full_n0012_rep02_impl_dae_jac_x_xdot_u_z.o
+maglev_sim_full_n0012_rep02_model/maglev_sim_full_n0012_rep02_impl_dae_jac_x_xdot_u_z.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0012_rep02_model/maglev_sim_full_n0012_rep02_impl_dae_fun_jac_x_xdot_u.o
+maglev_sim_full_n0012_rep02_model/maglev_sim_full_n0012_rep02_impl_dae_fun_jac_x_xdot_u.c
+Assembler messages:
+Fatal error: can't create
+maglev_sim_full_n0012_rep02_model/maglev_sim_full_n0012_rep02_impl_dae_fun_jac_x_xdot_u.o:
+No such file or directory
+make: *** [<builtin>:
+maglev_sim_full_n0012_rep02_model/maglev_sim_full_n0012_rep02_impl_dae_fun_jac_x_xdot_u.o]
+Error 1
+
+
+Error in AcadosSimSolver (line 142)
+                obj.compile_sim_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 249)
+    sim_solver = AcadosSimSolver(setup.sim);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[RUN] full_n0012_rep03 started 2026-05-20 20:45:09
+  Building OCP solver...
+found compiled acados MEX interface
+Not rendering Simulink-related templates, as simulink_opts are not specified.
+Successfully rendered acados templates!
+problem specific shared library compiled successfully
+compiling acados_mex_create_maglev_nmpc_full_n0012_rep03.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_free_maglev_nmpc_full_n0012_rep03.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_solve_maglev_nmpc_full_n0012_rep03.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_set_maglev_nmpc_full_n0012_rep03.c
+Building with 'gcc'.
+MEX completed successfully.
+maglev_nmpc_full_n0012_rep03_acados_create() -> success!
+  Building simulation solver...
+compiling /home/mariujf/acados/interfaces/acados_matlab_octave/sim_solve.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling /home/mariujf/acados/interfaces/acados_matlab_octave/sim_get.c
+Building with 'gcc'.
+MEX completed successfully.
+Successfully rendered acados templates!
+[Warning: The following error was caught while executing
+'maglev_nmpc_full_n0012_rep03_mex_solver' class destructor:
+Method 'delete' is not defined for class
+'maglev_nmpc_full_n0012_rep03_mex_solver' or is removed from MATLAB's search
+path.] 
+[> In run_magnet_n_sweep>runSingleCase (line 212)
+In run_magnet_n_sweep (line 91)] 
+[FAIL] full_n0012_rep03
+Error using AcadosSimSolver/compile_sim_shared_lib (line 318)
+Building templated code as shared library failed.
+Got status 2, result: cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+acados_sim_solver_maglev_sim_full_n0012_rep03.o
+acados_sim_solver_maglev_sim_full_n0012_rep03.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun.o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun_jac_x_xdot_z.o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun_jac_x_xdot_z.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_jac_x_xdot_u_z.o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_jac_x_xdot_u_z.c
+cc -fPIC -std=c99   -O1 -I/home/mariujf/acados/include
+-I/home/mariujf/acados/include/acados
+-I/home/mariujf/acados/include/blasfeo/include
+-I/home/mariujf/acados/include/hpipm/include  -c -o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun_jac_x_xdot_u.o
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun_jac_x_xdot_u.c
+Assembler messages:
+Fatal error: can't create
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun_jac_x_xdot_u.o:
+No such file or directory
+make: *** [<builtin>:
+maglev_sim_full_n0012_rep03_model/maglev_sim_full_n0012_rep03_impl_dae_fun_jac_x_xdot_u.o]
+Error 1
+
+
+Error in AcadosSimSolver (line 142)
+                obj.compile_sim_shared_lib(code_export_directory);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 249)
+    sim_solver = AcadosSimSolver(setup.sim);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[SKIP] reduced_n0012_rep01 already completed.
+[SKIP] reduced_n0012_rep02 already completed.
+
+[RUN] reduced_n0012_rep03 started 2026-05-20 20:47:03
+  Building OCP solver...
+found compiled acados MEX interface
+Not rendering Simulink-related templates, as simulink_opts are not specified.
+Successfully rendered acados templates!
+problem specific shared library compiled successfully
+compiling acados_mex_create_maglev_nmpc_reduced_reduced_n0012_rep03.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_free_maglev_nmpc_reduced_reduced_n0012_rep03.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_solve_maglev_nmpc_reduced_reduced_n0012_rep03.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_set_maglev_nmpc_reduced_reduced_n0012_rep03.c
+Building with 'gcc'.
+MEX completed successfully.
+maglev_nmpc_reduced_reduced_n0012_rep03_acados_create() -> success!
+  Building simulation solver...
+compiling /home/mariujf/acados/interfaces/acados_matlab_octave/sim_solve.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling /home/mariujf/acados/interfaces/acados_matlab_octave/sim_get.c
+Building with 'gcc'.
+MEX completed successfully.
+Successfully rendered acados templates!
+compiling acados_sim_create_maglev_sim_reduced_reduced_n0012_rep03.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_sim_free_maglev_sim_reduced_reduced_n0012_rep03.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_sim_set_maglev_sim_reduced_reduced_n0012_rep03.c
+Building with 'gcc'.
+MEX completed successfully.
+maglev_sim_reduced_reduced_n0012_rep03_acados_create() -> success!
+  step    1/2000: st=0, reported=2.143 ms, wall=4.400 ms, |e|=4.151e+00
+  step    2/2000: st=0, reported=2.124 ms, wall=2.335 ms, |e|=2.486e+00
+  step    3/2000: st=0, reported=2.093 ms, wall=2.156 ms, |e|=2.604e-01
+  step    4/2000: st=0, reported=2.036 ms, wall=2.089 ms, |e|=1.212e+00
+  step    5/2000: st=0, reported=2.031 ms, wall=2.279 ms, |e|=7.366e-01
+  step  100/2000: st=0, reported=1.872 ms, wall=1.886 ms, |e|=4.001e-06
+  step  200/2000: st=0, reported=1.855 ms, wall=1.867 ms, |e|=5.814e-10
+  step  300/2000: st=0, reported=1.830 ms, wall=1.842 ms, |e|=3.979e-12
+  step  400/2000: st=0, reported=1.829 ms, wall=1.841 ms, |e|=3.977e-12
+  step  500/2000: st=0, reported=1.826 ms, wall=1.838 ms, |e|=3.996e-12
+  step  600/2000: st=0, reported=1.830 ms, wall=1.842 ms, |e|=3.971e-12
+  step  700/2000: st=0, reported=1.829 ms, wall=1.841 ms, |e|=3.999e-12
+  step  800/2000: st=0, reported=1.829 ms, wall=1.841 ms, |e|=3.963e-12
+  step  900/2000: st=0, reported=1.928 ms, wall=1.946 ms, |e|=3.986e-12
+  step 1000/2000: st=0, reported=1.917 ms, wall=1.953 ms, |e|=2.001e-01
+  step 1100/2000: st=0, reported=1.834 ms, wall=1.845 ms, |e|=2.876e-05
+  step 1200/2000: st=0, reported=1.836 ms, wall=1.847 ms, |e|=2.770e-09
+  step 1300/2000: st=0, reported=1.841 ms, wall=1.852 ms, |e|=4.005e-12
+  step 1400/2000: st=0, reported=1.832 ms, wall=1.843 ms, |e|=3.963e-12
+  step 1500/2000: st=0, reported=1.831 ms, wall=1.842 ms, |e|=3.965e-12
+  step 1600/2000: st=0, reported=1.828 ms, wall=1.840 ms, |e|=3.964e-12
+  step 1700/2000: st=0, reported=1.832 ms, wall=1.844 ms, |e|=4.037e-12
+  step 1800/2000: st=0, reported=1.835 ms, wall=1.846 ms, |e|=3.976e-12
+  step 1900/2000: st=0, reported=1.923 ms, wall=1.945 ms, |e|=3.961e-12
+  step 2000/2000: st=0, reported=1.875 ms, wall=1.886 ms, |e|=3.969e-12
+delete template...
+[Warning: The following error was caught while executing
+'maglev_nmpc_reduced_reduced_n0012_rep03_mex_solver' class destructor:
+Undefined function 'acados_mex_free_maglev_nmpc_reduced_reduced_n0012_rep03'
+for input arguments of type 'struct'.
+
+Error in maglev_nmpc_reduced_reduced_n0012_rep03_mex_solver/delete (line 61)
+
+Error in run_magnet_n_sweep>runSingleCase (line 270)
+end
+   ^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^] 
+[> In run_magnet_n_sweep>runSingleCase (line 270)
+In run_magnet_n_sweep (line 91)] 
+delete template...
+[Warning: The following error was caught while executing
+'maglev_sim_reduced_reduced_n0012_rep03_mex_sim_solver' class destructor:
+Undefined function 'acados_sim_free_maglev_sim_reduced_reduced_n0012_rep03' for
+input arguments of type 'struct'.
+
+Error in maglev_sim_reduced_reduced_n0012_rep03_mex_sim_solver/delete (line 78)
+
+Error in run_magnet_n_sweep>runSingleCase (line 270)
+end
+   ^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^] 
+[> In run_magnet_n_sweep>runSingleCase (line 270)
+In run_magnet_n_sweep (line 91)] 
+[DONE] reduced_n0012_rep03 total 91.00 s, build 69.28 s, mean solve 1.865 ms
+
+[RUN] full_n0016_rep01 started 2026-05-20 20:48:34
+  Building OCP solver...
+found compiled acados MEX interface
+Not rendering Simulink-related templates, as simulink_opts are not specified.
+Successfully rendered acados templates!
+problem specific shared library compiled successfully
+compiling acados_mex_create_maglev_nmpc_full_n0016_rep01.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_free_maglev_nmpc_full_n0016_rep01.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_solve_maglev_nmpc_full_n0016_rep01.c
+Building with 'gcc'.
+MEX completed successfully.
+compiling acados_mex_set_maglev_nmpc_full_n0016_rep01.c
+Building with 'gcc'.
+[FAIL] full_n0016_rep01
+Error using mex
+'/home/mariujf/n_sweep/isolated_experiment2/c_generated_code/acados_mex_set_maglev_nmpc_full_n0016_rep01.mexa64'
+is not a MEX file. For more information, see <a href="matlab: helpview([docroot
+'/matlab/helptargets.map'],'ENOTMEX')">File is not a MEX file</a>.
+
+Error in make_mex_maglev_nmpc_full_n0016_rep01 (line 133)
+            mex(FLAGS, LDFLAGS, COMPDEFINES, COMPFLAGS, acados_include, template_lib_include, external_include, blasfeo_include, hpipm_include,...
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in maglev_nmpc_full_n0016_rep01_mex_solver (line 48)
+                make_mex_maglev_nmpc_full_n0016_rep01();
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in AcadosOcpSolver (line 171)
+            obj.t_ocp = mex_solver(obj.solver_creation_opts);
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[RUN] full_n0016_rep02 started 2026-05-20 20:50:11
+  Building OCP solver...
+compiling /home/mariujf/acados/interfaces/acados_matlab_octave/ocp_get.c
+Caught "std::exception" Exception message is:
+fl:filesystem:PathNotFound

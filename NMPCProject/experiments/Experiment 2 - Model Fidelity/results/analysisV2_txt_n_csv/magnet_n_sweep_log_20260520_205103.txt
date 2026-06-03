@@ -1,0 +1,134 @@
+=== Magnet n sweep started 2026-05-20 20:51:04 ===
+Results directory: /home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep
+Summary CSV:       /home/mariujf/n_sweep/isolated_experiment2/results_magnet_n_sweep/magnet_n_sweep_summary.csv
+n values:          [4 6 8 10 12 16 20 30 40 60 80 100]
+repetitions:       3
+variants:          full, reduced
+
+
+[RUN] full_n0004_rep01 started 2026-05-20 20:51:05
+No real equilibrium for this system
+[FAIL] full_n0004_rep01
+Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[RUN] full_n0004_rep02 started 2026-05-20 20:51:06
+No real equilibrium for this system
+[FAIL] full_n0004_rep02
+Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[RUN] full_n0004_rep03 started 2026-05-20 20:51:06
+No real equilibrium for this system
+[FAIL] full_n0004_rep03
+Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[RUN] reduced_n0004_rep01 started 2026-05-20 20:51:06
+No real equilibrium for this system
+[FAIL] reduced_n0004_rep01
+Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[RUN] reduced_n0004_rep02 started 2026-05-20 20:51:06
+No real equilibrium for this system
+[FAIL] reduced_n0004_rep02
+Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[RUN] reduced_n0004_rep03 started 2026-05-20 20:51:07
+No real equilibrium for this system
+[FAIL] reduced_n0004_rep03
+Error using run_magnet_n_sweep>runSingleCase (line 224)
+no_equilibrium: computeSolenoidRadiusCorrectionFactor found no real equilibrium
+for n=4.
+
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[SKIP] full_n0006_rep01 already completed.
+[SKIP] full_n0006_rep02 already completed.
+[SKIP] full_n0006_rep03 already completed.
+[SKIP] reduced_n0006_rep01 already completed.
+[SKIP] reduced_n0006_rep02 already completed.
+[SKIP] reduced_n0006_rep03 already completed.
+[SKIP] full_n0008_rep01 already completed.
+[SKIP] full_n0008_rep02 already completed.
+[SKIP] full_n0008_rep03 already completed.
+[SKIP] reduced_n0008_rep01 already completed.
+[SKIP] reduced_n0008_rep02 already completed.
+[SKIP] reduced_n0008_rep03 already completed.
+[SKIP] full_n0010_rep01 already completed.
+[SKIP] full_n0010_rep02 already completed.
+[SKIP] full_n0010_rep03 already completed.
+[SKIP] reduced_n0010_rep01 already completed.
+[SKIP] reduced_n0010_rep02 already completed.
+[SKIP] reduced_n0010_rep03 already completed.
+[SKIP] full_n0012_rep01 already completed.
+
+[RUN] full_n0012_rep02 started 2026-05-20 20:51:07
+
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit https://github.com/coin-or/Ipopt
+******************************************************************************
+
+  Building OCP solver...
+found compiled acados MEX interface
+Not rendering Simulink-related templates, as simulink_opts are not specified.
+[FAIL] full_n0012_rep02
+Error using cd
+Unable to change current folder to
+'/home/mariujf/n_sweep/isolated_experiment2/c_generated_code/..' (Name is
+nonexistent or not a folder).
+
+Error in render_file (line 50)
+        cd ..
+        ^^
+Error in AcadosOcp/render_templates (line 1762)
+                render_file( in_file, out_file, json_fullfile )
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in AcadosOcpSolver/generate (line 770)
+            obj.ocp.render_templates()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in AcadosOcpSolver (line 139)
+                obj.generate();
+                ^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep>runSingleCase (line 244)
+    ocp_solver = AcadosOcpSolver(setup.ocp);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_magnet_n_sweep (line 91)
+                result = runSingleCase(cfg, variant, magnet_n, rep, run_id);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[RUN] full_n0012_rep03 started 2026-05-20 20:51:28
+  Building OCP solver...
+compiling /home/mariujf/acados/interfaces/acados_matlab_octave/ocp_get.c
+Caught "std::exception" Exception message is:
+fl:filesystem:PathNotFound

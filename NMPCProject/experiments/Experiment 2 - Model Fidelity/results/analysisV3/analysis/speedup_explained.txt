@@ -1,0 +1,92 @@
+HOW THE BUILD-TIME SPEEDUP WAS ACHIEVED
+=======================================
+
+THE PROBLEM
+-----------
+The controller needs to know the magnetic field around a circular magnet.
+To compute it, the code splits the magnet's circumference into `n` small
+pieces and adds up the field contribution from each piece (a trapezoidal
+sum).
+
+In the original code, this sum was written out symbolically. That means
+if n = 40, the math for "field at one point" was copy-pasted 40 times
+into one giant formula. If n = 100, it was copy-pasted 100 times.
+
+CasADi (the symbolic math library) then handed this huge formula to
+acados, which turned it into C source code. The C file grew with `n`:
+
+    n = 40   -> ~115 MB of C code
+    n = 60   -> too big, the C compiler ran out of memory and crashed
+    n = 100  -> completely impossible
+
+Build time grew almost as n^2. At n = 40 a single build took ~13 minutes.
+Anything above n = 60 simply would not compile.
+
+THE FIX
+-------
+Instead of pasting the per-point math `n` times, wrap it ONCE as a
+reusable function and tell CasADi: "call this function `n` times."
+
+Concretely, two things were changed:
+
+1. The per-point field calculation was packaged as its own
+   casadi.Function called `f_point`. This is just the math for ONE
+   piece of the circumference, written once.
+   (File: singlePointFieldCasADi.m)
+
+2. The trapezoidal sum was rewritten using CasADi's `.map(n)` feature:
+
+       B = f_point.map(n)(all_points, all_currents)
+
+   This tells CasADi: "evaluate f_point n times in a loop." The
+   generated C code now contains ONE copy of the per-point body and
+   a small loop that calls it n times.
+   (File: maglevSystemDynamicsCasADiMapped.m)
+
+One extra detail mattered: the top-level symbols (x, u, xdot) had to
+be switched from SX to MX. SX would have "helpfully" inlined the loop
+back out, undoing the whole optimization. MX keeps the function call
+as a real call.
+
+THE RESULT
+----------
+Because the C file no longer grows with `n`, build time and code size
+become FLAT in `n`:
+
+                   inline (old)        mapped (new)
+    n = 10         ~31 s build         ~23 s build
+    n = 40         ~634 s build        ~23 s build      (~28x faster)
+    n = 60         could not build     ~23 s build
+    n = 100        could not build     ~24 s build
+
+    Generated C code at n = 100:
+        old:   would have been ~280 MB (never compiled)
+        new:   ~8 MB
+
+The compiler memory wall is gone. Builds for n = 60, 80, 100 now
+succeed every time. n = 100 builds in under half a minute.
+
+THE TRADE-OFF
+-------------
+At runtime, the solver now makes a real function call for each of the
+`n` points, instead of running through inlined arithmetic. This costs
+roughly 30% in per-step solve time:
+
+    n = 40 mean solve:   inline 6.4 ms    mapped 8.4 ms
+
+So the change buys:
+  + flat build time (huge win)
+  + flat code size  (huge win)
+  + no more out-of-memory compile failures (huge win)
+in exchange for:
+  - about 30% slower runtime solves
+
+For offline studies and for building at high `n`, this is an enormous
+net win. The real-time ceiling at dt = 5 ms drops by roughly one
+n-step (from n ~ 20 to n ~ 16-20), which is the only meaningful cost.
+
+ONE-LINE SUMMARY
+----------------
+Replaced "write the per-point field math n times" with "write it once
+and tell CasADi to call it n times" (Function.map), using MX symbols
+so the call is preserved through to the generated C.
