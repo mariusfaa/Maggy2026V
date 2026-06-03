@@ -25,8 +25,13 @@
 %% --- PROJECT SETUP ---
 clearvars -except ocp_solver sim_solver; clc;
 
-acados_root  = '/home/mariujf/acados';
-project_root = '/home/mariujf/Maggy2026V/NMPCProject';
+% acados_root  = '/home/mariujf/acados';
+% project_root = '/home/mariujf/Maggy2026V/NMPCProject';
+
+% Windows root
+acados_root  = 'C:\Users\mariujf\acados';
+project_root = 'C:\Users\mariujf\Maggy2026V\NMPCProject';
+
 
 setenv('ACADOS_SOURCE_DIR',        acados_root);
 setenv('ENV_ACADOS_INSTALL_DIR',   acados_root);
@@ -79,16 +84,16 @@ xEq     = [0; 0; zEq_cas; zeros(9,1)];
 fprintf('Equilibrium: z = %.6f m, u = [0, 0, 0, 0]\n', zEq_cas);
 
 %% --- OCP SETUP ---
-N      = 20;
-Tf     = 0.2;
-dt_mpc = Tf / N;   % 0.01 s
+N      = 10;
+Tf     = 0.05;
+dt_mpc = Tf / N;   % 0.005 s
 
 % Cost matrices
 Q = diag([1e2, 1e2, 1e3, ...    % x, y, z position
           1e3, 1e3, 1e1, ...    % roll, pitch, yaw angles
-          1e1, 1e1, 1e1, ...    % vx, vy, vz
-          1e1, 1e1, 1e0]);      % wx, wy, wz
-R = eye(nu) * 1.0;
+          1e1*0.3, 1e1*0.3, 1e1*0.3, ...    % vx, vy, vz
+          1e1*0.3, 1e1*0.3, 1e0*0.3]);      % wx, wy, wz
+R = eye(nu) * 0.1;
 
 ocp = AcadosOcp();
 ocp.model.name        = 'maglev_nmpc';
@@ -101,10 +106,10 @@ ocp.model.f_impl_expr = xdot - f_expl;
 ocp.solver_options.N_horizon             = N;
 ocp.solver_options.tf                    = Tf;
 ocp.solver_options.integrator_type       = 'IRK';
-ocp.solver_options.sim_method_num_stages = 4;
-ocp.solver_options.sim_method_num_steps  = 10;
-ocp.solver_options.nlp_solver_type       = 'SQP';
-ocp.solver_options.nlp_solver_max_iter   = 100;
+ocp.solver_options.sim_method_num_stages = 1;
+ocp.solver_options.sim_method_num_steps  = 1;
+ocp.solver_options.nlp_solver_type       = 'SQP_RTI';
+% ocp.solver_options.nlp_solver_max_iter   = 100;
 ocp.solver_options.nlp_solver_tol_stat   = 1e-4;
 ocp.solver_options.nlp_solver_tol_eq     = 1e-4;
 ocp.solver_options.nlp_solver_tol_ineq   = 1e-4;
@@ -121,7 +126,7 @@ ocp.cost.cost_type_0 = 'NONLINEAR_LS';
 ocp.cost.cost_type_e = 'NONLINEAR_LS';
 ocp.cost.W           = blkdiag(Q, R);
 ocp.cost.W_0         = blkdiag(Q, R);
-ocp.cost.W_e         = Q * 10;
+ocp.cost.W_e         = Q * 3;
 
 ocp.model.cost_y_expr   = [x; u];
 ocp.model.cost_y_expr_0 = [x; u];
@@ -143,8 +148,8 @@ ocp.constraints.ubx    = [ 0.025;  0.025; 0.055;  0.35;  0.35];
 ocp.constraints.idxsbx = 0:4;
 
 n_sbx = 5;
-ocp.cost.Zl = 1e3 * ones(n_sbx, 1);
-ocp.cost.Zu = 1e3 * ones(n_sbx, 1);
+ocp.cost.Zl = 1e5 * ones(n_sbx, 1);
+ocp.cost.Zu = 1e5 * ones(n_sbx, 1);
 ocp.cost.zl = 1e2 * ones(n_sbx, 1);
 ocp.cost.zu = 1e2 * ones(n_sbx, 1);
 
@@ -169,8 +174,8 @@ if ~exist('sim_solver', 'var') || ~isvalid(sim_solver)
     sim.model.f_impl_expr = xdot - f_expl;
     sim.solver_options.Tsim            = dt_mpc;
     sim.solver_options.integrator_type = 'IRK';
-    sim.solver_options.num_stages      = 4;
-    sim.solver_options.num_steps       = 10;
+    sim.solver_options.num_stages      = 1;
+    sim.solver_options.num_steps       = 1;
     sim_solver = AcadosSimSolver(sim);
 else
     fprintf('\n--- Reusing sim solver ---\n');
@@ -201,7 +206,9 @@ for k = 0:N-1
 end
 
 %% --- SIMULATION ---
-sim_steps = 200;
+sim_steps = 2000;
+dist_time = 5.0;
+dist_step = dist_time / dt_mpc;
 
 plot_x    = zeros(nx, sim_steps+1);
 plot_u    = zeros(nu, sim_steps);
@@ -210,7 +217,9 @@ plot_sqp  = zeros(1,  sim_steps);
 plot_time = zeros(1,  sim_steps);
 plot_x(:,1) = x_current;
 
-fprintf('\n--- Starting NMPC simulation (%d steps, %.2f s) ---\n', sim_steps, sim_steps*dt_mpc);
+fprintf('\n--- Starting NMPC simulation (%d steps, %.2f s, nx=%d) ---\n', sim_steps, sim_steps*dt_mpc, nx);
+
+push_magnitude = [0; 0; 0; 0; 0; 0; -0.005; 0.0025; -0.2; 0; 0; 0];
 
 for i = 1:sim_steps
     % --- Solve OCP ---
@@ -228,6 +237,12 @@ for i = 1:sim_steps
     sim_solver.set('u', u_applied);
     sim_solver.solve();
     x_next = sim_solver.get('xn');
+
+    % --- Inject distrubance ---
+    if i == dist_step
+        fprintf('  *** APPLYING PUSH at t = %.2f s ***\n', i * dt_mpc)
+        x_next = x_next + push_magnitude;
+    end
 
     % --- Warm-start shift ---
     x_traj = ocp_solver.get('x');

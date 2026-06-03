@@ -19,15 +19,15 @@
 % =========================================================================
 
 %% --- PROJECT SETUP ---
-clearvars -except ocp_solver sim_solver; clc;
+clearvars -except ocp_solver_reduced10 sim_solver_reduced10; clc;
 
 % Linux/WSL root
 % acados_root  = '/home/mariujf/acados';
-% project_root = '/home/mariujf/Maggy2026V/NMPCProject';
+% project_root = '/home/mariujf/isolated_experiment';
 
 % Windows root
 acados_root  = 'C:\Users\mariujf\acados';
-project_root = 'C:\Users\mariujf\Maggy2026V\NMPCProject';
+project_root = 'C:\Users\mariujf\isolated_experiment';
 
 setenv('ACADOS_SOURCE_DIR',        acados_root);
 setenv('ENV_ACADOS_INSTALL_DIR',   acados_root);
@@ -99,15 +99,15 @@ f_expl_r = [dx_full(1:5); dx_full(7:11)];
 
 %% --- OCP SETUP ---
 N      = 10;
-Tf     = 0.05;
-dt_mpc = Tf / N;   % 0.005 s
+Tf     = 0.1;
+dt_mpc = Tf / N;   % 0.01 s
 
 % Cost matrices (10 states: x, y, z, roll, pitch, vx, vy, vz, wx, wy)
 Q = diag([1e2, 1e2, 1e3, ...    % x, y, z position
           1e3, 1e3, ...          % roll, pitch
-          1e1*0.3, 1e1*0.3, 1e1*0.3, ...    % vx, vy, vz
-          1e1*0.3, 1e1*0.3]);            % wx, wy
-R = eye(nu) * 0.1;
+          1e1, 1e1, 1e1, ...    % vx, vy, vz
+          1e1, 1e1]);            % wx, wy
+R = eye(nu) * 1.0;
 
 ocp = AcadosOcp();
 ocp.model.name        = 'maglev_nmpc_reduced';
@@ -120,15 +120,15 @@ ocp.model.f_impl_expr = xdot_r - f_expl_r;
 ocp.solver_options.N_horizon             = N;
 ocp.solver_options.tf                    = Tf;
 ocp.solver_options.integrator_type       = 'IRK';
-ocp.solver_options.sim_method_num_stages = 1;
-ocp.solver_options.sim_method_num_steps  = 1;
+ocp.solver_options.sim_method_num_stages = 2;
+ocp.solver_options.sim_method_num_steps  = 5;
 ocp.solver_options.nlp_solver_type       = 'SQP_RTI';
 % ocp.solver_options.nlp_solver_max_iter   = 100;
 ocp.solver_options.nlp_solver_tol_stat   = 1e-4;
 ocp.solver_options.nlp_solver_tol_eq     = 1e-4;
 ocp.solver_options.nlp_solver_tol_ineq   = 1e-4;
 ocp.solver_options.nlp_solver_tol_comp   = 1e-4;
-ocp.solver_options.qp_solver             = 'PARTIAL_CONDENSING_HPIPM';
+ocp.solver_options.qp_solver             = 'FULL_CONDENSING_HPIPM';
 ocp.solver_options.qp_solver_iter_max    = 200;
 ocp.solver_options.qp_solver_warm_start  = 1;
 ocp.solver_options.hessian_approx        = 'GAUSS_NEWTON';
@@ -140,7 +140,7 @@ ocp.cost.cost_type_0 = 'NONLINEAR_LS';
 ocp.cost.cost_type_e = 'NONLINEAR_LS';
 ocp.cost.W           = blkdiag(Q, R);
 ocp.cost.W_0         = blkdiag(Q, R);
-ocp.cost.W_e         = Q * 3;
+ocp.cost.W_e         = Q * 50;
 
 ocp.model.cost_y_expr   = [x_r; u_sym];
 ocp.model.cost_y_expr_0 = [x_r; u_sym];
@@ -165,21 +165,21 @@ ocp.constraints.idxsbx = 0:4;
 n_sbx = 5;
 ocp.cost.Zl = 1e3 * ones(n_sbx, 1);
 ocp.cost.Zu = 1e3 * ones(n_sbx, 1);
-ocp.cost.zl = 1e3 * ones(n_sbx, 1);
-ocp.cost.zu = 1e3 * ones(n_sbx, 1);
+ocp.cost.zl = 1e2 * ones(n_sbx, 1);
+ocp.cost.zu = 1e2 * ones(n_sbx, 1);
 
 ocp.constraints.x0 = xEq;
 
 %% --- BUILD OCP SOLVER ---
-if ~exist('ocp_solver', 'var') || ~isvalid(ocp_solver)
+if ~exist('ocp_solver_reduced10', 'var') || ~isvalid(ocp_solver_reduced10)
     fprintf('\n--- Building acados OCP solver (reduced, nx=%d) ---\n', nx);
-    ocp_solver = AcadosOcpSolver(ocp);
+    ocp_solver_reduced10 = AcadosOcpSolver(ocp);
 else
     fprintf('\n--- Reusing OCP solver ---\n');
 end
 
 %% --- BUILD SIM SOLVER ---
-if ~exist('sim_solver', 'var') || ~isvalid(sim_solver)
+if ~exist('sim_solver_reduced10', 'var') || ~isvalid(sim_solver_reduced10)
     fprintf('\n--- Building acados sim solver (reduced, nx=%d) ---\n', nx);
     sim = AcadosSim();
     sim.model.name        = 'maglev_sim_reduced';
@@ -189,9 +189,9 @@ if ~exist('sim_solver', 'var') || ~isvalid(sim_solver)
     sim.model.f_impl_expr = xdot_r - f_expl_r;
     sim.solver_options.Tsim            = dt_mpc;
     sim.solver_options.integrator_type = 'IRK';
-    sim.solver_options.num_stages      = 1;
-    sim.solver_options.num_steps       = 1;
-    sim_solver = AcadosSimSolver(sim);
+    sim.solver_options.num_stages      = 4;
+    sim.solver_options.num_steps       = 10;
+    sim_solver_reduced10 = AcadosSimSolver(sim);
 else
     fprintf('\n--- Reusing sim solver ---\n');
 end
@@ -215,14 +215,14 @@ fprintf('  Orientation:      (%+.2f, %+.2f) deg\n', ...
 % Linear interpolation from perturbed state to equilibrium
 for k = 0:N
     alpha_k = k / N;
-    ocp_solver.set('x', (1 - alpha_k) * x_current + alpha_k * xEq, k);
+    ocp_solver_reduced10.set('x', (1 - alpha_k) * x_current + alpha_k * xEq, k);
 end
 for k = 0:N-1
-    ocp_solver.set('u', uEq, k);
+    ocp_solver_reduced10.set('u', uEq, k);
 end
 
 %% --- SIMULATION ---
-sim_steps = 2000;
+sim_steps = 1000;
 dist_time = 5.0;
 dist_step = dist_time / dt_mpc;
 
@@ -239,20 +239,20 @@ push_magnitude = [0; 0; 0; 0; 0; -0.005; 0.0025; -0.2; 0; 0];
 
 for i = 1:sim_steps
     % --- Solve OCP ---
-    ocp_solver.set('constr_x0', x_current);
-    ocp_solver.solve();
+    ocp_solver_reduced10.set('constr_x0', x_current);
+    ocp_solver_reduced10.solve();
 
-    status    = ocp_solver.get('status');
-    sqp_iter  = ocp_solver.get('sqp_iter');
-    time_tot  = ocp_solver.get('time_tot');
-    u_applied = ocp_solver.get('u', 0);
+    status    = ocp_solver_reduced10.get('status');
+    sqp_iter  = ocp_solver_reduced10.get('sqp_iter');
+    time_tot  = ocp_solver_reduced10.get('time_tot');
+    u_applied = ocp_solver_reduced10.get('u', 0);
     u_applied = max(min(u_applied, 1), -1);
 
     % --- Simulate plant ---
-    sim_solver.set('x', x_current);
-    sim_solver.set('u', u_applied);
-    sim_solver.solve();
-    x_next = sim_solver.get('xn');
+    sim_solver_reduced10.set('x', x_current);
+    sim_solver_reduced10.set('u', u_applied);
+    sim_solver_reduced10.solve();
+    x_next = sim_solver_reduced10.get('xn');
 
     % --- Inject distrubance ---
     if i == dist_step
@@ -261,15 +261,15 @@ for i = 1:sim_steps
     end
 
     % --- Warm-start shift ---
-    x_traj = ocp_solver.get('x');
-    u_traj = ocp_solver.get('u');
+    x_traj = ocp_solver_reduced10.get('x');
+    u_traj = ocp_solver_reduced10.get('u');
     x_traj_shift = [x_traj(:, 2:end), xEq];
     u_traj_shift = [u_traj(:, 2:end), uEq];
     for k = 0:N
-        ocp_solver.set('x', x_traj_shift(:, k+1), k);
+        ocp_solver_reduced10.set('x', x_traj_shift(:, k+1), k);
     end
     for k = 0:N-1
-        ocp_solver.set('u', u_traj_shift(:, k+1), k);
+        ocp_solver_reduced10.set('u', u_traj_shift(:, k+1), k);
     end
 
     % --- Log ---

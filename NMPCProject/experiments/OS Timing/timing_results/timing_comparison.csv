@@ -1,0 +1,7 @@
+setup,os,mode,matlab_release,compile_time_s,mean_avg_acados_ms,std_avg_acados_ms,mean_max_acados_ms,std_max_acados_ms,mean_avg_wall_ms,std_avg_wall_ms,mean_max_wall_ms,std_max_wall_ms,median_wall_ms,p99_wall_ms,worst_wall_ms,pct_over_deadline
+"Windows (GUI)",Windows,GUI,2025b,164.8216,3.0757,0.0213,3.4603,0.0408,3.1309,0.0207,3.5336,0.0418,3.1319,3.5336,13.5992,0.0100
+"Windows (headless)",Windows,headless,2025b,137.8412,3.0315,0.0111,3.4241,0.2124,3.0863,0.0135,3.4964,0.2362,3.0864,3.4578,12.5932,0.0100
+"WSL (GUI)",WSL,GUI,2025b,129.7884,4.0252,0.0443,6.2277,0.2587,4.0957,0.0440,6.5181,0.3109,NaN,6.5104,30.3420,0.0200
+"WSL (headless)",WSL,headless,2025b,113.1725,3.8039,0.0383,4.7126,0.3636,3.8699,0.0384,4.8325,0.4225,NaN,4.9265,12.1370,0.0100
+"Ubuntu (GUI)",Ubuntu,GUI,2026a,103.9662,3.2946,0.0372,5.1192,0.1444,3.3439,0.0367,5.4422,0.1692,3.3385,5.3795,15.2880,0.0100
+"Ubuntu (headless)",Ubuntu,headless,2026a,97.9842,3.1529,0.0601,3.8743,0.3413,3.1962,0.0597,3.9340,0.3652,3.1990,3.9790,9.6800,0.0000

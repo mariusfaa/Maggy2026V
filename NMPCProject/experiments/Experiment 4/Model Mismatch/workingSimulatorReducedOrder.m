@@ -27,7 +27,7 @@ clearvars -except ocp_solver sim_solver; clc;
 
 % Windows root
 acados_root  = 'C:\Users\mariujf\acados';
-project_root = 'C:\Users\mariujf\Maggy2026V\NMPCProject';
+project_root = 'C:\Users\mariujf\model_mismatch';
 
 setenv('ACADOS_SOURCE_DIR',        acados_root);
 setenv('ENV_ACADOS_INSTALL_DIR',   acados_root);
