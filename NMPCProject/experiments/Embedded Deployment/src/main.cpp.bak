@@ -1,0 +1,204 @@
+#include<Arduino.h>
+
+// Arduino's binary.h defines B1 which conflicts with BLASFEO
+#undef B1
+
+extern "C" {
+    #include"acados_solver_maglev_nmpc_reduced.h"
+}
+
+static maglev_nmpc_reduced_solver_capsule *capsule = nullptr;
+
+// 10-state equilibrium: [x, y, z, alpha, beta, vx, vy, vz, wx, wy]
+// *** REPLACE 0.0300 WITH YOUR ACTUAL zEq FROM MATLAB ***
+static const double xEq[10] = {0, 0, 0.0301191833, 0, 0, 0, 0, 0, 0, 0};
+static const double uEq[4]  = {0, 0, 0, 0};
+
+void setup() {
+    Serial.begin(115200);
+    while (!Serial) { delay(10); }
+	
+	// --- Print crash info from previous boot ---
+    if (CrashReport) {
+        Serial.println("=== CRASH REPORT FROM PREVIOUS RUN ===");
+        Serial.println(CrashReport);
+        Serial.println("======================================");
+    }
+
+    Serial.println("=== acados NMPC Timing Test (reduced, nx=10) ===");
+
+    // --- Create solver ---
+    Serial.print("Creating solver... ");
+	Serial.println("Before capsule create");
+    capsule = maglev_nmpc_reduced_acados_create_capsule();
+	Serial.println("Capsule created");
+    int status = maglev_nmpc_reduced_acados_create(capsule);
+	Serial.println("Solver created");
+    if (status != 0) {
+        Serial.print("FAILED with status ");
+        Serial.println(status);
+        while (1) {}
+    }
+    Serial.println("OK");
+
+    // --- Get solver objects ---
+    ocp_nlp_config *config = maglev_nmpc_reduced_acados_get_nlp_config(capsule);
+    ocp_nlp_dims *dims     = maglev_nmpc_reduced_acados_get_nlp_dims(capsule);
+    ocp_nlp_in *nlp_in     = maglev_nmpc_reduced_acados_get_nlp_in(capsule);
+    ocp_nlp_out *nlp_out   = maglev_nmpc_reduced_acados_get_nlp_out(capsule);
+
+    int N = MAGLEV_NMPC_REDUCED_N;
+    Serial.print("Horizon N = "); Serial.println(N);
+
+    // --- Warm-start at equilibrium ---
+    for (int k = 0; k <= N; k++) {
+        ocp_nlp_out_set(config, dims, nlp_out, nlp_in, k, "x", (void *)xEq);
+    }
+    for (int k = 0; k < N; k++) {
+        ocp_nlp_out_set(config, dims, nlp_out, nlp_in, k, "u", (void *)uEq);
+    }
+
+    // --- Set reference (nx + nu = 10 + 4 = 14 elements) ---
+    double yref[14];
+    for (int i = 0; i < 10; i++) yref[i] = xEq[i];
+    for (int i = 0; i < 4; i++)  yref[10 + i] = uEq[i];
+
+    for (int k = 0; k < N; k++) {
+        ocp_nlp_cost_model_set(config, dims, nlp_in, k, "yref", (void *)yref);
+    }
+    // Terminal reference (only x, 10 elements)
+    ocp_nlp_cost_model_set(config, dims, nlp_in, N, "yref", (void *)xEq);
+
+    Serial.println("Solver initialized and warm-started.");
+
+    // ===========================================
+    //TEST 1: Timing at equilibrium (100 solves)
+    // ===========================================
+    Serial.println("\n--- Test 1: 100 RTI solves at equilibrium ---");
+
+    double x_current[10];
+    memcpy(x_current, xEq, sizeof(xEq));
+
+    unsigned long total_us = 0;
+    unsigned long worst_us = 0;
+    unsigned long best_us  = 999999;
+
+    for (int i = 0; i < 100; i++) {
+        ocp_nlp_constraints_model_set(config, dims, nlp_in, nlp_out, 0, "lbx", (void *)x_current);
+        ocp_nlp_constraints_model_set(config, dims, nlp_in, nlp_out, 0, "ubx", (void *)x_current);
+
+        unsigned long t0 = micros();
+        status = maglev_nmpc_reduced_acados_solve(capsule);
+        unsigned long dt = micros() - t0;
+
+        total_us += dt;
+        if (dt > worst_us) worst_us = dt;
+        if (dt < best_us)  best_us  = dt;
+
+        double u_opt[4];
+        ocp_nlp_out_get(config, dims, nlp_out, 0, "u", u_opt);
+
+        if (i < 5 || i == 99) {
+            Serial.print("  Solve ");
+            Serial.print(i);
+            Serial.print(": ");
+            Serial.print(dt);
+            Serial.print(" us, status=");
+            Serial.print(status);
+            Serial.print(", u=[");
+            for (int j = 0; j < 4; j++) {
+                Serial.print(u_opt[j], 6);
+                if (j < 3) Serial.print(", ");
+            }
+            Serial.println("]");
+        }
+    }
+
+    Serial.println("\n=== EQUILIBRIUM TIMING ===");
+    Serial.print("  Average: "); Serial.print(total_us / 100); Serial.println(" us");
+    Serial.print("  Best:    "); Serial.print(best_us); Serial.println(" us");
+    Serial.print("  Worst:   "); Serial.print(worst_us); Serial.println(" us");
+    Serial.println("  Budget:  10000 us (100 Hz)");
+
+    // ===========================================
+    //TEST 2: Perturbed initial condition
+    // ===========================================
+    Serial.println("\n--- Test 2: 20 RTI solves from perturbed state ---");
+
+    // Small perturbation: 1mm in x, 1mm in y, 0.5mm in z, 2 deg tilt
+    double x_pert[10];
+    memcpy(x_pert, xEq, sizeof(xEq));
+    x_pert[0] += 0.001;           // x + 1mm
+    x_pert[1] += 0.001;           // y + 1mm
+    x_pert[2] += 0.0005;          // z + 0.5mm
+    x_pert[3] += 0.035;           // roll + 2 deg
+    x_pert[4] -= 0.035;           // pitch - 2 deg
+
+    // Re-warm-start
+    for (int k = 0; k <= N; k++) {
+        double alpha_k = (double)k / N;
+        double x_init[10];
+        for (int j = 0; j < 10; j++) {
+            x_init[j] = (1.0 - alpha_k) * x_pert[j] + alpha_k * xEq[j];
+        }
+        ocp_nlp_out_set(config, dims, nlp_out, nlp_in, k, "x", (void *)x_init);
+    }
+    for (int k = 0; k < N; k++) {
+        ocp_nlp_out_set(config, dims, nlp_out, nlp_in, k, "u", (void *)uEq);
+    }
+
+    total_us = 0; worst_us = 0; best_us = 999999;
+
+    for (int i = 0; i < 20; i++) {
+        ocp_nlp_constraints_model_set(config, dims, nlp_in, nlp_out, 0, "lbx", (void *)x_pert);
+        ocp_nlp_constraints_model_set(config, dims, nlp_in, nlp_out, 0, "ubx", (void *)x_pert);
+
+        unsigned long t0 = micros();
+        status = maglev_nmpc_reduced_acados_solve(capsule);
+        unsigned long dt = micros() - t0;
+
+        total_us += dt;
+        if (dt > worst_us) worst_us = dt;
+        if (dt < best_us)  best_us  = dt;
+
+        double u_opt[4];
+        ocp_nlp_out_get(config, dims, nlp_out, 0, "u", u_opt);
+
+        Serial.print("  Solve ");
+        Serial.print(i);
+        Serial.print(": ");
+        Serial.print(dt);
+        Serial.print(" us, status=");
+        Serial.print(status);
+        Serial.print(", u=[");
+        for (int j = 0; j < 4; j++) {
+            Serial.print(u_opt[j], 6);
+            if (j < 3) Serial.print(", ");
+        }
+        Serial.println("]");
+
+        // Shift warm-start (simulate getting closer to equilibrium)
+    }
+
+    Serial.println("\n=== PERTURBED TIMING ===");
+    Serial.print("  Average: "); Serial.print(total_us / 20); Serial.println(" us");
+    Serial.print("  Best:    "); Serial.print(best_us); Serial.println(" us");
+    Serial.print("  Worst:   "); Serial.print(worst_us); Serial.println(" us");
+    Serial.println("  Budget:  10000 us (100 Hz)");
+
+    // ===========================================
+    // SUMMARY
+    // ===========================================
+    Serial.println("\n=== SUMMARY ===");
+    Serial.print("  Model: 10 states, 4 inputs, N="); Serial.println(N);
+    Serial.print("  IRK stages=2, steps=5");
+    Serial.println();
+
+    if (worst_us < 10000) Serial.println("  VERDICT: PASS — fits 100 Hz control loop.");
+    else if (worst_us < 25000) Serial.println("  VERDICT: MARGINAL — fits 40 Hz but not 100 Hz.");
+    else Serial.println("  VERDICT: FAIL — too slow for real-time. Reduce N or integrator settings.");
+
+    Serial.println("\n=== TEST COMPLETE ===");
+}
+
+void loop() {}
