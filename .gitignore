@@ -15,3 +15,5 @@ NMPCProject/c_generated_code/
 # Platformio
 .pio/
 .vscode/
+
+NMPCProject/.venv/

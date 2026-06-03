@@ -1,0 +1,3 @@
+# Ignore results and plot validations
+results/
+plots_validation/
