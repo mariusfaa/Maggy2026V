@@ -3,7 +3,8 @@ clearvars -except ocp_solver_basin sim_solver_basin; clc; close all;
 
 scriptPath   = fileparts(mfilename('fullpath'));
 projectRoot  = scriptPath;
-acados_root  = 'C:\Users\mariu\acados';
+% --- Enter the path to your local acados installation here ---
+acados_root  = '';   % e.g. 'C:\Users\you\acados' or '/home/you/acados'
 
 cd(projectRoot);
 

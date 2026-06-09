@@ -30,8 +30,11 @@
 clearvars; clc;
 
 %% --- PROJECT SETUP ---
-acados_root  = '/home/mariujf/acados';
-project_root = '/home/mariujf/Maggy2026V/NMPCProject';
+% --- Enter your own paths here ---
+% acados_root  : path to your local acados installation
+% project_root : path to the NMPCProject folder (this repository)
+acados_root  = '';   % e.g. 'C:\Users\you\acados' or '/home/you/acados'
+project_root = '';   % e.g. 'C:\Users\you\Maggy2026V\NMPCProject'
 
 addpath(fullfile(acados_root, 'external', 'casadi-matlab'));
 addpath(genpath(fullfile(project_root, 'model_implementations')));

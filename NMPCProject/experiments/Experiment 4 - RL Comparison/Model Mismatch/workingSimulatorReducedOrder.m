@@ -21,13 +21,11 @@
 %% --- PROJECT SETUP ---
 clearvars -except ocp_solver sim_solver; clc;
 
-% Linux/WSL root
-% acados_root  = '/home/mariujf/acados';
-% project_root = '/home/mariujf/Maggy2026V/NMPCProject';
-
-% Windows root
-acados_root  = 'C:\Users\mariujf\acados';
-project_root = 'C:\Users\mariujf\model_mismatch';
+% --- Enter your own paths here ---
+% acados_root  : path to your local acados installation
+% project_root : path to the working directory for this experiment
+acados_root  = '';   % e.g. 'C:\Users\you\acados' or '/home/you/acados'
+project_root = '';   % e.g. 'C:\Users\you\model_mismatch'
 
 setenv('ACADOS_SOURCE_DIR',        acados_root);
 setenv('ENV_ACADOS_INSTALL_DIR',   acados_root);

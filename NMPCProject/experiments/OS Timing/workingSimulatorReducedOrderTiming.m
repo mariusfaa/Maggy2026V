@@ -38,12 +38,15 @@ sim_steps         = 1000;
 force_clean_build = true;
 
 %% --- PROJECT SETUP ---
+% --- Enter your own paths here ---
+% acados_root  : path to your local acados installation
+% project_root : path to the NMPCProject folder (this repository)
 if ispc
-    acados_root  = 'C:\Users\mariujf\acados';
-    project_root = 'C:\Users\mariujf\Maggy2026V\NMPCProject';
+    acados_root  = '';   % e.g. 'C:\Users\you\acados'
+    project_root = '';   % e.g. 'C:\Users\you\Maggy2026V\NMPCProject'
 else
-    acados_root  = '/home/mariujf/acados';
-    project_root = '/home/mariujf/Maggy2026V/NMPCProject';
+    acados_root  = '';   % e.g. '/home/you/acados'
+    project_root = '';   % e.g. '/home/you/Maggy2026V/NMPCProject'
 end
 
 setenv('ACADOS_SOURCE_DIR',        acados_root);

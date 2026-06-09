@@ -22,11 +22,11 @@ import matplotlib as mpl
 import numpy as np
 
 
-ROOT = Path(r"C:\Users\mariujf\isolated_experiment\experiments\thesis\results")
-OUT = Path(
-    r"C:\Users\mariujf\master_thesis"
-    r"\2026_TTK4900___Master_thesis___Marius___nmpc_deployment\figures"
-)
+# --- Enter your own paths here ---
+# ROOT : directory containing the thesis results
+# OUT  : directory where generated figures should be written
+ROOT = Path(r"")  # e.g. r"C:\Users\you\isolated_experiment\experiments\thesis\results"
+OUT = Path(r"")  # e.g. r"C:\Users\you\master_thesis\figures"
 
 ORDER_LABEL = {
     "full12": "12-state",

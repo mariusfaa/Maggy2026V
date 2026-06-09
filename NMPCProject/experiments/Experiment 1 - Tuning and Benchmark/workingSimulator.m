@@ -25,12 +25,11 @@
 %% --- PROJECT SETUP ---
 clearvars -except ocp_solver_full12 sim_solver_full12; clc;
 
-% acados_root  = '/home/mariujf/acados';
-% project_root = '/home/mariujf/isolated_experiment';
-
-% Windows root
-acados_root  = 'C:\Users\mariujf\acados';
-project_root = 'C:\Users\mariujf\isolated_experiment';
+% --- Enter your own paths here ---
+% acados_root  : path to your local acados installation
+% project_root : path to the working directory for this experiment
+acados_root  = '';   % e.g. 'C:\Users\you\acados' or '/home/you/acados'
+project_root = '';   % e.g. 'C:\Users\you\isolated_experiment'
 
 
 setenv('ACADOS_SOURCE_DIR',        acados_root);

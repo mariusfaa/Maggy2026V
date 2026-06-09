@@ -16,8 +16,10 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 # --- Paths -------------------------------------------------------------
-ROOT = Path(r"C:\Users\mariujf\isolated_experiment\experiments\thesis\results")
-OUT  = Path(r"C:\Users\mariujf\master_thesis\2026_TTK4900___Master_thesis___Marius___nmpc_deployment\figures")
+# ROOT : directory containing the thesis results
+# OUT  : directory where generated figures should be written
+ROOT = Path(r"")  # e.g. r"C:\Users\you\isolated_experiment\experiments\thesis\results"
+OUT  = Path(r"")  # e.g. r"C:\Users\you\master_thesis\figures"
 OUT.mkdir(parents=True, exist_ok=True)
 
 # --- Matplotlib style --------------------------------------------------

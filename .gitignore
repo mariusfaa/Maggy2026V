@@ -17,3 +17,17 @@ NMPCProject/c_generated_code/
 .vscode/
 
 NMPCProject/.venv/
+
+# MATLAB Coder / Simulink codegen build output and cache
+slprj/
+**/slprj/
+*_ert_rtw/
+**/*_ert_rtw/
+*_grt_rtw/
+**/*_grt_rtw/
+codegen/
+**/codegen/
+*.slxc
+*.mex*
+*.asv
+*.autosave

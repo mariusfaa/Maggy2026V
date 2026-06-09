@@ -2,7 +2,7 @@ function analyze_sweep()
 % ANALYZE_SWEEP  Generate thesis plots and aggregate CSV from the n-sweep results.
 %
 %   Run from MATLAB (any cwd):
-%       run('/home/mariujf/n_sweep/.../results_magnet_n_sweep/analysis/analyze_sweep.m')
+%       run('<path-to>/results_magnet_n_sweep/analysis/analyze_sweep.m')
 %   or:
 %       cd /.../results_magnet_n_sweep/analysis
 %       analyze_sweep

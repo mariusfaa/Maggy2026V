@@ -113,9 +113,12 @@ fprintf('Loaded %d playback states.\n', nPlaybackSteps);
 %% ------------------------------------------------------------------------
 %  PATH SETUP
 % -------------------------------------------------------------------------
+% --- Enter your own paths here ---
+% acados_root  : path to your local acados installation
+% project_root : path to the Controller folder
 if ispc
-    acados_root  = 'C:\Users\mariu\acados';
-    project_root = 'C:\Users\mariu\MagLevTbx\Controller';
+    acados_root  = '';   % e.g. 'C:\Users\you\acados'
+    project_root = '';   % e.g. 'C:\Users\you\MagLevTbx\Controller'
 else
     acados_root  = fullfile(getenv('HOME'), 'acados');
     project_root = fullfile(getenv('HOME'), 'MagLevTbx-main', 'Controller');
